@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone *)",
+      "Bash(agent-browser --version)",
+      "Bash(agent-browser install *)"
+    ]
+  }
+}
