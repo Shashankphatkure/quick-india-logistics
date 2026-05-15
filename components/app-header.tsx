@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { cn } from '@/utils/cn';
 import * as Input from '@/components/ui/input';
 import * as Avatar from '@/components/ui/avatar';
@@ -15,6 +16,8 @@ import {
   RiLogoutBoxLine,
   RiMenuLine,
 } from '@remixicon/react';
+
+const ThemeSwitch = dynamic(() => import('./theme-switch'), { ssr: false });
 
 interface AppHeaderProps {
   onMenuToggle: () => void;
@@ -39,7 +42,7 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed }: AppHeaderP
 
       {/* Docket search */}
       <div className="w-56">
-        <Input.Root size="sm">
+        <Input.Root size="small">
           <Input.Wrapper>
             <Input.Icon as={RiSearchLine} />
             <Input.Input placeholder="Enter Docket No" />
@@ -71,6 +74,9 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed }: AppHeaderP
         <button className="flex size-8 items-center justify-center rounded-lg text-text-sub-600 transition hover:bg-bg-weak-50 hover:text-text-strong-950">
           <RiRefreshLine size={16} />
         </button>
+
+        {/* Theme switcher */}
+        <ThemeSwitch />
 
         {/* User dropdown */}
         <Dropdown.Root>

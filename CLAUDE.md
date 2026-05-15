@@ -181,11 +181,69 @@ Build in this sequence (each depends on the previous shell):
 
 ---
 
+## UX Design Intent
+
+> **Goal: Make every page fast to understand and fast to act on.**
+
+Every page should enable the user to:
+1. **Understand at a glance** — KPI stats at the top of every list page (using `StatsStrip`)
+2. **Navigate contextually** — Breadcrumbs (`Breadcrumb.*`) on every page header
+3. **Act without page changes** — Use `Drawer.*` for detail panels and add-forms instead of navigating away
+4. **Get help instantly** — `Tooltip.*` on every icon button and ambiguous action
+5. **See progress clearly** — `HorizontalStepper.*` on all multi-step forms
+
+### Layout Pattern (every list page)
+```
+<PageHeader icon title subtitle actions />     ← shared component
+<StatsStrip stats={[...]} />                   ← shared component, 3-4 KPIs
+<Breadcrumb />                                 ← context trail
+<Table + Pagination />                         ← data with Drawer on row click
+```
+
+### Component Priority Rules
+| Situation | Use |
+|-----------|-----|
+| Inline detail panel (order, manifest, runsheet) | `Drawer.*` — slides from right |
+| Confirmation / warning dialog | `Modal.*` |
+| Add/edit forms (commodity, branch, vendor…) | `Drawer.*` — full form in drawer |
+| Multi-step flows (Add Order) | `HorizontalStepper.*` |
+| Page trail | `Breadcrumb.*` — on every PageHeader |
+| Icon buttons with no text label | `Tooltip.*` |
+| Keyboard shortcuts | `Kbd.*` |
+
+### AlignUI Color Token Usage (CRITICAL)
+Never use raw Tailwind colors. Always use AlignUI semantic tokens:
+- Text: `text-text-strong-950` / `text-text-sub-600` / `text-text-soft-400` / `text-text-disabled-300`
+- Background: `bg-bg-white-0` / `bg-bg-weak-50` / `bg-bg-soft-200`
+- Borders: `border-stroke-soft-200` / `border-stroke-sub-300`
+- Status colors via Badge: `color="green"` / `color="orange"` / `color="red"` / `color="blue"`
+- Semantic backgrounds: `bg-success-lighter` / `bg-warning-lighter` / `bg-error-lighter` / `bg-information-lighter`
+- Page outer bg: `bg-bg-weak-50` (set on `<main>` in app-shell)
+
+### AlignUI Typography Token Usage (CRITICAL)
+Never use `text-xs`, `text-sm`, `text-base`, `text-lg`. Use AlignUI tokens:
+- `text-title-h4/h5/h6` — large numbers, section titles
+- `text-label-lg/md/sm/xs` — medium weight labels, headings
+- `text-paragraph-md/sm/xs` — body text, table cells, descriptions
+- `text-subheading-xs/2xs` — uppercase section labels with tracking
+
+---
+
+## Shared Components (use on every page)
+
+- `components/page-header.tsx` — icon + title + subtitle + right-side actions
+- `components/stats-strip.tsx` — KPI metric strip with trend indicators
+
+---
+
 ## Do Not
 
 - Do not modify files in `components/ui/` — these are AlignUI library components
 - Do not add a backend or API calls — UI only for now
+- Do not use raw Tailwind colors (`text-blue-700`, `bg-green-50`, etc.) — use AlignUI semantic tokens
+- Do not use raw font sizes (`text-xs`, `text-sm`) — use AlignUI typography tokens
 - Do not use raw HTML form elements — always use AlignUI components
+- Do not use manual modal/slide-over divs — use `Drawer.*` or `Modal.*`
 - Do not invent new routes not in PRD.md §16 without discussing first
 - Do not use `any` type in TypeScript
 - Do not add dependencies without checking if AlignUI already covers the use case

@@ -14,8 +14,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <AppHeader sidebarCollapsed={collapsed} onMenuToggle={() => setCollapsed((p) => !p)} />
       <div
         className={cn(
-          'min-h-screen pt-14 transition-all duration-300',
-          collapsed ? 'pl-16' : 'pl-60',
+          'min-h-screen bg-bg-weak-50 pt-14 transition-all duration-300',
+          collapsed ? 'pl-[60px]' : 'pl-[232px]',
         )}
       >
         <main className="p-6">{children}</main>
