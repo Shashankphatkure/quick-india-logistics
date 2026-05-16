@@ -1,0 +1,23 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+/**
+ * Subscribes to a CSS media query and returns whether it currently matches.
+ * Defaults to `false` on the server / first render to avoid hydration
+ * mismatches, then resolves to the real value after mount.
+ */
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+
+    onChange();
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, [query]);
+
+  return matches;
+}

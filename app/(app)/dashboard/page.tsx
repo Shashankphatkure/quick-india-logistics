@@ -64,7 +64,7 @@ export default function DashboardPage() {
       </PageHeader>
 
       {/* Main layout: content + activity sidebar */}
-      <div className="flex gap-5">
+      <div className="flex flex-col gap-5 xl:flex-row">
         {/* Left: stats + sections */}
         <div className="flex-1 min-w-0 space-y-5">
           {/* Top KPI strip */}
@@ -76,7 +76,7 @@ export default function DashboardPage() {
           ]} />
 
           {/* Outgoing + Incoming */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* Outgoing */}
             <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs">
               <div className="mb-4 flex items-center justify-between">
@@ -131,7 +131,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Cold Chain + Delay Orders */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs">
               <div className="mb-4 flex items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-lg bg-verified-lighter">
@@ -183,7 +183,7 @@ export default function DashboardPage() {
               </div>
               <span className="text-label-sm text-text-strong-950">Manifest / Hub Orders</span>
             </div>
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {[
                 { title: 'Incoming Orders', received: 39, notReceived: 1 },
                 { title: 'Outgoing Orders', received: 8, notReceived: 3 },
@@ -206,7 +206,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick links */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               { label: 'Add Order', href: '/booking/orders/add', icon: RiTruckLine, color: 'bg-primary-alpha-10 text-primary-base' },
               { label: 'All Orders', href: '/booking/orders', icon: RiCheckboxCircleLine, color: 'bg-success-lighter text-success-base' },
@@ -231,8 +231,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Right: Recent Activity feed */}
-        <div className="w-72 shrink-0">
-          <div className="sticky top-[80px] rounded-2xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
+        <div className="w-full shrink-0 xl:w-72">
+          <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs xl:sticky xl:top-[80px]">
             <div className="flex items-center justify-between border-b border-stroke-soft-200 px-5 py-4">
               <div>
                 <p className="text-label-sm text-text-strong-950">Recent Activities</p>

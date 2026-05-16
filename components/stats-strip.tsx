@@ -22,9 +22,9 @@ function StatCard({ stat }: { stat: Stat }) {
   const isPositive = (stat.trend ?? 0) >= 0;
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-5 py-4 shadow-regular-xs">
+    <div className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-4 py-4 shadow-regular-xs sm:px-5">
       <p className="text-paragraph-sm text-text-sub-600">{stat.label}</p>
-      <div className="flex items-end gap-3">
+      <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
         <p className="text-title-h5 font-bold text-text-strong-950">
           {stat.prefix && <span className="text-label-md">{stat.prefix}</span>}
           {stat.value}
@@ -32,7 +32,7 @@ function StatCard({ stat }: { stat: Stat }) {
         </p>
         {hasTrend && (
           <div className={cn(
-            'mb-0.5 flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-semibold',
+            'mb-0.5 flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-semibold',
             isPositive
               ? 'bg-success-lighter text-success-dark'
               : 'bg-error-lighter text-error-dark',

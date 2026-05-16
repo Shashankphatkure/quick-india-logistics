@@ -4,13 +4,17 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/utils/cn';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import * as Tooltip from '@/components/ui/tooltip';
+import * as Avatar from '@/components/ui/avatar';
+import * as Dropdown from '@/components/ui/dropdown';
+import * as CompactButton from '@/components/ui/compact-button';
 import {
   RiDashboardLine,
   RiBuilding2Line,
   RiTeamLine,
   RiReceiptLine,
   RiDatabase2Line,
-  RiTruckLine,
   RiCalendarCheckLine,
   RiListCheck2,
   RiFilePaperLine,
@@ -19,10 +23,13 @@ import {
   RiSearchEyeLine,
   RiCustomerServiceLine,
   RiArrowDownSLine,
-  RiMenuLine,
   RiSidebarFoldLine,
-  RiSettings4Line,
+  RiSidebarUnfoldLine,
+  RiTruckLine,
+  RiUserLine,
+  RiSettings3Line,
   RiLogoutBoxLine,
+  RiCloseLine,
 } from '@remixicon/react';
 
 interface NavChild {
@@ -148,35 +155,41 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-const ALL_ITEMS: NavItem[] = NAV_GROUPS.flatMap(g => g.items);
+const ALL_ITEMS: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
 
+function isHrefActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(href + '/');
+}
+
+/* ── Expanded: single leaf or expandable parent ── */
 function NavSection({ item, pathname }: { item: NavItem; pathname: string }) {
-  const isLeafActive = item.href
-    ? pathname === item.href || pathname.startsWith(item.href + '/')
-    : false;
-  const isParentActive = item.children?.some(
-    c => pathname === c.href || pathname.startsWith(c.href + '/'),
-  );
+  const isLeafActive = item.href ? isHrefActive(pathname, item.href) : false;
+  const isParentActive = item.children?.some((c) => isHrefActive(pathname, c.href));
 
-  const [open, setOpen] = useState(isLeafActive || isParentActive || false);
+  const [open, setOpen] = useState<boolean>(isLeafActive || !!isParentActive);
 
   if (!item.children) {
     return (
       <Link
         href={item.href!}
         className={cn(
-          'group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium no-underline transition-all duration-150',
+          'group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-label-sm no-underline transition duration-200 ease-out',
           isLeafActive
-            ? 'bg-white/[.12] text-white'
-            : 'text-white/70 hover:bg-white/8 hover:text-white',
+            ? 'bg-bg-weak-50 text-text-strong-950'
+            : 'text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
         )}
       >
         {isLeafActive && (
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary-base" />
+          <span className='absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary-base' />
         )}
         <item.icon
-          size={15}
-          className={cn('shrink-0', isLeafActive ? 'text-primary-base' : 'text-white/50')}
+          size={20}
+          className={cn(
+            'shrink-0 transition-colors',
+            isLeafActive
+              ? 'text-primary-base'
+              : 'text-text-sub-600 group-hover:text-text-strong-950',
+          )}
         />
         {item.label}
       </Link>
@@ -186,23 +199,29 @@ function NavSection({ item, pathname }: { item: NavItem; pathname: string }) {
   return (
     <div>
       <button
-        onClick={() => setOpen(p => !p)}
+        type='button'
+        onClick={() => setOpen((p) => !p)}
         className={cn(
-          'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150',
+          'group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-label-sm transition duration-200 ease-out',
           isParentActive
-            ? 'text-white bg-white/[.06]'
-            : 'text-white/70 hover:bg-white/8 hover:text-white',
+            ? 'text-text-strong-950'
+            : 'text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
         )}
       >
         <item.icon
-          size={15}
-          className={cn('shrink-0', isParentActive ? 'text-primary-base' : 'text-white/50')}
-        />
-        <span className="flex-1 text-left">{item.label}</span>
-        <RiArrowDownSLine
-          size={14}
+          size={20}
           className={cn(
-            'shrink-0 text-white/40 transition-transform duration-200',
+            'shrink-0 transition-colors',
+            isParentActive
+              ? 'text-primary-base'
+              : 'text-text-sub-600 group-hover:text-text-strong-950',
+          )}
+        />
+        <span className='flex-1 text-left'>{item.label}</span>
+        <RiArrowDownSLine
+          size={18}
+          className={cn(
+            'shrink-0 text-text-soft-400 transition-transform duration-200',
             open && 'rotate-180',
           )}
         />
@@ -210,181 +229,267 @@ function NavSection({ item, pathname }: { item: NavItem; pathname: string }) {
 
       <div
         className={cn(
-          'overflow-hidden transition-all duration-200 ease-in-out',
-          open ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0',
+          'grid transition-all duration-200 ease-out',
+          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
         )}
       >
-        <div className="relative ml-[23px] mt-0.5 flex flex-col border-l border-white/[.10] pb-1 pl-3">
-          {item.children.map(child => {
-            const childActive =
-              pathname === child.href || pathname.startsWith(child.href + '/');
-            return (
-              <Link
-                key={child.href}
-                href={child.href}
-                className={cn(
-                  'rounded-md px-2.5 py-1.5 text-[12px] no-underline transition-all duration-100',
-                  childActive
-                    ? 'bg-primary-base/20 text-white font-semibold'
-                    : 'font-medium text-white/55 hover:bg-white/[.06] hover:text-white/85',
-                )}
-              >
-                {child.label}
-              </Link>
-            );
-          })}
+        <div className='overflow-hidden'>
+          <div className='ml-[26px] mt-0.5 flex flex-col gap-0.5 border-l border-stroke-soft-200 pb-1 pl-3'>
+            {item.children.map((child) => {
+              const childActive = isHrefActive(pathname, child.href);
+              return (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  className={cn(
+                    'relative rounded-md px-2.5 py-1.5 text-paragraph-sm no-underline transition duration-150 ease-out',
+                    childActive
+                      ? 'font-medium text-primary-base'
+                      : 'text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
+                  )}
+                >
+                  {childActive && (
+                    <span className='absolute -left-[13px] top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary-base' />
+                  )}
+                  {child.label}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+/* ── Collapsed: icon-only with tooltip ── */
+function CollapsedItem({ item, pathname }: { item: NavItem; pathname: string }) {
+  const href = item.href ?? item.children?.[0]?.href ?? '/';
+  const isActive = item.href
+    ? isHrefActive(pathname, item.href)
+    : !!item.children?.some((c) => isHrefActive(pathname, c.href));
+
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>
+        <Link
+          href={href}
+          className={cn(
+            'flex size-10 items-center justify-center rounded-lg no-underline transition duration-200 ease-out',
+            isActive
+              ? 'bg-primary-alpha-10 text-primary-base'
+              : 'text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
+          )}
+        >
+          <item.icon size={20} />
+        </Link>
+      </Tooltip.Trigger>
+      <Tooltip.Content side='right' sideOffset={8}>
+        {item.label}
+      </Tooltip.Content>
+    </Tooltip.Root>
+  );
+}
+
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
 }
 
-export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export default function Sidebar({
+  collapsed,
+  onToggle,
+  mobileOpen,
+  onMobileClose,
+}: SidebarProps) {
   const pathname = usePathname();
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+  // The icon-rail is a desktop-only affordance; on mobile the drawer is
+  // always shown in its full, expanded form.
+  const showRail = isDesktop && collapsed;
 
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 flex h-screen flex-col bg-[#0c1322] transition-all duration-300',
-        collapsed ? 'w-[60px]' : 'w-[232px]',
-      )}
-    >
-      {/* ── Logo ── */}
-      <div
+    <Tooltip.Provider delayDuration={200}>
+      <aside
         className={cn(
-          'flex h-14 shrink-0 items-center border-b border-white/[.07]',
-          collapsed ? 'justify-center' : 'justify-between px-4',
+          'fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-stroke-soft-200 bg-bg-white-0 transition-[transform,width] duration-300 ease-out',
+          showRail ? 'w-16' : 'w-60',
+          // Mobile: slide off-canvas unless opened. Desktop: always visible.
+          mobileOpen ? 'translate-x-0 shadow-regular-md' : '-translate-x-full',
+          'lg:translate-x-0 lg:shadow-none',
         )}
       >
-        {collapsed ? (
-          <button
-            onClick={onToggle}
-            className="flex size-8 items-center justify-center rounded-xl bg-primary-base shadow-lg"
-          >
-            <RiTruckLine size={15} className="text-white" />
-          </button>
-        ) : (
-          <>
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-primary-base shadow-lg">
-                <RiTruckLine size={15} className="text-white" />
-              </div>
-              <div>
-                <p className="text-[13px] font-bold leading-none tracking-tight text-white">
-                  LogiCore
-                </p>
-                <p className="mt-0.5 text-[10px] text-white/30">v1.0</p>
-              </div>
-            </div>
-            <button
-              onClick={onToggle}
-              title="Collapse sidebar"
-              className="rounded-lg p-1.5 text-white/25 transition hover:bg-white/8 hover:text-white/70"
-            >
-              <RiSidebarFoldLine size={15} />
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* ── Nav ── */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {collapsed ? (
-          <div className="flex flex-col items-center gap-0.5 px-2">
-            {ALL_ITEMS.map(item => {
-              const href = item.href ?? item.children?.[0]?.href ?? '/';
-              const isActive = item.href
-                ? pathname === item.href || pathname.startsWith(item.href + '/')
-                : item.children?.some(
-                    c => pathname === c.href || pathname.startsWith(c.href + '/'),
-                  );
-              return (
-                <Link
-                  key={item.label}
-                  href={href}
-                  title={item.label}
-                  className={cn(
-                    'flex size-9 items-center justify-center rounded-lg no-underline transition-all',
-                    isActive
-                      ? 'bg-primary-base text-white'
-                      : 'text-white/50 hover:bg-white/10 hover:text-white/85',
-                  )}
+        {/* ── Logo ── */}
+        <div
+          className={cn(
+            'flex h-14 shrink-0 items-center border-b border-stroke-soft-200',
+            showRail ? 'justify-center px-2' : 'justify-between px-4',
+          )}
+        >
+          {showRail ? (
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <button
+                  type='button'
+                  onClick={onToggle}
+                  className='flex size-9 items-center justify-center rounded-lg bg-primary-base text-static-white shadow-regular-sm transition hover:bg-primary-darker'
                 >
-                  <item.icon size={17} />
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-5 px-2">
-            {NAV_GROUPS.map((group, gi) => (
-              <div key={gi} className="flex flex-col gap-0.5">
-                {group.title && (
-                  <p className="mb-1.5 px-3 text-[9px] font-bold uppercase tracking-[0.12em] text-white/25">
-                    {group.title}
+                  <RiTruckLine size={18} />
+                </button>
+              </Tooltip.Trigger>
+              <Tooltip.Content side='right' sideOffset={8}>
+                Expand sidebar
+              </Tooltip.Content>
+            </Tooltip.Root>
+          ) : (
+            <>
+              <div className='flex items-center gap-2.5'>
+                <div className='flex size-9 items-center justify-center rounded-lg bg-primary-base text-static-white shadow-regular-sm'>
+                  <RiTruckLine size={18} />
+                </div>
+                <div className='leading-none'>
+                  <p className='text-label-sm text-text-strong-950'>LogiCore</p>
+                  <p className='mt-1 text-subheading-2xs uppercase text-text-soft-400'>
+                    Logistics Suite
                   </p>
-                )}
-                {group.items.map(item => (
-                  <div key={item.label} className="relative">
-                    <NavSection item={item} pathname={pathname} />
-                  </div>
-                ))}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </nav>
+              {/* Mobile: close drawer */}
+              <CompactButton.Root
+                variant='ghost'
+                size='large'
+                onClick={onMobileClose}
+                className='lg:hidden'
+                aria-label='Close menu'
+              >
+                <CompactButton.Icon as={RiCloseLine} />
+              </CompactButton.Root>
+              {/* Desktop: collapse to icon rail */}
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <CompactButton.Root
+                    variant='ghost'
+                    size='large'
+                    onClick={onToggle}
+                    className='hidden lg:flex'
+                  >
+                    <CompactButton.Icon as={RiSidebarFoldLine} />
+                  </CompactButton.Root>
+                </Tooltip.Trigger>
+                <Tooltip.Content side='bottom' sideOffset={8}>
+                  Collapse sidebar
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </>
+          )}
+        </div>
 
-      {/* ── User footer ── */}
-      <div
-        className={cn(
-          'shrink-0 border-t border-white/[.07]',
-          collapsed ? 'p-2' : 'p-3',
-        )}
-      >
-        {collapsed ? (
-          <button
-            onClick={onToggle}
-            title="Expand sidebar"
-            className="flex w-full items-center justify-center rounded-lg p-2 text-white/30 transition hover:bg-white/8 hover:text-white/70"
-          >
-            <RiMenuLine size={15} />
-          </button>
-        ) : (
-          <div className="flex items-center gap-2.5 rounded-xl bg-white/[.05] px-3 py-2.5">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-alpha-24 text-[11px] font-bold text-primary-base">
-              GN
+        {/* ── Nav ── */}
+        <nav className='flex-1 overflow-y-auto overflow-x-hidden py-4 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-stroke-soft-200'>
+          {showRail ? (
+            <div className='flex flex-col items-center gap-1 px-2'>
+              {ALL_ITEMS.map((item) => (
+                <CollapsedItem key={item.label} item={item} pathname={pathname} />
+              ))}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[12px] font-semibold leading-none text-white/85">
-                Ganesh
-              </p>
-              <p className="mt-0.5 truncate text-[10px] text-white/35">Admin Manager</p>
+          ) : (
+            <div className='flex flex-col gap-6 px-3'>
+              {NAV_GROUPS.map((group, gi) => (
+                <div key={gi} className='flex flex-col gap-1'>
+                  {group.title && (
+                    <p className='mb-1 px-3 text-subheading-2xs uppercase tracking-wider text-text-soft-400'>
+                      {group.title}
+                    </p>
+                  )}
+                  {group.items.map((item) => (
+                    <NavSection key={item.label} item={item} pathname={pathname} />
+                  ))}
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-0.5">
-              <Link
-                href="/ems/change-password"
-                title="Settings"
-                className="rounded p-1 text-white/25 no-underline transition hover:bg-white/10 hover:text-white/70"
-              >
-                <RiSettings4Line size={13} />
-              </Link>
-              <Link
-                href="/login"
-                title="Sign out"
-                className="rounded p-1 text-white/25 no-underline transition hover:bg-white/10 hover:text-white/70"
-              >
-                <RiLogoutBoxLine size={13} />
-              </Link>
-            </div>
+          )}
+        </nav>
+
+        {/* ── User footer ── */}
+        <div className={cn('shrink-0 border-t border-stroke-soft-200', showRail ? 'p-2' : 'p-3')}>
+          <Dropdown.Root>
+            <Dropdown.Trigger asChild>
+              {showRail ? (
+                <button
+                  type='button'
+                  className='flex w-full items-center justify-center rounded-lg p-1 transition hover:bg-bg-weak-50'
+                >
+                  <Avatar.Root size='32' color='blue'>
+                    GN
+                  </Avatar.Root>
+                </button>
+              ) : (
+                <button
+                  type='button'
+                  className='flex w-full items-center gap-2.5 rounded-lg p-2 text-left transition hover:bg-bg-weak-50'
+                >
+                  <Avatar.Root size='40' color='blue'>
+                    GN
+                    <Avatar.Indicator position='bottom'>
+                      <Avatar.Status status='online' />
+                    </Avatar.Indicator>
+                  </Avatar.Root>
+                  <div className='min-w-0 flex-1'>
+                    <p className='truncate text-label-sm text-text-strong-950'>Ganesh</p>
+                    <p className='truncate text-paragraph-xs text-text-sub-600'>Admin Manager</p>
+                  </div>
+                  <RiArrowDownSLine size={18} className='shrink-0 text-text-soft-400' />
+                </button>
+              )}
+            </Dropdown.Trigger>
+            <Dropdown.Content side='top' align={showRail ? 'center' : 'start'} className='w-56'>
+              <Dropdown.Item asChild>
+                <Link href='/ems/users'>
+                  <Dropdown.ItemIcon as={RiUserLine} />
+                  Profile
+                </Link>
+              </Dropdown.Item>
+              <Dropdown.Item asChild>
+                <Link href='/ems/change-password'>
+                  <Dropdown.ItemIcon as={RiSettings3Line} />
+                  Settings
+                </Link>
+              </Dropdown.Item>
+              <Dropdown.Separator />
+              <Dropdown.Item asChild className='text-error-base'>
+                <Link href='/login'>
+                  <Dropdown.ItemIcon as={RiLogoutBoxLine} className='text-error-base' />
+                  Sign out
+                </Link>
+              </Dropdown.Item>
+            </Dropdown.Content>
+          </Dropdown.Root>
+        </div>
+
+        {/* Collapsed expand affordance */}
+        {showRail && (
+          <div className='shrink-0 border-t border-stroke-soft-200 p-2'>
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <CompactButton.Root
+                  variant='ghost'
+                  size='large'
+                  onClick={onToggle}
+                  className='w-full'
+                >
+                  <CompactButton.Icon as={RiSidebarUnfoldLine} />
+                </CompactButton.Root>
+              </Tooltip.Trigger>
+              <Tooltip.Content side='right' sideOffset={8}>
+                Expand sidebar
+              </Tooltip.Content>
+            </Tooltip.Root>
           </div>
         )}
-      </div>
-    </aside>
+      </aside>
+    </Tooltip.Provider>
   );
 }
