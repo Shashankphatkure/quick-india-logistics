@@ -182,7 +182,7 @@ export default function OrganizationPage() {
                   <Table.Cell>
                     <Checkbox />
                   </Table.Cell>
-                  <Table.Cell className="cursor-pointer whitespace-nowrap font-medium text-primary-base hover:underline">
+                  <Table.Cell className="cursor-pointer whitespace-nowrap text-paragraph-xs font-medium text-primary-base hover:underline">
                     {o.name}
                   </Table.Cell>
                   <Table.Cell className="whitespace-nowrap text-paragraph-xs text-text-sub-600">{o.pan}</Table.Cell>
