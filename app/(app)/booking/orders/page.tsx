@@ -8,6 +8,8 @@ import * as Badge from '@/components/ui/badge';
 import * as Pagination from '@/components/ui/pagination';
 import * as Drawer from '@/components/ui/drawer';
 import * as Tooltip from '@/components/ui/tooltip';
+import * as Avatar from '@/components/ui/avatar';
+import * as CompactButton from '@/components/ui/compact-button';
 import { Root as Checkbox } from '@/components/ui/checkbox';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
@@ -41,12 +43,18 @@ function initials(name: string) {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
-function Avatar({ name }: { name: string }) {
-  const colors = ['bg-primary-alpha-16 text-primary-base', 'bg-success-lighter text-success-dark', 'bg-feature-lighter text-feature-base'];
+const AVATAR_TONES = [
+  'bg-primary-alpha-16 text-primary-base',
+  'bg-success-lighter text-success-dark',
+  'bg-feature-lighter text-feature-base',
+];
+
+function ShipperAvatar({ name }: { name: string }) {
+  const tone = AVATAR_TONES[name.charCodeAt(0) % AVATAR_TONES.length];
   return (
-    <div className={cn('flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold', colors[name.charCodeAt(0) % colors.length])}>
+    <Avatar.Root size="32" className={cn(tone, 'text-label-xs font-bold')}>
       {initials(name)}
-    </div>
+    </Avatar.Root>
   );
 }
 
@@ -94,7 +102,7 @@ export default function OrdersPage() {
         { label: 'Cold Chain', value: 3, trend: 12, trendLabel: 'this week' },
       ]} />
 
-      <div className="overflow-hidden rounded-2xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
+      <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <div className="flex items-center justify-between border-b border-stroke-soft-200 px-4 py-3">
           <Input.Root size="small" className="w-64">
             <Input.Wrapper>
@@ -150,7 +158,7 @@ export default function OrdersPage() {
                 </Table.Cell>
                 <Table.Cell className="h-auto py-3">
                   <div className="flex items-center gap-2">
-                    <Avatar name={order.shipper} />
+                    <ShipperAvatar name={order.shipper} />
                     <span className="text-paragraph-sm text-text-strong-950 truncate max-w-[100px]">{order.shipper}</span>
                   </div>
                 </Table.Cell>
@@ -164,25 +172,25 @@ export default function OrdersPage() {
                   <div className="flex items-center gap-1 opacity-0 transition group-hover/row:opacity-100">
                     <Tooltip.Root>
                       <Tooltip.Trigger asChild>
-                        <button onClick={e => { e.stopPropagation(); setSelectedOrder(order); }} className="rounded-lg p-1.5 text-text-sub-600 hover:bg-bg-soft-200">
-                          <RiEyeLine size={14} />
-                        </button>
+                        <CompactButton.Root variant="ghost" size="large" onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}>
+                          <CompactButton.Icon as={RiEyeLine} />
+                        </CompactButton.Root>
                       </Tooltip.Trigger>
                       <Tooltip.Content>View details</Tooltip.Content>
                     </Tooltip.Root>
                     <Tooltip.Root>
                       <Tooltip.Trigger asChild>
-                        <button onClick={e => e.stopPropagation()} className="rounded-lg p-1.5 text-text-sub-600 hover:bg-bg-soft-200">
-                          <RiPrinterLine size={14} />
-                        </button>
+                        <CompactButton.Root variant="ghost" size="large" onClick={e => e.stopPropagation()}>
+                          <CompactButton.Icon as={RiPrinterLine} />
+                        </CompactButton.Root>
                       </Tooltip.Trigger>
                       <Tooltip.Content>Print docket</Tooltip.Content>
                     </Tooltip.Root>
                     <Tooltip.Root>
                       <Tooltip.Trigger asChild>
-                        <button onClick={e => e.stopPropagation()} className="rounded-lg p-1.5 text-text-sub-600 hover:bg-bg-soft-200">
-                          <RiBarcodeLine size={14} />
-                        </button>
+                        <CompactButton.Root variant="ghost" size="large" onClick={e => e.stopPropagation()}>
+                          <CompactButton.Icon as={RiBarcodeLine} />
+                        </CompactButton.Root>
                       </Tooltip.Trigger>
                       <Tooltip.Content>Print barcode</Tooltip.Content>
                     </Tooltip.Root>
@@ -260,7 +268,7 @@ export default function OrdersPage() {
                           'flex size-5 shrink-0 items-center justify-center rounded-full',
                           !t.done ? 'bg-primary-base' : 'bg-success-lighter border border-success-light',
                         )}>
-                          <div className={cn('size-1.5 rounded-full', !t.done ? 'bg-white' : 'bg-success-base')} />
+                          <div className={cn('size-1.5 rounded-full', !t.done ? 'bg-static-white' : 'bg-success-base')} />
                         </div>
                         {i < STATUS_TIMELINE.length - 1 && (
                           <div className="mt-1 h-7 w-px bg-stroke-soft-200" />

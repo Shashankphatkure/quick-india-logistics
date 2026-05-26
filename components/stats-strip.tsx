@@ -22,7 +22,7 @@ function StatCard({ stat }: { stat: Stat }) {
   const isPositive = (stat.trend ?? 0) >= 0;
 
   return (
-    <div className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-4 py-4 shadow-regular-xs sm:px-5">
+    <div className="flex min-w-0 flex-col gap-1.5 rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-4 py-4 shadow-regular-xs sm:px-5">
       <p className="text-paragraph-sm text-text-sub-600">{stat.label}</p>
       <p className="text-title-h5 font-bold tabular-nums text-text-strong-950">
         {stat.prefix && <span className="text-label-md">{stat.prefix}</span>}

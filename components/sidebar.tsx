@@ -316,7 +316,7 @@ export default function Sidebar({
       <aside
         className={cn(
           'fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-stroke-soft-200 bg-bg-white-0 transition-[transform,width] duration-300 ease-out',
-          showRail ? 'w-16' : 'w-60',
+          showRail ? 'w-16' : 'w-72 lg:w-60',
           // Mobile: slide off-canvas unless opened. Desktop: always visible.
           mobileOpen ? 'translate-x-0 shadow-regular-md' : '-translate-x-full',
           'lg:translate-x-0 lg:shadow-none',
