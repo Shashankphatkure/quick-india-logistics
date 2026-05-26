@@ -55,15 +55,17 @@ export default function EwayBillPage() {
       ]} />
 
       {/* Alert banner */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border border-warning-light bg-warning-lighter px-4 py-4 sm:px-5">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning-light">
-          <RiAlertLine size={18} className="text-warning-dark" />
+      <div className="flex flex-col gap-3 rounded-2xl border border-warning-light bg-warning-lighter px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+        <div className="flex flex-1 items-start gap-3 sm:items-center">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning-light">
+            <RiAlertLine size={18} className="text-warning-dark" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-label-sm text-warning-dark">0 Actionable EWBs assigned for last 48 hrs</p>
+            <p className="text-paragraph-sm text-warning-base mt-0.5">Assigned Eway Bill To Us. All Actionable EWB&apos;s are up to date.</p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-label-sm text-warning-dark">0 Actionable EWBs assigned for last 48 hrs</p>
-          <p className="text-paragraph-sm text-warning-base mt-0.5">Assigned Eway Bill To Us. All Actionable EWB&apos;s are up to date.</p>
-        </div>
-        <Badge.Root size="medium" variant="light" color="orange">0 Pending</Badge.Root>
+        <Badge.Root size="medium" variant="light" color="orange" className="ml-[52px] self-start sm:ml-0 sm:self-auto">0 Pending</Badge.Root>
       </div>
 
       {/* Main stats grid */}
