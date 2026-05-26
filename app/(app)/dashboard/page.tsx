@@ -3,6 +3,7 @@ import Link from 'next/link';
 import * as Select from '@/components/ui/select';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
+import StatTile, { type StatTone } from '@/components/stat-tile';
 import {
   RiDashboard3Line,
   RiArrowRightLine,
@@ -89,16 +90,13 @@ export default function DashboardPage() {
                 <button className="rounded-lg p-1 text-text-sub-600 hover:bg-bg-weak-50"><RiMoreLine size={15} /></button>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: 'Outgoing', value: 11, color: 'text-text-strong-950' },
-                  { label: 'Delivered', value: 0, color: 'text-success-base' },
-                  { label: 'Pending', value: 11, color: 'text-warning-base' },
-                  { label: 'All Pending', value: 17, color: 'text-error-base' },
-                ].map(s => (
-                  <div key={s.label} className="rounded-xl bg-bg-weak-50 px-3 py-2.5">
-                    <p className="text-paragraph-xs text-text-sub-600">{s.label}</p>
-                    <p className={`text-title-h6 font-bold ${s.color}`}>{s.value}</p>
-                  </div>
+                {([
+                  { label: 'Outgoing', value: 11, tone: 'neutral' },
+                  { label: 'Delivered', value: 0, tone: 'success' },
+                  { label: 'Pending', value: 11, tone: 'warning' },
+                  { label: 'All Pending', value: 17, tone: 'error' },
+                ] as { label: string; value: number; tone: StatTone }[]).map(s => (
+                  <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
               </div>
             </div>
@@ -115,16 +113,13 @@ export default function DashboardPage() {
                 <button className="rounded-lg p-1 text-text-sub-600 hover:bg-bg-weak-50"><RiMoreLine size={15} /></button>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: 'Incoming', value: 40, color: 'text-text-strong-950' },
-                  { label: 'Delivered', value: 39, color: 'text-success-base' },
-                  { label: 'Pending', value: 1, color: 'text-warning-base' },
-                  { label: 'All Pending', value: 2, color: 'text-error-base' },
-                ].map(s => (
-                  <div key={s.label} className="rounded-xl bg-bg-weak-50 px-3 py-2.5">
-                    <p className="text-paragraph-xs text-text-sub-600">{s.label}</p>
-                    <p className={`text-title-h6 font-bold ${s.color}`}>{s.value}</p>
-                  </div>
+                {([
+                  { label: 'Incoming', value: 40, tone: 'neutral' },
+                  { label: 'Delivered', value: 39, tone: 'success' },
+                  { label: 'Pending', value: 1, tone: 'warning' },
+                  { label: 'All Pending', value: 2, tone: 'error' },
+                ] as { label: string; value: number; tone: StatTone }[]).map(s => (
+                  <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
               </div>
             </div>
@@ -140,14 +135,11 @@ export default function DashboardPage() {
                 <span className="text-label-sm text-text-strong-950">Cold Chain Orders</span>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: 'Incoming', value: 24, color: 'text-verified-base' },
-                  { label: 'Outgoing', value: 0, color: 'text-text-sub-600' },
-                ].map(s => (
-                  <div key={s.label} className="rounded-xl bg-bg-weak-50 px-3 py-2.5">
-                    <p className="text-paragraph-xs text-text-sub-600">{s.label}</p>
-                    <p className={`text-title-h6 font-bold ${s.color}`}>{s.value}</p>
-                  </div>
+                {([
+                  { label: 'Incoming', value: 24, tone: 'verified' },
+                  { label: 'Outgoing', value: 0, tone: 'muted' },
+                ] as { label: string; value: number; tone: StatTone }[]).map(s => (
+                  <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
               </div>
             </div>
@@ -160,16 +152,13 @@ export default function DashboardPage() {
                 <span className="text-label-sm text-text-strong-950">Delay Orders</span>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: 'Incoming 24h', value: 40, color: 'text-warning-base' },
-                  { label: 'Outgoing 24h', value: 11, color: 'text-warning-base' },
-                  { label: 'Incoming 40h', value: 38, color: 'text-error-base' },
-                  { label: 'Outgoing 40h', value: 11, color: 'text-error-base' },
-                ].map(s => (
-                  <div key={s.label} className="rounded-xl bg-bg-weak-50 px-3 py-2.5">
-                    <p className="text-paragraph-xs text-text-sub-600">{s.label}</p>
-                    <p className={`text-title-h6 font-bold ${s.color}`}>{s.value}</p>
-                  </div>
+                {([
+                  { label: 'Incoming 24h', value: 40, tone: 'warning' },
+                  { label: 'Outgoing 24h', value: 11, tone: 'warning' },
+                  { label: 'Incoming 40h', value: 38, tone: 'error' },
+                  { label: 'Outgoing 40h', value: 11, tone: 'error' },
+                ] as { label: string; value: number; tone: StatTone }[]).map(s => (
+                  <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
               </div>
             </div>
