@@ -43,7 +43,7 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed }: AppHeaderP
       </button>
 
       {/* Docket search */}
-      <div className="w-36 min-w-0 flex-shrink sm:w-56">
+      <div className="min-w-0 flex-1">
         <Input.Root size="small">
           <Input.Wrapper>
             <Input.Icon as={RiSearchLine} />
@@ -52,7 +52,7 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed }: AppHeaderP
         </Input.Root>
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-2">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         {/* Branch selector */}
         <Dropdown.Root>
           <Dropdown.Trigger asChild>
