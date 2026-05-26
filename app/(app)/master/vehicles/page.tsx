@@ -1,6 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import * as Button from '@/components/ui/button';
+import * as CompactButton from '@/components/ui/compact-button';
+import * as Divider from '@/components/ui/divider';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
@@ -8,8 +10,13 @@ import * as Pagination from '@/components/ui/pagination';
 import * as Select from '@/components/ui/select';
 import * as Label from '@/components/ui/label';
 import { Root as Checkbox } from '@/components/ui/checkbox';
-import { RiAddLine, RiSearchLine, RiFilterLine, RiArrowLeftSLine, RiArrowRightSLine, RiCheckLine } from '@remixicon/react';
+import PageHeader from '@/components/page-header';
+import StatsStrip from '@/components/stats-strip';
 import { cn } from '@/utils/cn';
+import {
+  RiAddLine, RiSearchLine, RiFilterLine, RiCloseLine,
+  RiArrowLeftSLine, RiArrowRightSLine, RiCheckLine, RiCarLine,
+} from '@remixicon/react';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 
 const VEHICLE_TABS = ['Vehicle', 'Market Vehicle'] as const;
@@ -25,40 +32,56 @@ export default function VehiclesPage() {
   const [showAdd, setShowAdd] = useState(false);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-label-lg text-text-strong-950">Vehicle</h1>
-          <p className="text-paragraph-xs text-text-sub-600">Masters / Vehicle</p>
-        </div>
-        <div className="flex gap-2">
-          <Button.Root variant="neutral" mode="stroke" size="small"><Button.Icon as={RiFilterLine} />Filter</Button.Root>
-          <Button.Root size="small" onClick={() => setShowAdd(true)}><Button.Icon as={RiAddLine} />Add Vehicle</Button.Root>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={RiCarLine}
+        iconColor="bg-information-lighter text-information-base"
+        title="Vehicle"
+        subtitle="Manage owned and market vehicles"
+        breadcrumbs={[{ label: 'Master', href: '/master/vehicles' }, { label: 'Vehicle' }]}
+      >
+        <Button.Root variant="neutral" mode="stroke" size="small">
+          <Button.Icon as={RiFilterLine} />Filter
+        </Button.Root>
+        <Button.Root size="small" onClick={() => setShowAdd(true)}>
+          <Button.Icon as={RiAddLine} />Add Vehicle
+        </Button.Root>
+      </PageHeader>
 
-      <div className="flex gap-1 rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs w-fit">
-        {VEHICLE_TABS.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              'rounded-lg px-4 py-1.5 text-paragraph-sm font-medium transition',
-              activeTab === tab ? 'bg-primary-base text-text-white-0' : 'text-text-sub-600 hover:bg-bg-weak-50',
-            )}
-          >
-            {tab}
-          </button>
-        ))}
+      <StatsStrip stats={[
+        { label: 'Total Vehicles', value: 3, trend: 0, trendLabel: 'no change' },
+        { label: 'Active', value: 3, trend: 0, trendLabel: 'no change' },
+        { label: 'Market Vehicles', value: 0, trend: 0, trendLabel: 'no change' },
+        { label: 'Owned', value: 3, trend: 0, trendLabel: 'no change' },
+      ]} />
+
+      <div className="overflow-x-auto">
+        <div className="flex gap-1 rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs w-fit">
+          {VEHICLE_TABS.map(tab => (
+            <Button.Root
+              key={tab}
+              variant={activeTab === tab ? 'primary' : 'neutral'}
+              mode={activeTab === tab ? 'filled' : 'ghost'}
+              size="small"
+              onClick={() => setActiveTab(tab)}
+              className="shrink-0"
+            >
+              {tab}
+            </Button.Root>
+          ))}
+        </div>
       </div>
 
       {showAdd && (
-        <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-stroke-soft-200 pb-3">
+        <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-5 shadow-regular-xs space-y-4">
+          <div className="flex items-center justify-between">
             <h3 className="text-label-sm text-text-strong-950">Add Vehicle</h3>
-            <button onClick={() => setShowAdd(false)} className="text-text-sub-600 hover:text-text-strong-950 text-title-h5 leading-none">&times;</button>
+            <CompactButton.Root variant="ghost" size="large" onClick={() => setShowAdd(false)}>
+              <CompactButton.Icon as={RiCloseLine} />
+            </CompactButton.Root>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <Divider.Root />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label.Root>Vehicle Number <Label.Asterisk /></Label.Root>
               <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter vehicle number" /></Input.Wrapper></Input.Root>
@@ -94,7 +117,7 @@ export default function VehiclesPage() {
               <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter capacity" /></Input.Wrapper></Input.Root>
             </div>
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button.Root variant="neutral" mode="stroke" size="small" onClick={() => setShowAdd(false)}>Cancel</Button.Root>
             <Button.Root size="small">Save</Button.Root>
           </div>
@@ -103,7 +126,7 @@ export default function VehiclesPage() {
 
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <div className="border-b border-stroke-soft-200 p-3">
-          <Input.Root size="small" className="w-56">
+          <Input.Root size="small" className="w-full max-w-xs">
             <Input.Wrapper><Input.Icon as={RiSearchLine} /><Input.Input placeholder="Search vehicles..." /></Input.Wrapper>
           </Input.Root>
         </div>

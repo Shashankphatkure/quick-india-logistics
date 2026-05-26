@@ -1,6 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import * as Button from '@/components/ui/button';
+import * as CompactButton from '@/components/ui/compact-button';
+import * as Divider from '@/components/ui/divider';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
@@ -8,7 +10,12 @@ import * as Pagination from '@/components/ui/pagination';
 import * as Select from '@/components/ui/select';
 import * as Label from '@/components/ui/label';
 import { Root as Checkbox } from '@/components/ui/checkbox';
-import { RiAddLine, RiSearchLine, RiFilterLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
+import PageHeader from '@/components/page-header';
+import StatsStrip from '@/components/stats-strip';
+import {
+  RiAddLine, RiSearchLine, RiFilterLine,
+  RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine, RiStore2Line,
+} from '@remixicon/react';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 
 const BRANCHES = [
@@ -24,32 +31,43 @@ export default function BranchesPage() {
   const [showAdd, setShowAdd] = useState(false);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-label-lg text-text-strong-950">Branches</h1>
-          <p className="text-paragraph-xs text-text-sub-600">Masters / Branches</p>
-        </div>
-        <div className="flex gap-2">
-          <Button.Root variant="neutral" mode="stroke" size="small">
-            <Button.Icon as={RiFilterLine} />Filter
-          </Button.Root>
-          <Button.Root size="small" onClick={() => setShowAdd(true)}>
-            <Button.Icon as={RiAddLine} />Add Branch
-          </Button.Root>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={RiStore2Line}
+        iconColor="bg-away-lighter text-away-base"
+        title="Branches"
+        subtitle="Manage branch locations and teams"
+        breadcrumbs={[{ label: 'Master', href: '/master/branches' }, { label: 'Branches' }]}
+      >
+        <Button.Root variant="neutral" mode="stroke" size="small">
+          <Button.Icon as={RiFilterLine} />Filter
+        </Button.Root>
+        <Button.Root size="small" onClick={() => setShowAdd(true)}>
+          <Button.Icon as={RiAddLine} />Add Branch
+        </Button.Root>
+      </PageHeader>
+
+      <StatsStrip stats={[
+        { label: 'Total Branches', value: 1, trend: 0, trendLabel: 'no change' },
+        { label: 'Active', value: 1, trend: 0, trendLabel: 'no change' },
+        { label: 'Hubs', value: 0, trend: 0, trendLabel: 'no change' },
+        { label: 'Franchises', value: 0, trend: 0, trendLabel: 'no change' },
+      ]} />
 
       {showAdd && (
-        <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-stroke-soft-200 pb-3">
+        <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-5 shadow-regular-xs space-y-5">
+          <div className="flex items-center justify-between">
             <h3 className="text-label-sm text-text-strong-950">Add Branch</h3>
-            <button onClick={() => setShowAdd(false)} className="text-text-sub-600 hover:text-text-strong-950 text-title-h5 leading-none">&times;</button>
+            <CompactButton.Root variant="ghost" size="large" onClick={() => setShowAdd(false)}>
+              <CompactButton.Icon as={RiCloseLine} />
+            </CompactButton.Root>
           </div>
+
+          <Divider.Root />
 
           <section className="space-y-3">
             <h4 className="text-subheading-xs uppercase text-text-sub-600">Branch Info</h4>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label.Root>Branch Type <Label.Asterisk /></Label.Root>
                 <Select.Root size="small">
@@ -77,7 +95,7 @@ export default function BranchesPage() {
 
           <section className="space-y-3">
             <h4 className="text-subheading-xs uppercase text-text-sub-600">Location Info</h4>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label.Root>Address Line <Label.Asterisk /></Label.Root>
                 <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter address" /></Input.Wrapper></Input.Root>
@@ -105,7 +123,7 @@ export default function BranchesPage() {
 
           <section className="space-y-3">
             <h4 className="text-subheading-xs uppercase text-text-sub-600">Employee Info</h4>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { label: 'Branch Head', ph: 'Enter name' },
                 { label: 'Branch Head Email', ph: 'Enter email' },
@@ -119,7 +137,7 @@ export default function BranchesPage() {
             </div>
           </section>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button.Root variant="neutral" mode="stroke" size="small" onClick={() => setShowAdd(false)}>Cancel</Button.Root>
             <Button.Root variant="neutral" mode="stroke" size="small">Save &amp; Add Another</Button.Root>
             <Button.Root size="small">Save</Button.Root>
@@ -129,7 +147,7 @@ export default function BranchesPage() {
 
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <div className="border-b border-stroke-soft-200 p-3">
-          <Input.Root size="small" className="w-56">
+          <Input.Root size="small" className="w-full max-w-xs">
             <Input.Wrapper><Input.Icon as={RiSearchLine} /><Input.Input placeholder="Search branches..." /></Input.Wrapper>
           </Input.Root>
         </div>

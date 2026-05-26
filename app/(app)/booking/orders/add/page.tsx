@@ -7,11 +7,14 @@ import * as Label from '@/components/ui/label';
 import * as Select from '@/components/ui/select';
 import * as HorizontalStepper from '@/components/ui/horizontal-stepper';
 import * as Tooltip from '@/components/ui/tooltip';
+import * as FileUpload from '@/components/ui/file-upload';
+import * as LinkButton from '@/components/ui/link-button';
+import * as Textarea from '@/components/ui/textarea';
 import { Root as Checkbox } from '@/components/ui/checkbox';
 import PageHeader from '@/components/page-header';
 import {
   RiArrowLeftLine, RiArrowRightLine, RiCheckLine,
-  RiCalendarCheckLine, RiSaveLine,
+  RiCalendarCheckLine, RiSaveLine, RiAddLine, RiUploadCloud2Line,
 } from '@remixicon/react';
 import { cn } from '@/utils/cn';
 
@@ -36,11 +39,31 @@ function Field({ label, required, children }: { label: string; required?: boolea
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-6 shadow-regular-xs space-y-5">
+    <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-6 shadow-regular-xs space-y-5">
       <div className="border-b border-stroke-soft-200 pb-4">
         <h3 className="text-label-sm text-text-strong-950">{title}</h3>
       </div>
       {children}
+    </div>
+  );
+}
+
+function RadioGroup({ name, options, defaultIndex = 0 }: { name: string; options: string[]; defaultIndex?: number }) {
+  const [selected, setSelected] = useState(defaultIndex);
+  return (
+    <div className="flex flex-wrap gap-4 pt-1">
+      {options.map((opt, i) => (
+        <label key={opt} className="flex items-center gap-1.5 text-paragraph-sm cursor-pointer">
+          <input
+            type="radio"
+            name={name}
+            checked={selected === i}
+            onChange={() => setSelected(i)}
+            className="accent-primary-base"
+          />
+          {opt}
+        </label>
+      ))}
     </div>
   );
 }
@@ -64,13 +87,7 @@ function Step1() {
             <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Search Bill To..." /></Input.Wrapper></Input.Root>
           </Field>
           <Field label="Delivery Type" required>
-            <div className="flex gap-4 pt-1">
-              {['Local', 'Domestic', 'International'].map((t, i) => (
-                <label key={t} className="flex items-center gap-1.5 text-paragraph-sm cursor-pointer">
-                  <input type="radio" name="delivery" defaultChecked={i === 0} className="accent-primary-base" />{t}
-                </label>
-              ))}
-            </div>
+            <RadioGroup name="delivery" options={['Local', 'Domestic', 'International']} defaultIndex={0} />
           </Field>
           <Field label="Type Of Booking" required>
             <Select.Root size="small" defaultValue="economy">
@@ -82,13 +99,7 @@ function Step1() {
             </Select.Root>
           </Field>
           <Field label="Entry Type" required>
-            <div className="flex gap-4 pt-1">
-              {['Manually', 'Auto Generate'].map((t, i) => (
-                <label key={t} className="flex items-center gap-1.5 text-paragraph-sm cursor-pointer">
-                  <input type="radio" name="entry" defaultChecked={i === 1} className="accent-primary-base" />{t}
-                </label>
-              ))}
-            </div>
+            <RadioGroup name="entry" options={['Manually', 'Auto Generate']} defaultIndex={1} />
           </Field>
           <Field label="Booking Date & Time" required>
             <Input.Root size="small"><Input.Wrapper><Input.Input type="datetime-local" /></Input.Wrapper></Input.Root>
@@ -102,14 +113,7 @@ function Step1() {
             </Select.Root>
           </Field>
           <Field label="Barcode Type" required>
-            <div className="flex gap-4 pt-1">
-              <label className="flex items-center gap-1.5 text-paragraph-sm cursor-pointer">
-                <input type="radio" name="barcode" className="accent-primary-base" />Manually
-              </label>
-              <label className="flex items-center gap-1.5 text-paragraph-sm cursor-pointer">
-                <input type="radio" name="barcode" defaultChecked className="accent-primary-base" />Auto Generate
-              </label>
-            </div>
+            <RadioGroup name="barcode" options={['Manually', 'Auto Generate']} defaultIndex={1} />
           </Field>
           <div className="flex flex-col gap-2.5 pt-1">
             <label className="flex items-center gap-2 cursor-pointer text-paragraph-sm">
@@ -279,7 +283,7 @@ function Step4() {
         </Field>
         <div className="sm:col-span-2 lg:col-span-3">
           <Field label="Remarks">
-            <textarea className="w-full rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-3 py-2 text-paragraph-sm text-text-strong-950 outline-none transition hover:bg-bg-weak-50 focus:border-stroke-strong-950 focus:ring-1 focus:ring-stroke-strong-950" rows={2} placeholder="Enter remarks" />
+            <Textarea.Root simple placeholder="Enter remarks" rows={2} />
           </Field>
         </div>
       </div>
@@ -291,16 +295,17 @@ function Step5() {
   return (
     <Section title="Dimensions">
       <div className="space-y-3">
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {['Length (Cm)', 'Breadth (Cm)', 'Height (Cm)', 'No of Pieces'].map(f => (
             <Field key={f} label={f}>
               <Input.Root size="small"><Input.Wrapper><Input.Input type="number" placeholder="0" /></Input.Wrapper></Input.Root>
             </Field>
           ))}
         </div>
-        <button className="text-paragraph-sm font-medium text-primary-base hover:underline">
-          + Add Another Dimension
-        </button>
+        <LinkButton.Root variant="primary" size="medium">
+          <LinkButton.Icon as={RiAddLine} />
+          Add Another Dimension
+        </LinkButton.Root>
       </div>
     </Section>
   );
@@ -310,7 +315,7 @@ function Step6() {
   return (
     <Section title="Order Images">
       <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Caption">
             <Select.Root size="small">
               <Select.Trigger><Select.Value placeholder="Select caption type" /></Select.Trigger>
@@ -322,15 +327,17 @@ function Step6() {
             </Select.Root>
           </Field>
           <Field label="Image">
-            <div className="flex h-9 items-center rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-sub-600 transition hover:bg-bg-weak-50">
-              <input type="file" accept="image/*" className="sr-only" id="order-image" />
-              <label htmlFor="order-image" className="cursor-pointer">Choose file...</label>
-            </div>
+            <FileUpload.Root className="p-4 gap-3">
+              <input type="file" accept="image/*" tabIndex={-1} className="hidden" />
+              <FileUpload.Icon as={RiUploadCloud2Line} />
+              <FileUpload.Button>Choose file...</FileUpload.Button>
+            </FileUpload.Root>
           </Field>
         </div>
-        <button className="text-paragraph-sm font-medium text-primary-base hover:underline">
-          + Add Another Image
-        </button>
+        <LinkButton.Root variant="primary" size="medium">
+          <LinkButton.Icon as={RiAddLine} />
+          Add Another Image
+        </LinkButton.Root>
       </div>
     </Section>
   );
@@ -340,7 +347,7 @@ function Step7() {
   return (
     <Section title="Invoices">
       <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="EwayBill No">
             <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter EwayBill No" /></Input.Wrapper></Input.Root>
           </Field>
@@ -354,21 +361,24 @@ function Step7() {
             <Input.Root size="small"><Input.Wrapper><Input.Input type="number" placeholder="0.00" /></Input.Wrapper></Input.Root>
           </Field>
           <Field label="EwayBill Image">
-            <div className="flex h-9 items-center rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-sub-600 hover:bg-bg-weak-50 transition cursor-pointer">
-              <input type="file" className="sr-only" id="ewb-image" />
-              <label htmlFor="ewb-image" className="cursor-pointer">Choose file...</label>
-            </div>
+            <FileUpload.Root className="p-4 gap-3">
+              <input type="file" tabIndex={-1} className="hidden" />
+              <FileUpload.Icon as={RiUploadCloud2Line} />
+              <FileUpload.Button>Choose file...</FileUpload.Button>
+            </FileUpload.Root>
           </Field>
           <Field label="Invoice Image">
-            <div className="flex h-9 items-center rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-3 text-paragraph-sm text-text-sub-600 hover:bg-bg-weak-50 transition cursor-pointer">
-              <input type="file" className="sr-only" id="inv-image" />
-              <label htmlFor="inv-image" className="cursor-pointer">Choose file...</label>
-            </div>
+            <FileUpload.Root className="p-4 gap-3">
+              <input type="file" tabIndex={-1} className="hidden" />
+              <FileUpload.Icon as={RiUploadCloud2Line} />
+              <FileUpload.Button>Choose file...</FileUpload.Button>
+            </FileUpload.Root>
           </Field>
         </div>
-        <button className="text-paragraph-sm font-medium text-primary-base hover:underline">
-          + Add Another Invoice
-        </button>
+        <LinkButton.Root variant="primary" size="medium">
+          <LinkButton.Icon as={RiAddLine} />
+          Add Another Invoice
+        </LinkButton.Root>
       </div>
     </Section>
   );
@@ -400,27 +410,24 @@ export default function AddOrderPage() {
       </PageHeader>
 
       {/* HorizontalStepper */}
-      <div className="overflow-hidden rounded-2xl border border-stroke-soft-200 bg-bg-white-0 px-6 py-4 shadow-regular-xs overflow-x-auto">
-        <HorizontalStepper.Root>
+      <div className="overflow-x-auto rounded-2xl border border-stroke-soft-200 bg-bg-white-0 px-4 py-4 sm:px-6 shadow-regular-xs">
+        <HorizontalStepper.Root className="min-w-max">
           {STEPS.map((s, i) => {
             const state: StepState = i < step ? 'completed' : i === step ? 'active' : 'default';
             return (
               <React.Fragment key={s.key}>
                 {i > 0 && <HorizontalStepper.SeparatorIcon />}
-                <div
-                  role={i < step ? 'button' : undefined}
-                  tabIndex={i < step ? 0 : undefined}
+                <HorizontalStepper.Item
+                  state={state}
                   onClick={() => i < step && setStep(i)}
-                  onKeyDown={e => e.key === 'Enter' && i < step && setStep(i)}
-                  className={cn(i < step && 'cursor-pointer')}
+                  className={cn(i < step ? 'cursor-pointer' : 'cursor-default')}
+                  type="button"
                 >
-                  <HorizontalStepper.Item state={state}>
-                    <HorizontalStepper.ItemIndicator>
-                      {i < step ? <RiCheckLine size={11} /> : i + 1}
-                    </HorizontalStepper.ItemIndicator>
-                    {s.label}
-                  </HorizontalStepper.Item>
-                </div>
+                  <HorizontalStepper.ItemIndicator>
+                    {i < step ? <RiCheckLine size={11} /> : i + 1}
+                  </HorizontalStepper.ItemIndicator>
+                  <span className="whitespace-nowrap">{s.label}</span>
+                </HorizontalStepper.Item>
               </React.Fragment>
             );
           })}
@@ -431,7 +438,7 @@ export default function AddOrderPage() {
       <StepContent />
 
       {/* Navigation */}
-      <div className="flex items-center justify-between rounded-2xl border border-stroke-soft-200 bg-bg-white-0 px-5 py-4 shadow-regular-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stroke-soft-200 bg-bg-white-0 px-4 py-4 sm:px-5 shadow-regular-xs">
         <div className="flex gap-2">
           {step > 0 && (
             <Button.Root variant="neutral" mode="stroke" size="small" onClick={() => setStep(p => p - 1)}>

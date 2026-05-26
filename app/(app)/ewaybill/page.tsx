@@ -23,7 +23,7 @@ const CARD_TONES = {
 function EwayStat({ label, value, color = 'default' }: EwayStatProps) {
   const tone = CARD_TONES[color];
   return (
-    <div className={`flex flex-col items-center justify-center rounded-2xl border px-4 py-5 text-center ${tone.bg}`}>
+    <div className={`flex flex-col items-center justify-center rounded-lg border px-4 py-5 text-center ${tone.bg}`}>
       <span className={`text-title-h5 font-bold tabular-nums sm:text-title-h4 ${tone.value}`}>{value}</span>
       <span className={`mt-1 text-center text-paragraph-xs font-medium ${tone.label}`}>{label}</span>
     </div>
@@ -55,7 +55,7 @@ export default function EwayBillPage() {
       ]} />
 
       {/* Alert banner */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-warning-light bg-warning-lighter px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+      <div className="flex flex-col gap-3 rounded-xl border border-warning-light bg-warning-lighter px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
         <div className="flex flex-1 items-start gap-3 sm:items-center">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning-light">
             <RiAlertLine size={18} className="text-warning-dark" />
@@ -69,7 +69,7 @@ export default function EwayBillPage() {
       </div>
 
       {/* Main stats grid */}
-      <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-4 shadow-regular-xs space-y-5 sm:p-6">
+      <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 shadow-regular-xs space-y-5 sm:p-6">
         <div>
           <p className="text-subheading-xs uppercase tracking-wider text-text-sub-600 mb-3">My Eway Bill (191,780)</p>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -80,7 +80,7 @@ export default function EwayBillPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-3 gap-y-5 lg:grid-cols-2">
           <div>
             <p className="text-subheading-xs uppercase tracking-wider text-text-sub-600 mb-3">Part B Details (589)</p>
             <div className="grid grid-cols-2 gap-3">
@@ -99,7 +99,7 @@ export default function EwayBillPage() {
       </div>
 
       {/* Expiry tracking */}
-      <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-4 shadow-regular-xs sm:p-6">
+      <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 shadow-regular-xs sm:p-6">
         <p className="text-subheading-xs uppercase tracking-wider text-text-sub-600 mb-4">Expiry Tracking</p>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
@@ -108,7 +108,7 @@ export default function EwayBillPage() {
             { label: 'Only Part A EWBs', value: '14,308', bg: 'bg-information-lighter border-information-light', text: 'text-information-dark', sub: 'text-information-base' },
             { label: 'Pending over 12 days', value: 223, bg: 'bg-feature-lighter border-feature-light', text: 'text-feature-dark', sub: 'text-feature-base' },
           ].map(s => (
-            <div key={s.label} className={`rounded-xl border ${s.bg} px-4 py-4 text-center`}>
+            <div key={s.label} className={`rounded-lg border ${s.bg} px-4 py-4 text-center`}>
               <p className={`text-title-h5 font-bold tabular-nums sm:text-title-h4 ${s.text}`}>{s.value}</p>
               <p className={`text-paragraph-xs mt-1 ${s.sub}`}>{s.label}</p>
             </div>
@@ -122,7 +122,7 @@ export default function EwayBillPage() {
           { label: 'Local EWBs', desc: 'Distance less than 200kms' },
           { label: 'Docket With EWBs', desc: 'All assigned EWBs' },
         ].map(c => (
-          <button key={c.label} className="flex items-center justify-between rounded-2xl border border-stroke-soft-200 bg-bg-white-0 px-5 py-4 shadow-regular-xs transition hover:border-stroke-sub-300 hover:bg-bg-weak-50 text-left">
+          <button key={c.label} className="flex items-center justify-between rounded-xl border border-stroke-soft-200 bg-bg-white-0 px-5 py-4 shadow-regular-xs transition hover:border-stroke-sub-300 hover:bg-bg-weak-50 text-left">
             <div>
               <p className="text-label-sm text-text-strong-950">{c.label}</p>
               <p className="text-paragraph-sm text-text-sub-600 mt-0.5">{c.desc}</p>

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import * as Badge from '@/components/ui/badge';
+import * as Button from '@/components/ui/button';
 import PageHeader from '@/components/page-header';
 import {
   RiBarChartLine, RiFileListLine, RiTruckLine, RiCheckboxCircleLine,
@@ -69,10 +70,10 @@ export default function ReportsPage() {
         subtitle="Analytics and insights across all modules"
         breadcrumbs={[{ label: 'Analytics', href: '/analytics/reports' }, { label: 'Reports' }]}
       >
-        <button className="flex items-center gap-1.5 rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-3 py-1.5 text-paragraph-sm font-medium text-text-strong-950 shadow-regular-xs transition hover:bg-bg-weak-50">
-          <RiDownloadLine size={14} className="text-text-sub-600" />
+        <Button.Root variant="neutral" mode="stroke" size="small">
+          <Button.Icon as={RiDownloadLine} />
           Export All
-        </button>
+        </Button.Root>
       </PageHeader>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">

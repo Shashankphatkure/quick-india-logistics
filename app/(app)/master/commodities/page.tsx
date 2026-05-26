@@ -1,6 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import * as Button from '@/components/ui/button';
+import * as CompactButton from '@/components/ui/compact-button';
+import * as Divider from '@/components/ui/divider';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
@@ -11,7 +13,7 @@ import { Root as Checkbox } from '@/components/ui/checkbox';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
 import {
-  RiAddLine, RiSearchLine, RiFilterLine,
+  RiAddLine, RiSearchLine, RiFilterLine, RiCloseLine,
   RiArrowUpDownLine, RiArrowLeftSLine, RiArrowRightSLine, RiBox3Line,
 } from '@remixicon/react';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
@@ -57,16 +59,18 @@ export default function CommoditiesPage() {
       ]} />
 
       {showAdd && (
-        <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-6 shadow-regular-xs space-y-5">
+        <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-6 shadow-regular-xs space-y-5">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-label-sm text-text-strong-950">Add Commodity</h3>
               <p className="text-paragraph-xs text-text-sub-600 mt-0.5">Define a new commodity type</p>
             </div>
-            <button onClick={() => setShowAdd(false)} className="rounded-lg p-1.5 text-text-sub-600 hover:bg-bg-weak-50">&times;</button>
+            <CompactButton.Root variant="ghost" size="large" onClick={() => setShowAdd(false)}>
+              <CompactButton.Icon as={RiCloseLine} />
+            </CompactButton.Root>
           </div>
-          <div className="h-px bg-stroke-soft-200" />
-          <div className="grid grid-cols-2 gap-4">
+          <Divider.Root />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <Label.Root>Commodity Type <Label.Asterisk /></Label.Root>
               <Select.Root size="small">

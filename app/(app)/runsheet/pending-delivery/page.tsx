@@ -1,11 +1,13 @@
-﻿'use client';
+'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import * as Button from '@/components/ui/button';
+import * as Table from '@/components/ui/table';
+import * as Label from '@/components/ui/label';
 import { Root as Checkbox } from '@/components/ui/checkbox';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiAddLine, RiListCheck2 } from '@remixicon/react';
+import { RiAddLine, RiListCheck2, RiArrowUpDownLine } from '@remixicon/react';
 import { cn } from '@/utils/cn';
 
 const RS_TABS = [
@@ -23,8 +25,14 @@ const ORDERS = [
   { docket: '4110940', date: '12-05-2026', origin: 'Vadape, 421307', destination: 'Vadape, 421307', client: 'Sun Pharma Distributors...', ewaybill: 'No EwayBill', weight: 10, qty: 1 },
 ];
 
+const ORDERS_COLS = ['Docket No', 'Booking Date', 'Origin', 'Destination', 'Client', 'EwayBill No', 'Actual Weight', 'Total Qty', 'Action'];
+const RS_COLS = ['Docket No', 'Booking Date', 'Origin', 'Destination', 'Client', 'EwayBill No', 'Actual Weight', 'Total Qty', 'Damaged'];
+
+type RunsheetType = 'runsheet' | 'hub';
+
 export default function PendingDeliveryPage() {
   const [selected, setSelected] = useState<string[]>([]);
+  const [rsType, setRsType] = useState<RunsheetType>('runsheet');
   const toggle = (id: string) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   return (
@@ -43,74 +51,182 @@ export default function PendingDeliveryPage() {
         { label: 'Total Weight', value: ORDERS.reduce((s, o) => s + o.weight, 0) + ' kg' },
         { label: 'Total Qty', value: ORDERS.reduce((s, o) => s + o.qty, 0) },
       ]} />
+
+      {/* Tab strip */}
       <div className="flex gap-1 overflow-x-auto rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs">
-        {RS_TABS.map(t => <Link key={t.href} href={t.href} className={cn('shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium transition', t.href === '/runsheet/pending-delivery' ? 'bg-primary-base text-white' : 'text-text-sub-600 hover:bg-bg-weak-50')}>{t.label}</Link>)}
+        {RS_TABS.map(t => (
+          <Link
+            key={t.href}
+            href={t.href}
+            className={cn(
+              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium transition',
+              t.href === '/runsheet/pending-delivery'
+                ? 'bg-primary-base text-static-white'
+                : 'text-text-sub-600 hover:bg-bg-weak-50',
+            )}
+          >
+            {t.label}
+          </Link>
+        ))}
       </div>
 
+      {/* Info banner */}
       <div className="rounded-xl border border-information-light bg-information-lighter px-4 py-2 text-paragraph-sm font-semibold text-information-dark">
         Total Local Order - {ORDERS.length}
       </div>
 
+      {/* Orders table card */}
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-paragraph-sm">
-            <thead><tr className="border-b border-stroke-soft-200 bg-bg-weak-50">
-              <th className="p-3"><Checkbox /></th>
-              {['Docket No', 'Booking Date', 'Origin', 'Destination', 'Client', 'EwayBill No', 'Actual Weight', 'Total Qty', 'Action'].map(c => <th key={c} className="whitespace-nowrap px-3 py-2.5 text-left text-paragraph-xs font-semibold text-text-sub-600">{c}</th>)}
-            </tr></thead>
-            <tbody className="divide-y divide-stroke-soft-200">
-              {ORDERS.map(o => (
-                <tr key={o.docket} className="hover:bg-bg-weak-50">
-                  <td className="p-3"><Checkbox checked={selected.includes(o.docket)} onCheckedChange={() => toggle(o.docket)} /></td>
-                  <td className="px-3 py-2.5 font-medium text-primary-base">{o.docket}</td>
-                  <td className="px-3 py-2.5 text-paragraph-xs text-text-sub-600">{o.date}</td>
-                  <td className="px-3 py-2.5 text-paragraph-xs">{o.origin}</td>
-                  <td className="px-3 py-2.5 text-paragraph-xs">{o.destination}</td>
-                  <td className="px-3 py-2.5 text-paragraph-xs">{o.client}</td>
-                  <td className="px-3 py-2.5 text-paragraph-xs">{o.ewaybill}</td>
-                  <td className="px-3 py-2.5 text-paragraph-xs">{o.weight}</td>
-                  <td className="px-3 py-2.5 text-paragraph-xs">{o.qty}</td>
-                  <td className="px-3 py-2.5"><Button.Root size="small" onClick={() => toggle(o.docket)}><Button.Icon as={RiAddLine} />Add</Button.Root></td>
-                </tr>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.Head className="w-10">
+                <Checkbox />
+              </Table.Head>
+              {ORDERS_COLS.map(col => (
+                <Table.Head key={col} className="whitespace-nowrap">
+                  {col === 'Action' ? (
+                    col
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      {col}
+                      <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
+                    </span>
+                  )}
+                </Table.Head>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {ORDERS.map(o => (
+              <Table.Row key={o.docket}>
+                <Table.Cell className="h-auto py-2.5 w-10">
+                  <Checkbox
+                    checked={selected.includes(o.docket)}
+                    onCheckedChange={() => toggle(o.docket)}
+                  />
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5">
+                  <span className="text-paragraph-sm font-medium text-primary-base cursor-pointer hover:underline">
+                    {o.docket}
+                  </span>
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
+                  {o.date}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
+                  {o.origin}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
+                  {o.destination}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
+                  {o.client}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
+                  {o.ewaybill}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
+                  {o.weight}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
+                  {o.qty}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-2.5">
+                  <Button.Root size="small" onClick={() => toggle(o.docket)}>
+                    <Button.Icon as={RiAddLine} />Add
+                  </Button.Root>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
       </div>
 
-      {/* Create Runsheet */}
-      <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs space-y-4">
-        <h3 className="text-paragraph-sm font-semibold text-text-strong-950">Create Runsheet</h3>
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-paragraph-sm cursor-pointer"><input type="radio" name="rstype" defaultChecked className="accent-primary-base" />Create Runsheet</label>
-          <label className="flex items-center gap-2 text-paragraph-sm cursor-pointer"><input type="radio" name="rstype" className="accent-primary-base" />Hub Transfer</label>
-          <Button.Root size="small" disabled={selected.length === 0}>Create</Button.Root>
+      {/* Create Runsheet panel */}
+      <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-5 shadow-regular-xs space-y-4">
+        <p className="text-label-sm text-text-strong-950">Create Runsheet</p>
+
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Radio options using Label + native radio (AlignUI has no radio component) */}
+          <Label.Root className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="rstype"
+              value="runsheet"
+              checked={rsType === 'runsheet'}
+              onChange={() => setRsType('runsheet')}
+              className="accent-primary-base"
+            />
+            <span className="text-paragraph-sm text-text-strong-950">Create Runsheet</span>
+          </Label.Root>
+          <Label.Root className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="rstype"
+              value="hub"
+              checked={rsType === 'hub'}
+              onChange={() => setRsType('hub')}
+              className="accent-primary-base"
+            />
+            <span className="text-paragraph-sm text-text-strong-950">Hub Transfer</span>
+          </Label.Root>
+          <Button.Root size="small" disabled={selected.length === 0}>
+            Create
+          </Button.Root>
         </div>
+
         {selected.length > 0 ? (
           <div className="overflow-hidden rounded-lg border border-stroke-soft-200">
-            <table className="w-full text-paragraph-xs">
-              <thead><tr className="border-b border-stroke-soft-200 bg-bg-weak-50">
-                {['Docket No', 'Booking Date', 'Origin', 'Destination', 'Client', 'EwayBill No', 'Actual Weight', 'Total Qty', 'Damaged'].map(c => <th key={c} className="px-3 py-2 text-left font-semibold text-text-sub-600">{c}</th>)}
-              </tr></thead>
-              <tbody className="divide-y divide-stroke-soft-200">
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  {RS_COLS.map(col => (
+                    <Table.Head key={col} className="whitespace-nowrap">
+                      {col}
+                    </Table.Head>
+                  ))}
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
                 {ORDERS.filter(o => selected.includes(o.docket)).map(o => (
-                  <tr key={o.docket}>
-                    <td className="px-3 py-2 font-medium text-primary-base">{o.docket}</td>
-                    <td className="px-3 py-2">{o.date}</td>
-                    <td className="px-3 py-2">{o.origin}</td>
-                    <td className="px-3 py-2">{o.destination}</td>
-                    <td className="px-3 py-2">{o.client}</td>
-                    <td className="px-3 py-2">{o.ewaybill}</td>
-                    <td className="px-3 py-2">{o.weight}</td>
-                    <td className="px-3 py-2">{o.qty}</td>
-                    <td className="px-3 py-2">0</td>
-                  </tr>
+                  <Table.Row key={o.docket}>
+                    <Table.Cell className="h-auto py-2">
+                      <span className="text-paragraph-xs font-medium text-primary-base">{o.docket}</span>
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
+                      {o.date}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
+                      {o.origin}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
+                      {o.destination}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600">
+                      {o.client}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600">
+                      {o.ewaybill}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600">
+                      {o.weight}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600">
+                      {o.qty}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-2 text-paragraph-xs text-text-sub-600">
+                      0
+                    </Table.Cell>
+                  </Table.Row>
                 ))}
-              </tbody>
-            </table>
+              </Table.Body>
+            </Table.Root>
           </div>
         ) : (
-          <p className="text-paragraph-xs text-text-sub-600 italic">No rows to show. Select orders above to add them.</p>
+          <p className="text-paragraph-xs text-text-sub-600 italic">
+            No rows to show. Select orders above to add them.
+          </p>
         )}
       </div>
     </div>

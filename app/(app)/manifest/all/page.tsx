@@ -3,10 +3,12 @@ import React from 'react';
 import Link from 'next/link';
 import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
-import PageHeader from '@/components/page-header';
-import StatsStrip from '@/components/stats-strip';
 import * as Badge from '@/components/ui/badge';
 import * as Pagination from '@/components/ui/pagination';
+import * as CompactButton from '@/components/ui/compact-button';
+import * as Tooltip from '@/components/ui/tooltip';
+import PageHeader from '@/components/page-header';
+import StatsStrip from '@/components/stats-strip';
 import { RiFilePaperLine, RiFilterLine, RiDownloadLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
 import { cn } from '@/utils/cn';
 
@@ -47,7 +49,16 @@ export default function AllManifestPage() {
 
       <div className="flex gap-1 overflow-x-auto rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs">
         {MANIFEST_TABS.map(t => (
-          <Link key={t.href} href={t.href} className={cn('shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium transition', t.href === '/manifest/all' ? 'bg-primary-base text-white' : 'text-text-sub-600 hover:bg-bg-weak-50')}>
+          <Link
+            key={t.href}
+            href={t.href}
+            className={cn(
+              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium transition',
+              t.href === '/manifest/all'
+                ? 'bg-primary-base text-static-white'
+                : 'text-text-sub-600 hover:bg-bg-weak-50',
+            )}
+          >
             {t.label}
           </Link>
         ))}
@@ -65,25 +76,39 @@ export default function AllManifestPage() {
           <Table.Body>
             {MANIFESTS.map(m => (
               <Table.Row key={m.no}>
-                <Table.Cell className="h-auto py-2.5 font-medium text-primary-base cursor-pointer hover:underline text-paragraph-sm">{m.no}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 font-medium text-primary-base cursor-pointer hover:underline text-paragraph-sm whitespace-nowrap">{m.no}</Table.Cell>
                 <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{m.date}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.verifiedBy}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.verifiedBy}</Table.Cell>
                 <Table.Cell className="h-auto py-2.5">
                   <Badge.Root size="medium" variant="light" color="green"><Badge.Dot />{m.status}</Badge.Root>
                 </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.origin}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.destination}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.coloader}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.coloaderNo}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.origin}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.destination}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.coloader}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.coloaderNo}</Table.Cell>
                 <Table.Cell className="h-auto py-2.5">
-                  <button className="text-text-sub-600 hover:text-primary-base"><RiDownloadLine size={14} /></button>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <CompactButton.Root variant="ghost" size="large">
+                        <CompactButton.Icon as={RiDownloadLine} />
+                      </CompactButton.Root>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Download PDF</Tooltip.Content>
+                  </Tooltip.Root>
                 </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.bags}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.boxes}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.weight}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs">{m.orders}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.bags}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.boxes}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.weight}</Table.Cell>
+                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.orders}</Table.Cell>
                 <Table.Cell className="h-auto py-2.5">
-                  <button className="rounded p-1 text-text-sub-600 hover:bg-bg-soft-200"><RiDownloadLine size={13} /></button>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <CompactButton.Root variant="ghost" size="large">
+                        <CompactButton.Icon as={RiDownloadLine} />
+                      </CompactButton.Root>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Download images</Tooltip.Content>
+                  </Tooltip.Root>
                 </Table.Cell>
               </Table.Row>
             ))}

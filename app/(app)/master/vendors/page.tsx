@@ -1,6 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import * as Button from '@/components/ui/button';
+import * as CompactButton from '@/components/ui/compact-button';
+import * as Divider from '@/components/ui/divider';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
@@ -8,7 +10,12 @@ import * as Pagination from '@/components/ui/pagination';
 import * as Select from '@/components/ui/select';
 import * as Label from '@/components/ui/label';
 import { Root as Checkbox } from '@/components/ui/checkbox';
-import { RiAddLine, RiSearchLine, RiFilterLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
+import PageHeader from '@/components/page-header';
+import StatsStrip from '@/components/stats-strip';
+import {
+  RiAddLine, RiSearchLine, RiFilterLine, RiCloseLine,
+  RiArrowLeftSLine, RiArrowRightSLine, RiTruckLine,
+} from '@remixicon/react';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 
 const VENDORS = [
@@ -20,32 +27,58 @@ const VENDORS = [
   },
 ];
 
+const DIMENSION_SERVICES = ['Local', 'Air', 'Surface', 'Cargo', 'Train', 'Courier', 'Warehouse'] as const;
+
 export default function VendorsPage() {
   const [showAdd, setShowAdd] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set());
+
+  function toggleService(s: string) {
+    setSelectedServices(prev => {
+      const next = new Set(prev);
+      if (next.has(s)) next.delete(s); else next.add(s);
+      return next;
+    });
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-label-lg text-text-strong-950">Vendors</h1>
-          <p className="text-paragraph-xs text-text-sub-600">Masters / Vendors</p>
-        </div>
-        <div className="flex gap-2">
-          <Button.Root variant="neutral" mode="stroke" size="small"><Button.Icon as={RiFilterLine} />Filter</Button.Root>
-          <Button.Root size="small" onClick={() => setShowAdd(true)}><Button.Icon as={RiAddLine} />Add Vendor</Button.Root>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={RiTruckLine}
+        iconColor="bg-faded-lighter text-faded-base"
+        title="Vendors"
+        subtitle="Manage third-party logistics vendors"
+        breadcrumbs={[{ label: 'Master', href: '/master/vendors' }, { label: 'Vendors' }]}
+      >
+        <Button.Root variant="neutral" mode="stroke" size="small">
+          <Button.Icon as={RiFilterLine} />Filter
+        </Button.Root>
+        <Button.Root size="small" onClick={() => setShowAdd(true)}>
+          <Button.Icon as={RiAddLine} />Add Vendor
+        </Button.Root>
+      </PageHeader>
+
+      <StatsStrip stats={[
+        { label: 'Total Vendors', value: 1, trend: 0, trendLabel: 'no change' },
+        { label: 'Approved', value: 1, trend: 0, trendLabel: 'no change' },
+        { label: 'Pending', value: 0, trend: 0, trendLabel: 'no change' },
+        { label: 'Pan India', value: 1, trend: 0, trendLabel: 'no change' },
+      ]} />
 
       {showAdd && (
-        <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-stroke-soft-200 pb-3">
+        <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-5 shadow-regular-xs space-y-5">
+          <div className="flex items-center justify-between">
             <h3 className="text-label-sm text-text-strong-950">Add Vendor</h3>
-            <button onClick={() => setShowAdd(false)} className="text-text-sub-600 hover:text-text-strong-950 text-title-h5 leading-none">&times;</button>
+            <CompactButton.Root variant="ghost" size="large" onClick={() => setShowAdd(false)}>
+              <CompactButton.Icon as={RiCloseLine} />
+            </CompactButton.Root>
           </div>
+
+          <Divider.Root />
 
           <section className="space-y-3">
             <h4 className="text-subheading-xs uppercase text-text-sub-600">Vendor Info</h4>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label.Root>PAN Number <Label.Asterisk /></Label.Root>
                 <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Please Enter PAN" /></Input.Wrapper></Input.Root>
@@ -70,7 +103,7 @@ export default function VendorsPage() {
 
           <section className="space-y-3">
             <h4 className="text-subheading-xs uppercase text-text-sub-600">Contact Info</h4>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 { label: 'Vendor Email', ph: 'Enter email' },
                 { label: 'Vendor Ph No', ph: 'Enter phone' },
@@ -88,15 +121,19 @@ export default function VendorsPage() {
           <section className="space-y-3">
             <h4 className="text-subheading-xs uppercase text-text-sub-600">Dimension Calculation</h4>
             <div className="flex flex-wrap gap-4">
-              {['Local', 'Air', 'Surface', 'Cargo', 'Train', 'Courier', 'Warehouse'].map(s => (
-                <label key={s} className="flex items-center gap-2 text-paragraph-sm text-text-strong-950 cursor-pointer">
-                  <input type="checkbox" className="accent-primary-base" />{s}
-                </label>
+              {DIMENSION_SERVICES.map(s => (
+                <Label.Root key={s} className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={selectedServices.has(s)}
+                    onCheckedChange={() => toggleService(s)}
+                  />
+                  <span className="text-paragraph-sm text-text-strong-950">{s}</span>
+                </Label.Root>
               ))}
             </div>
           </section>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button.Root variant="neutral" mode="stroke" size="small" onClick={() => setShowAdd(false)}>Cancel</Button.Root>
             <Button.Root size="small">Save</Button.Root>
           </div>
@@ -105,7 +142,7 @@ export default function VendorsPage() {
 
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <div className="border-b border-stroke-soft-200 p-3">
-          <Input.Root size="small" className="w-56">
+          <Input.Root size="small" className="w-full max-w-xs">
             <Input.Wrapper><Input.Icon as={RiSearchLine} /><Input.Input placeholder="Search vendors..." /></Input.Wrapper>
           </Input.Root>
         </div>
