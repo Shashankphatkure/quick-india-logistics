@@ -1,43 +1,43 @@
-'use client';
 import React from 'react';
-import Link from 'next/link';
 import * as Button from '@/components/ui/button';
+import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Tooltip from '@/components/ui/tooltip';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiPrinterLine, RiListCheck2, RiArrowUpDownLine } from '@remixicon/react';
-import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
-import { cn } from '@/utils/cn';
+import { RiSearchLine, RiFilterLine, RiListCheck2 } from '@remixicon/react';
+import { listRunsheets, countRunsheets, getRunsheetCounts, RUNSHEET_PAGE_SIZE } from '@/lib/db/runsheets';
+import { currentOrgId } from '@/lib/tenant';
+import PaginationLinks from '@/components/pagination-links';
+import RunsheetTabs from '@/components/runsheet-tabs';
 
-const RS_TABS = [
-  { label: 'Pending Delivery', href: '/runsheet/pending-delivery' },
-  { label: 'Hub Dispatch', href: '/runsheet/hub-dispatch' },
-  { label: 'Incoming Runsheet', href: '/runsheet/incoming' },
-  { label: 'All Runsheet', href: '/runsheet/all' },
-];
-
-const RUNSHEETS = [
-  { no: 'QLRS63427', branch: 'QIL-bhiwandi', orders: '4111010, 4111012 +46', verifiedBy: 'Super User', status: 'Active', dateTime: '12-05-2026 15:40:55', route: 'Kalher', vehicle: 'MH04BR4827', driver: 'Mohang', deliveryStatus: 'Not Delivered' },
-];
-
-const DELIVERY_STATUS_COLOR: Record<string, BadgeColor> = {
-  'Not Delivered': 'orange',
-  'Delivered': 'green',
-  'Partial': 'yellow',
+const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'orange' | 'green' }> = {
+  rough: { label: 'Rough', color: 'gray' },
+  final: { label: 'Final', color: 'blue' },
+  out_for_delivery: { label: 'Out for Delivery', color: 'orange' },
+  completed: { label: 'Completed', color: 'green' },
 };
 
-export default function AllRunsheetPage() {
+export default async function AllRunsheetsPage({ searchParams }: { searchParams?: { search?: string; state?: string; page?: string } }) {
+  const orgId = await currentOrgId();
+  const search = searchParams?.search?.trim() || undefined;
+  const state = searchParams?.state;
+  const page = Math.max(1, Number(searchParams?.page) || 1);
+
+  const [rows, total, counts] = await Promise.all([
+    listRunsheets({ orgId, search, state, page }),
+    countRunsheets({ orgId, search, state }),
+    getRunsheetCounts(orgId),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / RUNSHEET_PAGE_SIZE));
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
         icon={RiListCheck2}
-        iconColor="bg-success-lighter text-success-base"
-        title="All Runsheet"
-        subtitle="Track all delivery runsheets and driver assignments"
-        breadcrumbs={[{ label: 'Runsheet', href: '/runsheet/all' }, { label: 'All Runsheet' }]}
+        title="All Runsheets"
+        subtitle="Local delivery runsheets across all branches"
+        breadcrumbs={[{ label: 'Runsheet', href: '/runsheet/all' }, { label: 'All' }]}
       >
         <Button.Root variant="neutral" mode="stroke" size="small">
           <Button.Icon as={RiFilterLine} />Filter
@@ -45,111 +45,53 @@ export default function AllRunsheetPage() {
       </PageHeader>
 
       <StatsStrip stats={[
-        { label: 'Total Runsheets', value: 1, trend: 0 },
-        { label: 'Active', value: 1, trend: 0 },
-        { label: 'Not Delivered', value: 1, trend: -5, trendLabel: 'vs last week' },
-        { label: 'Delivered', value: 0, trend: 0 },
+        { label: 'Total Runsheets', value: counts.total, trend: 0, trendLabel: 'all time' },
+        { label: 'Rough', value: counts.rough, trend: 0, trendLabel: 'all time' },
+        { label: 'Out for Delivery', value: counts.out_for_delivery, trend: 0, trendLabel: 'now' },
+        { label: 'Completed', value: counts.completed, trend: 0, trendLabel: 'all time' },
       ]} />
 
-      {/* Tab strip */}
-      <div className="flex gap-1 overflow-x-auto rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs">
-        {RS_TABS.map(t => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={cn(
-              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium transition',
-              t.href === '/runsheet/all'
-                ? 'bg-primary-base text-static-white'
-                : 'text-text-sub-600 hover:bg-bg-weak-50',
-            )}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+      <RunsheetTabs active="/runsheet/all" />
 
-      {/* Table card */}
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
+        <div className="border-b border-stroke-soft-200 px-4 py-3">
+          <form method="GET">
+            <Input.Root size="small" className="w-full max-w-xs">
+              <Input.Wrapper>
+                <Input.Icon as={RiSearchLine} />
+                <Input.Input name="search" defaultValue={search ?? ''} placeholder="Search runsheet no..." />
+              </Input.Wrapper>
+            </Input.Root>
+          </form>
+        </div>
         <Table.Root>
           <Table.Header>
-            <Table.Row>
-              {['Runsheet No', 'Branch', 'Total Orders', 'Verified By', 'Status', 'Date & Time', 'Route', 'Vehicle No', 'Driver', 'Print', 'Delivery Status'].map(col => (
-                <Table.Head key={col} className="whitespace-nowrap">
-                  <span className="flex items-center gap-1">
-                    {col}
-                    {!['Print'].includes(col) && (
-                      <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
-                    )}
-                  </span>
-                </Table.Head>
-              ))}
-            </Table.Row>
+            <Table.Row>{['Runsheet No', 'Date', 'Branch', 'Route', 'Vehicle', 'Driver', 'Phone', 'Orders', 'State'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
           </Table.Header>
           <Table.Body>
-            {RUNSHEETS.map(r => (
-              <Table.Row key={r.no}>
-                <Table.Cell className="h-auto py-2.5">
-                  <span className="text-paragraph-sm font-medium text-primary-base cursor-pointer hover:underline">
-                    {r.no}
-                  </span>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
-                  {r.branch}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 max-w-[180px] truncate">
-                  {r.orders}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
-                  {r.verifiedBy}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <Badge.Root
-                    size="medium"
-                    variant="light"
-                    color={(STATUS_TO_BADGE_COLOR[r.status] ?? 'gray') as BadgeColor}
-                  >
-                    <Badge.Dot />{r.status}
-                  </Badge.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
-                  {r.dateTime}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
-                  {r.route}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
-                  {r.vehicle}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
-                  {r.driver}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <Tooltip.Root>
-                    <Tooltip.Trigger asChild>
-                      <CompactButton.Root variant="ghost" size="large">
-                        <CompactButton.Icon as={RiPrinterLine} />
-                      </CompactButton.Root>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>Print runsheet</Tooltip.Content>
-                  </Tooltip.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <Badge.Root
-                    size="medium"
-                    variant="light"
-                    color={(DELIVERY_STATUS_COLOR[r.deliveryStatus] ?? 'gray') as BadgeColor}
-                  >
-                    <Badge.Dot />{r.deliveryStatus}
-                  </Badge.Root>
-                </Table.Cell>
-              </Table.Row>
-            ))}
+            {rows.length === 0 ? (
+              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No runsheets found</Table.Cell></Table.Row>
+            ) : rows.map(r => {
+              const sl = STATE_LABEL[r.state] ?? { label: r.state, color: 'gray' as const };
+              return (
+                <Table.Row key={r.id}>
+                  <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{r.runsheet_no}</span></Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.runsheet_date}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.branch_name}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.route ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.vehicle_no ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.driver_name ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.driver_phone ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.order_count}</Table.Cell>
+                  <Table.Cell className="h-auto py-3"><Badge.Root size="medium" variant="light" color={sl.color}><Badge.Dot />{sl.label}</Badge.Root></Table.Cell>
+                </Table.Row>
+              );
+            })}
           </Table.Body>
         </Table.Root>
-
-        <div className="border-t border-stroke-soft-200 px-4 py-3">
-          <span className="text-paragraph-xs text-text-sub-600">Showing 1-1 of 1</span>
+        <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
+          <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*RUNSHEET_PAGE_SIZE+1}-{Math.min(page*RUNSHEET_PAGE_SIZE, total)} of {total}</span>
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/runsheet/all" query={{ search, state }} />
         </div>
       </div>
     </div>

@@ -1,162 +1,79 @@
-'use client';
 import React from 'react';
-import Link from 'next/link';
+import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Tooltip from '@/components/ui/tooltip';
+import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiListCheck2, RiArrowUpDownLine, RiPrinterLine, RiEditLine } from '@remixicon/react';
-import { cn } from '@/utils/cn';
+import { RiFilterLine, RiListCheck2 } from '@remixicon/react';
+import { listManifests, MANIFEST_PAGE_SIZE, countManifests, getManifestCounts } from '@/lib/db/manifests';
+import { currentOrgId } from '@/lib/tenant';
+import PaginationLinks from '@/components/pagination-links';
+import RunsheetTabs from '@/components/runsheet-tabs';
 
-const RS_TABS = [
-  { label: 'Pending Delivery', href: '/runsheet/pending-delivery' },
-  { label: 'Hub Dispatch', href: '/runsheet/hub-dispatch' },
-  { label: 'Incoming Runsheet', href: '/runsheet/incoming' },
-  { label: 'All Runsheet', href: '/runsheet/all' },
-];
+// Hub Dispatch on the runsheet side = hub-transfer manifests (cross-branch vehicle moves)
+export default async function RunsheetHubDispatchPage({ searchParams }: { searchParams?: { page?: string } }) {
+  const orgId = await currentOrgId();
+  const page = Math.max(1, Number(searchParams?.page) || 1);
 
-const HUB_DISPATCHES: {
-  hubTransferNo: string;
-  fromBranch: string;
-  toBranch: string;
-  destination: string;
-  totalOrders: number;
-  totalBox: number;
-  manifestDate: string;
-}[] = [];
+  // Filter manifests where mode='hub_transfer' OR vehicle-based local cross-branch
+  const [rows, total, counts] = await Promise.all([
+    listManifests({ orgId, page }),
+    countManifests({ orgId }),
+    getManifestCounts(orgId),
+  ]);
+  // Show only vehicle-based (no airway bill) manifests
+  const vehicleRows = rows.filter(r => !r.airway_bill_no);
+  const totalPages = Math.max(1, Math.ceil(total / MANIFEST_PAGE_SIZE));
 
-const TABLE_COLS = [
-  'Hub Transfer No',
-  'From Branch',
-  'To Branch',
-  'Destination',
-  'Total Orders',
-  'Total Box',
-  'Manifest Date',
-  'Print',
-  'Edit',
-];
-
-export default function HubDispatchRunsheetPage() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
         icon={RiListCheck2}
         iconColor="bg-feature-lighter text-feature-base"
         title="Hub Dispatch"
-        subtitle="Manage hub-to-hub transfer runsheets"
-        breadcrumbs={[
-          { label: 'Runsheet', href: '/runsheet/hub-dispatch' },
-          { label: 'Hub Dispatch' },
-        ]}
-      />
+        subtitle="Cross-branch vehicle transfers"
+        breadcrumbs={[{ label: 'Runsheet', href: '/runsheet/hub-dispatch' }, { label: 'Hub Dispatch' }]}
+      >
+        <Button.Root variant="neutral" mode="stroke" size="small">
+          <Button.Icon as={RiFilterLine} />Filter
+        </Button.Root>
+      </PageHeader>
 
       <StatsStrip stats={[
-        { label: 'Total Hub Dispatches', value: 0, trend: 0 },
-        { label: 'In Transit', value: 0, trend: 0 },
-        { label: 'Completed', value: 0, trend: 0 },
-        { label: 'Pending', value: 0, trend: 0 },
+        { label: 'Total Vehicle Manifests', value: vehicleRows.length, trend: 0, trendLabel: 'this page' },
+        { label: 'Departed', value: counts.departed, trend: 0, trendLabel: 'all time' },
+        { label: 'Received', value: counts.received, trend: 0, trendLabel: 'all time' },
+        { label: 'Total Manifests', value: counts.total, trend: 0, trendLabel: 'all time' },
       ]} />
 
-      {/* Tab strip */}
-      <div className="flex gap-1 overflow-x-auto rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs">
-        {RS_TABS.map(t => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={cn(
-              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium transition',
-              t.href === '/runsheet/hub-dispatch'
-                ? 'bg-primary-base text-static-white'
-                : 'text-text-sub-600 hover:bg-bg-weak-50',
-            )}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+      <RunsheetTabs active="/runsheet/hub-dispatch" />
 
-      {/* Table card */}
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <Table.Root>
           <Table.Header>
-            <Table.Row>
-              {TABLE_COLS.map(col => (
-                <Table.Head key={col} className="whitespace-nowrap">
-                  {['Print', 'Edit'].includes(col) ? (
-                    col
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      {col}
-                      <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
-                    </span>
-                  )}
-                </Table.Head>
-              ))}
-            </Table.Row>
+            <Table.Row>{['Manifest No', 'Date', 'From → To', 'Vehicle', 'Orders', 'Bags / Boxes', 'Weight (kg)', 'State'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
           </Table.Header>
           <Table.Body>
-            {HUB_DISPATCHES.length === 0 ? (
-              <Table.Row>
-                <Table.Cell
-                  colSpan={TABLE_COLS.length}
-                  className="h-auto py-10 text-center text-paragraph-sm text-text-sub-600"
-                >
-                  No data found
-                </Table.Cell>
+            {vehicleRows.length === 0 ? (
+              <Table.Row><Table.Cell colSpan={8} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vehicle manifests</Table.Cell></Table.Row>
+            ) : vehicleRows.map(m => (
+              <Table.Row key={m.id}>
+                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{m.manifest_no}</span></Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.manifest_date}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name} → {m.to_branch_name}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.vehicle_no ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.order_count}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_bags} / {m.total_boxes}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.coloader_chargeable_kg ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3"><Badge.Root size="small" variant="lighter" color="gray">{m.state}</Badge.Root></Table.Cell>
               </Table.Row>
-            ) : (
-              HUB_DISPATCHES.map(r => (
-                <Table.Row key={r.hubTransferNo}>
-                  <Table.Cell className="h-auto py-2.5">
-                    <span className="text-paragraph-sm font-medium text-primary-base cursor-pointer hover:underline">
-                      {r.hubTransferNo}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
-                    {r.fromBranch}
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
-                    {r.toBranch}
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
-                    {r.destination}
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
-                    {r.totalOrders}
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">
-                    {r.totalBox}
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
-                    {r.manifestDate}
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5">
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <CompactButton.Root variant="ghost" size="large">
-                          <CompactButton.Icon as={RiPrinterLine} />
-                        </CompactButton.Root>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>Print dispatch</Tooltip.Content>
-                    </Tooltip.Root>
-                  </Table.Cell>
-                  <Table.Cell className="h-auto py-2.5">
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <CompactButton.Root variant="ghost" size="large">
-                          <CompactButton.Icon as={RiEditLine} />
-                        </CompactButton.Root>
-                      </Tooltip.Trigger>
-                      <Tooltip.Content>Edit dispatch</Tooltip.Content>
-                    </Tooltip.Root>
-                  </Table.Cell>
-                </Table.Row>
-              ))
-            )}
+            ))}
           </Table.Body>
         </Table.Root>
+        <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
+          <span className="text-paragraph-xs text-text-sub-600">Showing {vehicleRows.length} of {total}</span>
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/runsheet/hub-dispatch" query={{}} />
+        </div>
       </div>
     </div>
   );

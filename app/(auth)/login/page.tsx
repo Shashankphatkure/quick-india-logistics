@@ -1,15 +1,27 @@
 'use client';
 import React, { useState } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import Link from 'next/link';
 import * as Button from '@/components/ui/button';
 import * as Input from '@/components/ui/input';
 import * as Label from '@/components/ui/label';
 import { Root as Checkbox } from '@/components/ui/checkbox';
 import { RiEyeLine, RiEyeOffLine, RiTruckLine, RiLockLine, RiUserLine, RiShieldLine } from '@remixicon/react';
+import { loginAction, type LoginState } from './actions';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button.Root className="w-full" size="medium" type="submit" disabled={pending}>
+      {pending ? 'Signing in...' : 'Sign In'}
+    </Button.Root>
+  );
+}
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [state, formAction] = useFormState<LoginState, FormData>(loginAction, undefined);
 
   return (
     <div className="flex min-h-screen bg-bg-weak-50">
@@ -43,7 +55,7 @@ export default function LoginPage() {
 
       {/* Right login form */}
       <div className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full max-w-sm space-y-8">
+        <form action={formAction} className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="flex items-center gap-2 lg:hidden">
             <div className="flex size-9 items-center justify-center rounded-xl bg-[#0c1322]">
@@ -63,7 +75,13 @@ export default function LoginPage() {
               <Input.Root size="medium">
                 <Input.Wrapper>
                   <Input.Icon as={RiUserLine} />
-                  <Input.Input id="username" placeholder="Enter your username" autoComplete="username" />
+                  <Input.Input
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    autoComplete="username"
+                    required
+                  />
                 </Input.Wrapper>
               </Input.Root>
             </div>
@@ -80,9 +98,11 @@ export default function LoginPage() {
                   <Input.Icon as={RiLockLine} />
                   <Input.Input
                     id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     autoComplete="current-password"
+                    required
                   />
                   <Input.Affix>
                     <button
@@ -99,11 +119,20 @@ export default function LoginPage() {
             </div>
 
             <label className="flex cursor-pointer items-center gap-2.5">
-              <Checkbox checked={remember} onCheckedChange={v => setRemember(!!v)} />
+              <Checkbox
+                name="remember"
+                checked={remember}
+                onCheckedChange={v => setRemember(!!v)}
+                value="on"
+              />
               <span className="text-paragraph-sm text-text-sub-600">Remember me for 30 days</span>
             </label>
 
-            <Button.Root className="w-full" size="medium">Sign In</Button.Root>
+            {state?.error && (
+              <p className="text-paragraph-sm text-error-base">{state.error}</p>
+            )}
+
+            <SubmitButton />
           </div>
 
           <p className="text-center text-paragraph-sm text-text-sub-600">
@@ -112,7 +141,7 @@ export default function LoginPage() {
               Create account
             </Link>
           </p>
-        </div>
+        </form>
       </div>
     </div>
   );

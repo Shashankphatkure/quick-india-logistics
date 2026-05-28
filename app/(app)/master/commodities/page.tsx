@@ -1,38 +1,44 @@
-'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import * as Button from '@/components/ui/button';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Divider from '@/components/ui/divider';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
-import * as Pagination from '@/components/ui/pagination';
-import * as Select from '@/components/ui/select';
-import * as Label from '@/components/ui/label';
-import { Root as Checkbox } from '@/components/ui/checkbox';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import {
-  RiAddLine, RiSearchLine, RiFilterLine, RiCloseLine,
-  RiArrowUpDownLine, RiArrowLeftSLine, RiArrowRightSLine, RiBox3Line,
-} from '@remixicon/react';
+import { RiFilterLine, RiSearchLine, RiArrowUpDownLine, RiBox3Line } from '@remixicon/react';
+import PaginationLinks from '@/components/pagination-links';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
+import {
+  listCommodities,
+  countCommodities,
+  listCommodityTypes,
+  getCommodityCounts,
+} from '@/lib/db/commodities';
+import { currentOrgId } from '@/lib/tenant';
+import AddCommodityForm from './add-commodity-form';
+import RowActions from './row-actions';
 
-const COMMODITIES = [
-  { name: 'Cement Pipe', type: 'General', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Cricket Balls', type: 'General', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Executive', status: 'Active' },
-  { name: 'Sweet', type: 'Perishable Food', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Expiry Goods', type: 'Expiry Goods', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Sample', type: 'Sample', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Boundary Matters', type: 'General', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Paints', type: 'General', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Sales', type: 'General', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Shooting Material', type: 'General', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-  { name: 'Spare Parts', type: 'General', org: 'Quick India Logistics Pvt Ltd', verifiedBy: 'Admin Manager', status: 'Active' },
-];
+const PAGE_SIZE = 10;
 
-export default function CommoditiesPage() {
-  const [showAdd, setShowAdd] = useState(false);
+export default async function CommoditiesPage({
+  searchParams,
+}: {
+  searchParams?: { search?: string; page?: string };
+}) {
+  const orgId = await currentOrgId();
+  const search = searchParams?.search?.trim() || undefined;
+  const page = Math.max(1, Number(searchParams?.page) || 1);
+
+  const [rows, total, counts, types] = await Promise.all([
+    listCommodities({ orgId, search, page, pageSize: PAGE_SIZE }),
+    countCommodities({ orgId, search }),
+    getCommodityCounts(orgId),
+    listCommodityTypes(orgId),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const fromRow = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const toRow = Math.min(page * PAGE_SIZE, total);
 
   return (
     <div className="space-y-6">
@@ -41,112 +47,115 @@ export default function CommoditiesPage() {
         iconColor="bg-feature-lighter text-feature-base"
         title="Commodities"
         subtitle="Manage commodity types for shipments"
-        breadcrumbs={[{ label: 'Master', href: '/master/commodities' }, { label: 'Commodities' }]}
+        breadcrumbs={[
+          { label: 'Master', href: '/master/commodities' },
+          { label: 'Commodities' },
+        ]}
       >
         <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
+          <Button.Icon as={RiFilterLine} />
+          Filter
         </Button.Root>
-        <Button.Root size="small" onClick={() => setShowAdd(true)}>
-          <Button.Icon as={RiAddLine} />Add Commodity
-        </Button.Root>
+        <AddCommodityForm types={types} />
       </PageHeader>
 
-      <StatsStrip stats={[
-        { label: 'Total Commodities', value: 33, trend: 3.2, trendLabel: 'this month' },
-        { label: 'Active', value: 30, trend: 2.1, trendLabel: 'this month' },
-        { label: 'Perishable', value: 4, trend: 0, trendLabel: 'no change' },
-        { label: 'Expiry Goods', value: 2, trend: -1, trendLabel: 'this month' },
-      ]} />
-
-      {showAdd && (
-        <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-6 shadow-regular-xs space-y-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-label-sm text-text-strong-950">Add Commodity</h3>
-              <p className="text-paragraph-xs text-text-sub-600 mt-0.5">Define a new commodity type</p>
-            </div>
-            <CompactButton.Root variant="ghost" size="large" onClick={() => setShowAdd(false)}>
-              <CompactButton.Icon as={RiCloseLine} />
-            </CompactButton.Root>
-          </div>
-          <Divider.Root />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label.Root>Commodity Type <Label.Asterisk /></Label.Root>
-              <Select.Root size="small">
-                <Select.Trigger><Select.Value placeholder="Select type" /></Select.Trigger>
-                <Select.Content>
-                  <Select.Item value="general">General</Select.Item>
-                  <Select.Item value="perishable">Perishable Food</Select.Item>
-                  <Select.Item value="expiry">Expiry Goods</Select.Item>
-                  <Select.Item value="sample">Sample</Select.Item>
-                </Select.Content>
-              </Select.Root>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label.Root>Commodity Name <Label.Asterisk /></Label.Root>
-              <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter commodity name" /></Input.Wrapper></Input.Root>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button.Root variant="neutral" mode="stroke" size="small" onClick={() => setShowAdd(false)}>Cancel</Button.Root>
-            <Button.Root size="small">Save Commodity</Button.Root>
-          </div>
-        </div>
-      )}
+      <StatsStrip
+        stats={[
+          { label: 'Total Commodities', value: counts.total, trend: 0, trendLabel: 'all time' },
+          { label: 'Active', value: counts.active, trend: 0, trendLabel: 'all time' },
+          { label: 'Perishable', value: counts.perishable, trend: 0, trendLabel: 'all time' },
+          { label: 'Expiry Goods', value: counts.expiry, trend: 0, trendLabel: 'all time' },
+        ]}
+      />
 
       <div className="overflow-hidden rounded-2xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <div className="flex items-center justify-between border-b border-stroke-soft-200 px-4 py-3">
-          <Input.Root size="small" className="w-64">
-            <Input.Wrapper>
-              <Input.Icon as={RiSearchLine} />
-              <Input.Input placeholder="Search commodities..." />
-            </Input.Wrapper>
-          </Input.Root>
-          <span className="text-paragraph-sm text-text-sub-600">33 commodities</span>
+          <form method="GET" className="flex items-center gap-2">
+            <Input.Root size="small" className="w-64">
+              <Input.Wrapper>
+                <Input.Icon as={RiSearchLine} />
+                <Input.Input
+                  name="search"
+                  defaultValue={search ?? ''}
+                  placeholder="Search commodities..."
+                />
+              </Input.Wrapper>
+            </Input.Root>
+          </form>
+          <span className="text-paragraph-sm text-text-sub-600">
+            {total} {total === 1 ? 'commodity' : 'commodities'}
+          </span>
         </div>
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.Head className="w-10"><Checkbox /></Table.Head>
-              {['Commodity Name', 'Type', 'Organization', 'Verified By', 'Status'].map(col => (
+              {['Commodity Name', 'Type', 'Organization', 'Verified By', 'Status', ''].map((col) => (
                 <Table.Head key={col}>
-                  <span className="flex items-center gap-1">{col}<RiArrowUpDownLine size={11} className="text-text-disabled-300" /></span>
+                  <span className="flex items-center gap-1">
+                    {col}
+                    <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
+                  </span>
                 </Table.Head>
               ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {COMMODITIES.map(c => (
-              <Table.Row key={c.name}>
-                <Table.Cell className="h-auto py-3 w-10"><Checkbox /></Table.Cell>
-                <Table.Cell className="h-auto py-3">
-                  <span className="text-paragraph-sm font-semibold text-text-strong-950 cursor-pointer hover:text-primary-base transition-colors">{c.name}</span>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3">
-                  <Badge.Root size="small" variant="lighter" color="gray">{c.type}</Badge.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{c.org}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{c.verifiedBy}</Table.Cell>
-                <Table.Cell className="h-auto py-3">
-                  <Badge.Root size="medium" variant="light" color={(STATUS_TO_BADGE_COLOR[c.status] ?? 'gray') as BadgeColor}>
-                    <Badge.Dot />{c.status}
-                  </Badge.Root>
+            {rows.length === 0 ? (
+              <Table.Row>
+                <Table.Cell colSpan={5} className="py-10 text-center text-paragraph-sm text-text-sub-600">
+                  No commodities found
                 </Table.Cell>
               </Table.Row>
-            ))}
+            ) : (
+              rows.map((c) => {
+                const statusLabel = c.is_active ? 'Active' : 'Inactive';
+                return (
+                  <Table.Row key={c.id}>
+                    <Table.Cell className="h-auto py-3">
+                      <span className="text-paragraph-sm font-semibold text-text-strong-950 cursor-pointer hover:text-primary-base transition-colors">
+                        {c.name}
+                      </span>
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-3">
+                      <Badge.Root size="small" variant="lighter" color="gray">
+                        {c.type_name}
+                      </Badge.Root>
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                      {c.org_name}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                      {c.verified_by_name ?? '—'}
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-3">
+                      <Badge.Root
+                        size="medium"
+                        variant="light"
+                        color={(STATUS_TO_BADGE_COLOR[statusLabel] ?? 'gray') as BadgeColor}
+                      >
+                        <Badge.Dot />
+                        {statusLabel}
+                      </Badge.Root>
+                    </Table.Cell>
+                    <Table.Cell className="h-auto py-3 text-right">
+                      <RowActions row={{ id: c.id, name: c.name, type_id: c.type_id, is_active: c.is_active }} types={types} />
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })
+            )}
           </Table.Body>
         </Table.Root>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-5 py-3">
-          <span className="text-paragraph-sm text-text-sub-600">Showing 1-10 of 33</span>
-          <Pagination.Root variant="rounded">
-            <Pagination.NavButton><Pagination.NavIcon as={RiArrowLeftSLine} /></Pagination.NavButton>
-            <Pagination.Item current>1</Pagination.Item>
-            <Pagination.Item>2</Pagination.Item>
-            <Pagination.Item>3</Pagination.Item>
-            <Pagination.Item>4</Pagination.Item>
-            <Pagination.NavButton><Pagination.NavIcon as={RiArrowRightSLine} /></Pagination.NavButton>
-          </Pagination.Root>
+          <span className="text-paragraph-sm text-text-sub-600">
+            Showing {fromRow}-{toRow} of {total}
+          </span>
+          <PaginationLinks
+            page={page}
+            totalPages={totalPages}
+            basePath="/master/commodities"
+            query={{ search }}
+          />
         </div>
       </div>
     </div>

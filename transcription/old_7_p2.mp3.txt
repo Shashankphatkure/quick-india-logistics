@@ -1,0 +1,348 @@
+00:00:00,260 --> 00:00:22,500 [Speaker 0]
+
+एक बार मैं आपको भेज दूंगा तो उसमें से किसी को plus किसी को minus वो चलता रहेगा। pending shipment report same way कि मेरे यहाँ से कितनी delivery pending है उसका मैं download कर पाऊं। जो हमने starting में dashboard में देखा था ना pending report वहां से click करेंगे तो सारे मेरे को Excel में भी option download का मिल जाए और ये Excel का download option भी हमने permission में दिया है कौन कर सकता है कौन नहीं कर सकता है 
+
+
+
+00:00:23,860 --> 00:01:25,780 [Speaker 0]
+
+delivery. ठीक है फिर C के बाद D में आ गया user report. जैसे मैं admin हूं तो मेरे को user report भी दिखेगा। अगर मैंने किसी person का या किसी branch का report निकाला तो किसने कितना entry किया, कितना-कितना checking किया, कितना गलतिया किया और कितनी login हुई सारा मेरे को detail दिखता है। इसके बाद नीचे आइए branch report. Branch report में भी download जब करता हूं तो उसका कितना shipment pick up हुआ है, कितना delivery हुआ, कितना 48 के ऊपर गया है, कितना 48 के अंदर delivery हो गया वो सारा report मेरे को मिलता है। तो permission यहाँ जैसे मैंने 10 report आपको दिए तो कौन सा report किसको option देना है वो मैं दूंगा। और मैं specific किसी को option दूंगा तो उसको जैसे कोई Bangalore branch है तो Bangalore का जो भी download करेगा Bangalore से related Bangalore में incoming and Bangalore से outgoing ही मिलेगा उसको। उसको Bombay से, Delhi के option नहीं दिखता है और download भी नहीं कर पाता है वो। Vendor bill report तो vendor का सारा समझ आता है। Asset report जो हमने discuss किया था हमारा जो box और data lockers है उसका inventory report और उसका asset report वो सारा मिल जाता है मेरे को। 
+
+
+
+00:01:27,080 --> 00:01:39,680 [Speaker 0]
+
+Airport to airport ये हम लोग करते नहीं हैं तो ये डालने की जरूरत नहीं है। फिर उसके बाद नीचे आइए local run sheet report तो report ही आएगा। फिर next क्या है? 
+
+
+
+00:01:43,300 --> 00:02:04,000 [Speaker 0]
+
+Local run sheet के बाद क्या है? Weight difference report एक बहुत major चीज है। ये मेरे को थोड़ा सा आपको explain करना पड़ेगा। हाँ, ये जो report है बहुत important है। इसको हम लोगों ने दो तीन criteria रखे हैं check करने के लिए। नहीं ऊपर है ना weight difference हाँ ये रहा weight difference report. नहीं ऊपर नहीं थोड़ा सा code order report के पहले क्या है? 
+
+
+
+00:02:06,600 --> 00:02:13,080 [Speaker 0]
+
+Local. ठीक है local के बाद code order में तो मेरा vendors के सारे report आते हैं। ठीक है फिर M आ गया weight difference report. 
+
+
+
+00:02:14,180 --> 00:02:15,540 [Speaker 0]
+
+अब weight difference report में ना 
+
+
+
+00:02:17,580 --> 00:02:25,820 [Speaker 0]
+
+सबसे important चीज है जैसे अभी है ना dimension का एक clauses होता है हमारा। ठीक है। हम लोग जितने भी client होते हैं सबको 
+
+
+
+00:02:26,840 --> 00:02:29,000 [Speaker 0]
+
+dimension quotation में डाल के देते हैं 
+
+
+
+00:02:30,880 --> 00:02:31,120 [Speaker 0]
+
+और 
+
+
+
+00:02:32,280 --> 00:02:47,180 [Speaker 0]
+
+सबका अलग-अलग रहता है। ठीक है। अलग-अलग client के हिसाब से dimension, dimension जो होता है weight का calculation होता है। जैसे मेरे पास 10 kg का parcel है लेकिन उसका dimension बड़ा है 
+
+
+
+00:02:48,340 --> 00:02:57,420 [Speaker 0]
+
+100 by 100 by 100 है तो उसको हम 10 kg नहीं कह सकते ना। उसको dimension के हिसाब से वो बड़ा बन जाता है तो उसका एक formula होता है length into breadth into height 
+
+
+
+00:02:59,360 --> 00:02:59,920 [Speaker 0]
+
+divide by 
+
+
+
+00:03:01,460 --> 00:03:01,560 [Speaker 0]
+
+X. 
+
+
+
+00:03:03,000 --> 00:03:07,460 [Speaker 0]
+
+अब ये जो divide by X होता है और multiply by एक हम लोग बोलते हैं CFT. 
+
+
+
+00:03:09,800 --> 00:03:12,620 [Speaker 0]
+
+तो ये दोनों जो है blank होते हैं ये हम लोग fill करते हैं. 
+
+
+
+00:03:15,380 --> 00:03:21,019 [Speaker 0]
+
+Divide by X into Y. X is divide by और Y is multiply. 
+
+
+
+00:03:23,260 --> 00:03:28,180 [Speaker 0]
+
+ठीक है। जो divide by होता है किसी के लिए 5000 होता है, किसी के लिए 6000 होता है। 
+
+
+
+00:03:29,740 --> 00:03:39,540 [Speaker 0]
+
+हाँ, जैसे और किसी mode के ऊपर depend करता है। अगर surface mode है तो divide by 27,000 multiply by 6 या multiply by 8 ऐसा अलग-अलग dimensions होते हैं。 
+
+
+
+00:03:41,620 --> 00:03:55,250 [Speaker 0]
+
+breadth into height divide by X into Y. ये अपना formula है। ये X और Y जो है ये हम लोग predefine करते हैं client to client. उनके master data में हम जब entry करते हैं तो ये सारा हम fill करते हैं। 
+
+
+
+00:03:56,780 --> 00:04:10,180 [Speaker 0]
+
+अभी आप जाइए masters में एकदम ऊपर उसमें आप जब देखेंगे ना वहां पे आपको दिखेगा screenshot में मैंने डाला हुआ है dimensions. हाँ, थोड़ा ऊपर जाइए। masters में आइए masters. 
+
+
+
+00:04:11,940 --> 00:04:14,220 [Speaker 0]
+
+Starting में देखो first या second option आएगा masters. 
+
+
+
+00:04:15,340 --> 00:04:18,880 [Speaker 0]
+
+मैं मेरा sheet में देख लेता हूं masters कहां है। 
+
+
+
+00:04:20,720 --> 00:04:21,780 [Speaker 0]
+
+पांच number master. 
+
+
+
+00:04:23,400 --> 00:04:26,660 [Speaker 0]
+
+पांच number में आपको बोलता हूं क्या चाहिए A, B 
+
+
+
+00:04:28,240 --> 00:04:28,800 [Speaker 0]
+
+हाँ, bill to. 
+
+
+
+00:04:30,120 --> 00:04:31,030 [Speaker 0]
+
+Bill to में 
+
+
+
+00:04:33,900 --> 00:04:35,240 [Speaker 0]
+
+dimension कहां है? 
+
+
+
+00:04:36,380 --> 00:04:38,060 [Speaker 0]
+
+Bill to में dimension दिखाएं क्या आपको? 
+
+
+
+00:04:39,140 --> 00:04:44,320 [Speaker 0]
+
+Bill to, report column, GST, primary address, communication address. 
+
+
+
+00:04:45,800 --> 00:04:51,600 [Speaker 0]
+
+एक मिनट मैं मेरे software में जाकर देखता हूं। Masters, bill to. 
+
+
+
+00:04:54,400 --> 00:04:54,460 [Speaker 0]
+
+एक 
+
+
+
+00:04:56,240 --> 00:05:10,870 [Speaker 0]
+
+मिनट। [गाड़ी के हॉर्न की आवाज़] इसमें आता है। 
+
+
+
+00:05:13,100 --> 00:05:19,940 [Speaker 0]
+
+ठीक है मैं ढूंढता हूं वो लिख के रखिएगा। कहीं तो मैं डालता हूं कहां पर है याद नहीं है। तो इसमें जब हम masters बनाते हैं ना 
+
+
+
+00:05:21,840 --> 00:05:29,380 [Speaker 0]
+
+तो उसमें ना हम लोग उसको define कर देते हैं कि ये client के लिए हम लोग क्या करते हैं करके 
+
+
+
+00:05:32,720 --> 00:06:13,184 [Speaker 0]
+
+dimension का clause क्या रहता है बोलके हम वो डालते हैं और define कर देते हैं divide by 5000 किसी के लिए रहेगा, किसी के लिए 4000 रहेगा, किसी के लिए 6000 भी रहेगा। तो उससे ना calculation होता है weight का। अच्छा मैंने आपको जो नहीं भेजा जैसे मैंने आपको bill to भेजा है ना bill to के बाद हम लोग एक client भी add करते हैं वो मैंने आपको भेजा नहीं है। ठीक है। वो मैं अभी group में डाल देता हूं। जब client address update करते हैं ना तो उसमें formula आता है। मैं आपको वो भी screenshot भेजता हूं।तो उसके अंदर है ना मैं एक column आपको screenshot भेजता हूँ calculation का services offered 
+
+
+
+00:06:14,244 --> 00:06:15,244 [Speaker 0]
+
+और calculation. 
+
+
+
+00:06:16,544 --> 00:06:19,384 [Speaker 0]
+
+देखिए इसे मैंने आपको भेजा है screenshot. 
+
+
+
+00:06:20,844 --> 00:06:37,384 [Speaker 0]
+
+अब इसमें देखो local के लिए अलग CFT रहता है, calculation अलग रहता है, air के लिए अलग रहता है, train के लिए अलग रहेगा, surface के लिए अलग रहेगा। तो आप जिसको भी option collect करोगे ना वो नीचे उसका calculation आपको पूछेगा। फिर billing कैसा monthly है, daily है वो सब भी हम लोग click करते हैं उस पर। 
+
+
+
+00:06:39,164 --> 00:06:44,324 [Speaker 0]
+
+तो ठीक है यहाँ पर हम लोग dimension का divide by 5000 और CFT मतलब multiply by 1. 
+
+
+
+00:06:45,964 --> 00:06:48,504 [Speaker 0]
+
+तो यह मैं manually fill करता हूँ for each and every client. 
+
+
+
+00:06:50,444 --> 00:07:32,024 [Speaker 0]
+
+और उसमें भी तीन option होता है कि dimension use करना है। ठीक है। तो use dimension kg wise. ठीक है। और अगर dimension use नहीं करना है तो don't use लिखते हैं हम लोग। और अगर समझो box के हिसाब से calculate करना है जैसे एक box का 10 kilo ही लेना है तो कितना ही बड़ा हो छोटा हो तो use box calculation लिखते हैं हम लोग। तो यह detail जो है मेरे को compulsory भरना है। इसके हिसाब से ही मेरा जो docket पर chargeable weight आता है ना वो इसी के हिसाब से आता है। ठीक है। तो यह जो है यह formula हम लोग डालेंगे तो इससे क्या आता है calculation आता है dimension weight बोलते जिसको हम लोग। ठीक है। तो dimension weight जो आता है हाँ dimension weight जो आता है और actual weight whichever is higher is taken as for billing. 
+
+
+
+00:07:34,264 --> 00:07:50,744 [Speaker 0]
+
+ठीक है। अभी इसमें क्या होता है जैसे मैंने 10 docket काटा उसका dimension weight आया 120 kilo actual weight आया 100 kilo तो मैं client को 120 kilo charge करूंगा। ठीक है। अभी जो second option है जब मैं manifest बनाता हूँ 
+
+
+
+00:07:52,024 --> 00:08:08,144 [Speaker 0]
+
+तो उसमें भी मेरा weight जाता है। वहां पर airline से मेरे से dimension लेता है या मैं third party के through भेजता हूँ तो वो भी मेरे से dimension लेता है। तो उसका जो weight है जो मुझसे charge कर रहा है suppose उसने मेरे को 125 kilo लिया तो मेरे पास है 120 kilo actual 
+
+
+
+00:08:09,184 --> 00:08:12,604 [Speaker 0]
+
+100 sorry 100 kilo actual 120 kilo dimension weight. 
+
+
+
+00:08:15,124 --> 00:08:16,583 [Speaker 0]
+
+आवाज़ नहीं आ रही क्या? 
+
+
+
+00:08:18,304 --> 00:08:22,244 [Speaker 0]
+
+मैं बोल रहा हूँ मैंने 10 docket का एक manifest बनाया। 
+
+
+
+00:08:23,844 --> 00:08:26,064 [Speaker 0]
+
+वो 10 docket का actual weight हो गया 100 kilo. 
+
+
+
+00:08:28,444 --> 00:08:31,704 [Speaker 0]
+
+और मेरे formula dimension के हिसाब से उसका weight आया 120 kilo. 
+
+
+
+00:08:33,944 --> 00:08:41,083 [Speaker 0]
+
+ठीक है। अभी जब मैंने manifest किया third party में connection किया या airline में connection किया airline ने मेरे से ले लिया 150 kilo 150 kg. 
+
+
+
+00:08:43,644 --> 00:08:46,174 [Speaker 0]
+
+ठीक है। तो जब मैं इसको compare करूंगा 
+
+
+
+00:08:47,384 --> 00:08:50,234 [Speaker 0]
+
+with actual weight तो मेरा difference आएगा 50 kg 
+
+
+
+00:08:52,544 --> 00:08:56,944 [Speaker 0]
+
+और जब मैं इसको compare करूंगा with dimension weight तो भी weight आएगा 30 kg का difference. 
+
+
+
+00:08:58,364 --> 00:09:24,414 [Speaker 0]
+
+तो यह जो difference है ना इसको हम लोग weight difference बोलते हैं कि मैंने कितने में उठाया और सामने कितने में गया। यह कभी कम भी होता है, कभी ज्यादा भी होता है। अगर कम गया तो मेरा फायदा है तो मुझे कोई दिक्कत नहीं है। ज्यादा गया तो मेरा नुकसान है तो मैं देखूंगा कहाँ पर मेरी गलती है कि client ने मेरे को कम वजन लिख के दिया या मेरे लड़के ने airline में ज्यादा गलती से ज्यादा लगा दिया तो उसको मैं amend करूंगा और check करूंगा। Daily basis जब मेरे को report मिलता है तो उसके हिसाब से मेरा आगे का follow up भी होता है। 
+
+
+
+00:09:26,284 --> 00:09:49,044 [Speaker 0]
+
+तो that is called the weight difference report जो हम लोग अभी discuss कर रहे थे एकदम नीचे। हाँ तो मैं जब download करूंगा तो मेरे को दोनों report देता है वो as per actual भी कितने का difference है और as per अगर मैं dimension भी ले लेता हूँ मेरे client के हिसाब से तो भी difference अगर रहेगा तो मेरे को report में देता है sir इतना plus है इतना minus है। तो जहाँ पर minus में हूँ मैं specifically वो चीजों को double check करूंगा। 
+
+
+
+00:09:50,104 --> 00:10:46,324 [Speaker 0]
+
+क्योंकि कभी क्या होता है लड़के ने गलती से 10 kilo का 100 kilo लिखवा के आ गया तो भाई मैं उसको 100 kilo का payment क्यों दूंगा? अगर मेरे को सुबह-सुबह मालूम पड़ गया तो मैं लूंगा ही नहीं। वापस double check करूंगा airline से भाई 10 kilo का parcel है इसको amend करो। अगर एक बार मैंने ले लिया तो उसके बाद वो change हो ही नहीं सकता है। तो मेरा 10 की जगह पर 100 kilo का 90 kilo का मेरा हो जाएगा नुकसान। तो इसके लिए report मेरे लिए बहुत important है। ठीक है। फिर उसके बाद older master status report है तो मुझे पता नहीं क्या होता है but कुछ बनाया रहेगा। तो reports में कैसा है जो हमने बनाया है मोटा-मोटी वो आएगा और उसके अलावा कुछ sir लोगों को भी चाहिए रहेगा। तो जब हम लोग बाद में start करेंगे ना तो note की जगह sir से भी पूछ लूंगा क्या-क्या उनको देखने के लिए चाहिए या सबको क्या दिखना चाहिए तो उस time पर वो बताएंगे। उसके बाद दो-तीन और option है वो हमने कभी use नहीं किया है shipping agency so discuss करने की जरूरत फिलहाल तो नहीं है। ठीक है तो मोटा-मोटी मैंने सारा कुछ आपको explain किया pickup से लेकर delivery तक के सारे steps. 
+
+
+
+00:10:48,484 --> 00:10:49,704 [Speaker 0]
+
+E-way bill का implementation 
+
+
+
+00:10:51,444 --> 00:11:21,104 [Speaker 0]
+
+और बीच में जो भी जैसे याद था कि dimension क्या होता है कहाँ पर क्या लिखते हैं क्या दिखाते हैं वो भी मोटा-मोटी मैंने आपको भेजा है। अब बनाने लगेंगे तो अभी बहुत सारी चीजें आएंगी। तो जैसे-जैसे बनेंगी वैसे-वैसे अपन discuss करेंगे। ठीक है। अभी जो मैंने समझाया हूँ यह मैंने already बनाया है और हम लोग इसको full length में use नहीं कर पा रहे because बहुत सारे अड़चनें हैं। तो इन चीजों को अपने को बनाना है but replica नहीं करना है। इसको और smoother और faster और easier way कैसे कर सकते हैं वो आप मुझे suggest कर सकते हो। 
+
+
+
+00:11:21,104 --> 00:11:21,264 [Speaker 1]
+
+हम्म
+
+
+

@@ -1,0 +1,168 @@
+00:00:00,140 --> 00:00:02,100 [Speaker 0]
+
+ऐसा मैंने बनाया है तो उसमें क्या हो गया? 
+
+
+
+00:00:06,220 --> 00:00:07,980 [Speaker 0]
+
+एक घंटा हो गया था क्या? 
+
+
+
+00:00:11,200 --> 00:00:59,940 [Speaker 0]
+
+ज्यादा हो गया। ठीक है। तो अभी देखो ये department में अभी जैसे सबसे नीचे लिखा है data entry। ठीक है। Data entry मैंने एक department बनाया हूँ जो basic काम करता है। Entry करता है computer पर entry करता है। ठीक है। तो उसको उसके basic permissions है। वो सारा entry करेगा और अपना आगे बढ़ते रहेगा। तो entry में हो गया docket creation हो गया manifest हो गया connection details हो गया या फिर हम लोगों ने delivery हो गया सारा कुछ वो entry कर सकता है। Data entry वाला सारा कुछ कर सकता है। तो data entry करते गए। फिर उसके बाद दूसरा मैंने designation बनाया है customer care customer support। तो customer support जो है ना data entry के ऊपर आता है। तो मैंने इसको maker checker भी बनाया ये दोनों को। ठीक है। तो जो entry data entry वाला कर सकता है customer care उसको check करके lock कर सकता है। 
+
+
+
+00:01:01,600 --> 00:01:37,480 [Speaker 0]
+
+ठीक है। और उसके बाद अगर customer care ने वो okay कर दिया save करके तो data entry operator उसको edit नहीं कर सकता है। ठीक है। और अगर समझो customer care ने उसको return भेज दिया भाई चार में गलती है इसको सुधार। तो data entry वाला फिर update करके उसको फिर चार लग जाएगा कि भाई चार मैंने check किया करके। ठीक है। हाँ और उसके बाद customer care का जो data है वो operation वाला check कर सकता है उसके ऊपर वाला। तो एक बार operation वाले ने lock कर दिया तो फिर customer care वाला ये नहीं कर सकता change। 
+
+
+
+00:01:38,940 --> 00:01:46,660 [Speaker 0]
+
+same procedure। operation के बाद आता है accounts। तो accounts हो गया मोटा मोटी last stage। तो account वाला check करेगा तो फिर data पूरा lock 
+
+
+
+00:01:47,740 --> 00:02:06,500 [Speaker 0]
+
+और accounts में check करने के बाद भी अगर कुछ edit-edit करना रहता है कभी कुछ गलती हो गई जैसे उसमें चार packet लिखा सभी ने गलती कर दी actual तीन ही packet delivery तीन packet हुआ है तो last में मेरा super user या हम लोग admin वाला जो है वो edit कर सकता है। वो रखा है इधर हम use करते नहीं। 
+
+
+
+00:02:07,600 --> 00:02:41,620 [Speaker 0]
+
+ऐसा layer बना है। ठीक है। software वाला एक हमने अलग से team रखा था जो सिर्फ software का ही काम करते हैं। जैसे कोई गलती कर रहा है किसी को time नहीं मिल रहा है। ठीक है। तो software वाले check करके खुद ही सारा कुछ proper update करके close करते रहते हैं। ठीक है। अभी मेरा maker checker जो हमने बनाना था तो हमने बना तो दिया लेकिन जिस तरह से ये use हो रहा था ना वो नहीं हो पा रहा क्योंकि वो उतना user friendly है ही नहीं maker checker। दिन में जैसे हजार docket आ गए तो हजार के हजार docket customer care check कर ही नहीं सकता। वो कैसे करेगा? 
+
+
+
+00:02:44,040 --> 00:02:45,400 [Speaker 0]
+
+तो यहां पर क्या हो रही है दिक्कत? 
+
+
+
+00:02:46,460 --> 00:02:54,740 [Speaker 0]
+
+तो ये जो काम है ना बना तो दिया हम लेकिन इसको हम लोग use नहीं कर पा रहे। तो इसी के लिए मैंने आपको बोला जो AI हम implement करेंगे 
+
+
+
+00:02:56,100 --> 00:03:11,540 [Speaker 0]
+
+तो आधा काम मेरा AI कर लेगा check करने का और उसके बाद जो बचेगा तो वो unlock कर ले। ऐसा मेरा target है। हाँ। 
+
+
+
+00:03:13,420 --> 00:03:47,680 [Speaker 0]
+
+करें। तो अपने को AI implement उसमें करना है। ठीक है। तो बाकी उनके permissions उसके हिसाब से हम इसी के हिसाब से हम permissions का भी एक grouping बना रहे हैं। Data entry का एक group बना दिया। Customer support का एक group बना देंगे तो हम user को allocate कर पाएंगे। ठीक है। हाँ फिर नीचे आइए। हाँ add department करेंगे तो उसमें क्या-क्या option आता है उसके नीचे मैंने screenshot डाला है। क्या-क्या भरना पड़ता है जब add department करते हैं तो। हाँ। 
+
+
+
+00:03:57,120 --> 00:04:07,800 [Speaker 0]
+
+ये मुझे दिख नहीं रहा है department summary। थोड़ा नीचे आइए। हाँ। कौन सा key है sir? 
+
+
+
+00:04:09,280 --> 00:04:14,540 [Speaker 0]
+
+अब मैं तेरे को phone करता हूँ meeting में। Add department में ये आया है permission आ रहा है क्या? 
+
+
+
+00:04:16,800 --> 00:04:23,860 [Speaker 0]
+
+हाँ वो है ना ऊपर add department का नाम लिखा first box। नहीं थोड़ा नीचे। 
+
+
+
+00:04:26,000 --> 00:04:31,140 [Speaker 0]
+
+हाँ तो देखो department का नाम लिखा। उसके बाद वो department का क्या-क्या permission से group बन। 
+
+
+
+00:04:32,300 --> 00:04:33,690 [Speaker 0]
+
+हाँ तो ये ऐसे आता है। 
+
+
+
+00:04:34,840 --> 00:04:35,640 [Speaker 0]
+
+फिर next आइए। 
+
+
+
+00:04:38,380 --> 00:04:58,940 [Speaker 0]
+
+Designation summary ठीक है। अभी वो department बन गया। Department में हमारे पास जितने भी designation हैं वो किसी ना किसी department में आएंगे। तो हम designation भी create करते हैं और designation add करेंगे तो किसे दिखता है वो नीचे दिख जाएगा। छोटा सा एक column आएगा। नाम डाल दिया designation बन गया। उतना ही है छोटा सा। 
+
+
+
+00:05:00,240 --> 00:05:21,900 [Speaker 0]
+
+इसमें कोई ये नहीं है। designation बन गया तो मेरे को किसको designation जब मैं user बनाऊंगा तो ये सबको दिखता है। उसका designation क्या है? उसका role क्या है? कौन से department में है? वो सब click कर वो automatically उसको permissions ये वो सब मिल जाता है। फिर change password तो common है। उसके बाद क्या है? 
+
+
+
+00:05:24,020 --> 00:06:21,084 [Speaker 0]
+
+Change कर सकते हैं। नहीं वो Gmail, Gmail तो connected है या फिर वो internally connect के रहता है। नहीं software का password है। software को login करने के लिए जो हम user password बनाते हैं ना। हमम। वो है। उसको अगर अपना password change करना रहेगा तो change कर सकता है ना। हमम, हमम, हमम। वो है।और इसमें एक और चीज बोलना था मेरे को आपको जब भी हम जैसे normal user बनाते हैं ना, जैसे मैंने user बनाया उसको xyz password डाल के दे दिया। तो जब भी वो first login करता है तो उसको compulsory password change करना रहता है तो अपना own create करता है। तो ये system डाला हुआ है। हम्म। Okay। 
+
+
+
+00:06:22,384 --> 00:06:36,964 [Speaker 0]
+
+तो उसके आगे क्या है? Last क्या हमने देखा change password हो गया तो EMS का box खत्म हो गया। EMS के बाद अपना आता है e-waybill। बराबर। हम्म। e-waybill में ना इस तरह का dashboard है। आप देख सकते हैं ना। 
+
+
+
+00:06:38,104 --> 00:06:50,424 [Speaker 0]
+
+ये जो dashboard है ये मेरा API से आता है। तो use API किया हुआ है। तो हम लोग क्या है इससे कुछ e-waybill expire हो रहा है। कुछ क्या हो रहा है तो यहां पे मेरे को दिखते रहता है। नीचे 
+
+
+
+00:06:53,004 --> 00:07:01,184 [Speaker 0]
+
+API से fetch करता है और same to same यहां पे दिखाता है। ये खाली तुमको दिखाता है इसमें कुछ आप यहां पे जाके कर नहीं सकते। हम्म। 
+
+
+
+00:07:02,384 --> 00:07:21,384 [Speaker 0]
+
+हां ये view है तो view मतलब दिखता है इसमें से कोई part भी pending है तो मुझे 223 part तो मैं चला जाऊंगा check करूंगा क्या है? Expiring today दिख रहा है 25 तो expiring 25 को मैं तुरंत जाऊंगा delivery हो गया तो tension नहीं है अगर delivery नहीं हुआ तो मैं उसको update करूंगा अगले दो दिन के लिए। तो उसके लिए वो दिखता रहता है। 
+
+
+
+00:07:23,144 --> 00:07:36,224 [Speaker 0]
+
+हां ये government का ही original है तो उसका जो है government का जो दिखता है वो एक company ने एक लेके रखा है उसके through अपन API लेते हैं। हम्म। बराबर। 
+
+
+
+00:07:38,004 --> 00:07:51,824 [Speaker 0]
+
+तो ये खाली वो dashboard है। ठीक है। तो उसका API अपने को भी sync करके और उसमें अगर आप directly यहां से कुछ change कर सकते हो और best हो जाएगा। इसका मैंने आपको दिखाऊंगा मैं आपको अपना easy way bill का। 
+
+
+
+00:07:54,664 --> 00:08:04,904 [Speaker 0]
+
+मैं, मैं किस level में हूं उसमें ना मैं directly जाके change कर सकता हूं login करके। तो वो चीज हम यहां से कर सकते हैं, कर सकते हैं क्या? क्योंकि everything is linked. 
+
+
+
+00:08:09,844 --> 00:08:12,544 [Speaker 0]
+
+मेरे को एक पांच minute का break देंगे। हां।
+
+
+

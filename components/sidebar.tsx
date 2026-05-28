@@ -291,11 +291,53 @@ function CollapsedItem({ item, pathname }: { item: NavItem; pathname: string }) 
   );
 }
 
+import { canAccessPath, type UserType } from '@/lib/permissions';
+import { logoutAction } from '@/app/(auth)/login/actions';
+
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   mobileOpen: boolean;
   onMobileClose: () => void;
+  userType?: UserType;
+  userFullName?: string;
+  userTitle?: string;
+}
+
+const USER_TYPE_LABEL: Record<UserType, string> = {
+  employee: 'Employee',
+  manager: 'Manager',
+  admin: 'Administrator',
+  super_admin: 'Super Admin',
+};
+
+function userInitials(name: string): string {
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
+}
+
+function filterNavGroups(groups: NavGroup[], userType: UserType | undefined): NavGroup[] {
+  if (!userType) return groups;
+  return groups
+    .map((g) => {
+      const items = g.items
+        .map((item) => {
+          if (item.children) {
+            const visibleChildren = item.children.filter((c) => canAccessPath(userType, c.href));
+            if (visibleChildren.length === 0) return null;
+            return { ...item, children: visibleChildren };
+          }
+          if (item.href && !canAccessPath(userType, item.href)) return null;
+          return item;
+        })
+        .filter((x): x is NavItem => x !== null);
+      return { ...g, items };
+    })
+    .filter((g) => g.items.length > 0);
 }
 
 export default function Sidebar({
@@ -303,7 +345,15 @@ export default function Sidebar({
   onToggle,
   mobileOpen,
   onMobileClose,
+  userType,
+  userFullName,
+  userTitle,
 }: SidebarProps) {
+  const navGroups = React.useMemo(() => filterNavGroups(NAV_GROUPS, userType), [userType]);
+  const allItems = React.useMemo(() => navGroups.flatMap((g) => g.items), [navGroups]);
+  const displayName = userFullName ?? 'User';
+  const initialsText = userInitials(displayName);
+  const subtitle = userTitle ?? (userType ? USER_TYPE_LABEL[userType] : '—');
   const pathname = usePathname();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
@@ -391,13 +441,13 @@ export default function Sidebar({
         <nav className='flex-1 overflow-y-auto overflow-x-hidden py-4 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-stroke-soft-200'>
           {showRail ? (
             <div className='flex flex-col items-center gap-1 px-2'>
-              {ALL_ITEMS.map((item) => (
+              {allItems.map((item) => (
                 <CollapsedItem key={item.label} item={item} pathname={pathname} />
               ))}
             </div>
           ) : (
             <div className='flex flex-col gap-6 px-3'>
-              {NAV_GROUPS.map((group, gi) => (
+              {navGroups.map((group, gi) => (
                 <div key={gi} className='flex flex-col gap-1'>
                   {group.title && (
                     <p className='mb-1 px-3 text-subheading-2xs uppercase tracking-wider text-text-soft-400'>
@@ -423,7 +473,7 @@ export default function Sidebar({
                   className='flex w-full items-center justify-center rounded-lg p-1 transition hover:bg-bg-weak-50'
                 >
                   <Avatar.Root size='32' color='blue'>
-                    GN
+                    {initialsText}
                   </Avatar.Root>
                 </button>
               ) : (
@@ -432,14 +482,14 @@ export default function Sidebar({
                   className='flex w-full items-center gap-2.5 rounded-lg p-2 text-left transition hover:bg-bg-weak-50'
                 >
                   <Avatar.Root size='40' color='blue'>
-                    GN
+                    {initialsText}
                     <Avatar.Indicator position='bottom'>
                       <Avatar.Status status='online' />
                     </Avatar.Indicator>
                   </Avatar.Root>
                   <div className='min-w-0 flex-1'>
-                    <p className='truncate text-label-sm text-text-strong-950'>Ganesh</p>
-                    <p className='truncate text-paragraph-xs text-text-sub-600'>Admin Manager</p>
+                    <p className='truncate text-label-sm text-text-strong-950'>{displayName}</p>
+                    <p className='truncate text-paragraph-xs text-text-sub-600'>{subtitle}</p>
                   </div>
                   <RiArrowDownSLine size={18} className='shrink-0 text-text-soft-400' />
                 </button>
@@ -459,12 +509,15 @@ export default function Sidebar({
                 </Link>
               </Dropdown.Item>
               <Dropdown.Separator />
-              <Dropdown.Item asChild className='text-error-base'>
-                <Link href='/login'>
-                  <Dropdown.ItemIcon as={RiLogoutBoxLine} className='text-error-base' />
+              <form action={logoutAction}>
+                <button
+                  type='submit'
+                  className='flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-paragraph-sm text-error-base transition hover:bg-error-lighter'
+                >
+                  <RiLogoutBoxLine size={14} />
                   Sign out
-                </Link>
-              </Dropdown.Item>
+                </button>
+              </form>
             </Dropdown.Content>
           </Dropdown.Root>
         </div>

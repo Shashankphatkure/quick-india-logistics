@@ -19,12 +19,22 @@ import {
 
 const ThemeSwitch = dynamic(() => import('./theme-switch'), { ssr: false });
 
+import { logoutAction } from '@/app/(auth)/login/actions';
+import type { AppShellUser } from './app-shell';
+
 interface AppHeaderProps {
   onMenuToggle: () => void;
   sidebarCollapsed: boolean;
+  user?: AppShellUser;
 }
 
-export default function AppHeader({ onMenuToggle, sidebarCollapsed }: AppHeaderProps) {
+function initials(name: string): string {
+  return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+}
+
+export default function AppHeader({ onMenuToggle, sidebarCollapsed, user }: AppHeaderProps) {
+  const displayName = user?.fullName?.split(' ')[0] ?? 'User';
+  const initialsText = user ? initials(user.fullName) : 'U';
   return (
     <header
       className={cn(
@@ -90,10 +100,10 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed }: AppHeaderP
           <Dropdown.Trigger asChild>
             <button className="flex items-center gap-2 rounded-lg px-1 py-1 transition hover:bg-bg-weak-50 sm:px-2">
               <Avatar.Root size="24" color="blue">
-                GN
+                {initialsText}
               </Avatar.Root>
               <span className="hidden text-paragraph-sm font-medium text-text-strong-950 sm:block">
-                Ganesh
+                {displayName}
               </span>
               <RiArrowDownSLine size={13} className="hidden text-text-sub-600 sm:block" />
             </button>
@@ -108,10 +118,15 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed }: AppHeaderP
               Settings
             </Dropdown.Item>
             <Dropdown.Separator />
-            <Dropdown.Item className="text-state-error-base">
-              <Dropdown.ItemIcon as={RiLogoutBoxLine} />
-              Log out
-            </Dropdown.Item>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-paragraph-sm text-error-base transition hover:bg-error-lighter"
+              >
+                <RiLogoutBoxLine size={14} />
+                Log out
+              </button>
+            </form>
           </Dropdown.Content>
         </Dropdown.Root>
       </div>

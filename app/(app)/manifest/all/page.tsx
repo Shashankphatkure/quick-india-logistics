@@ -1,39 +1,49 @@
-'use client';
 import React from 'react';
-import Link from 'next/link';
 import * as Button from '@/components/ui/button';
+import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
-import * as Pagination from '@/components/ui/pagination';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Tooltip from '@/components/ui/tooltip';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilePaperLine, RiFilterLine, RiDownloadLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
-import { cn } from '@/utils/cn';
+import { RiSearchLine, RiFilterLine, RiFilePaperLine } from '@remixicon/react';
+import { listManifests, countManifests, getManifestCounts, MANIFEST_PAGE_SIZE } from '@/lib/db/manifests';
+import { currentOrgId } from '@/lib/tenant';
+import PaginationLinks from '@/components/pagination-links';
+import ManifestTabs from '@/components/manifest-tabs';
 
-const MANIFEST_TABS = [
-  { label: 'Pending For Dispatch', href: '/manifest/pending-dispatch' },
-  { label: 'Hub Dispatch', href: '/manifest/hub-dispatch' },
-  { label: 'Forwarding Details', href: '/manifest/forwarding' },
-  { label: 'Pending To Depart', href: '/manifest/pending-depart' },
-  { label: 'Incoming Manifest', href: '/manifest/incoming' },
-  { label: 'All Manifest', href: '/manifest/all' },
-];
+const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'orange' | 'green' | 'purple' }> = {
+  rough: { label: 'Rough', color: 'gray' },
+  final: { label: 'Final', color: 'blue' },
+  departed: { label: 'Departed', color: 'orange' },
+  arrived: { label: 'Arrived', color: 'purple' },
+  received: { label: 'Received', color: 'green' },
+};
 
-const MANIFESTS = [
-  { no: 'QLIM096271', date: '12-05-2026 19:59', verifiedBy: 'Customer Support Executive', status: 'Active', origin: 'Lucknow', destination: 'Gorakhpur', coloader: 'Patel Integrated Logistics Ltd', coloaderNo: '111803-08', bags: 0, boxes: 1, weight: 2, orders: 787477 },
-];
+const MODE_LABEL: Record<string, string> = {
+  local: 'Local', air: 'Air', surface: 'Surface', cargo: 'Cargo',
+  train: 'Train', courier: 'Courier', warehouse: 'Warehouse', hub_transfer: 'Hub Transfer',
+};
 
-export default function AllManifestPage() {
+export default async function AllManifestsPage({ searchParams }: { searchParams?: { search?: string; state?: string; page?: string } }) {
+  const orgId = await currentOrgId();
+  const search = searchParams?.search?.trim() || undefined;
+  const state = searchParams?.state;
+  const page = Math.max(1, Number(searchParams?.page) || 1);
+
+  const [rows, total, counts] = await Promise.all([
+    listManifests({ orgId, search, state, page }),
+    countManifests({ orgId, search, state }),
+    getManifestCounts(orgId),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / MANIFEST_PAGE_SIZE));
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
         icon={RiFilePaperLine}
-        iconColor="bg-feature-lighter text-feature-base"
-        title="All Manifest"
-        subtitle="View and manage all manifests"
-        breadcrumbs={[{ label: 'Manifest', href: '/manifest/all' }, { label: 'All Manifest' }]}
+        title="All Manifests"
+        subtitle="Outbound shipment manifests across all states"
+        breadcrumbs={[{ label: 'Manifest', href: '/manifest/all' }, { label: 'All' }]}
       >
         <Button.Root variant="neutral" mode="stroke" size="small">
           <Button.Icon as={RiFilterLine} />Filter
@@ -41,86 +51,54 @@ export default function AllManifestPage() {
       </PageHeader>
 
       <StatsStrip stats={[
-        { label: 'Total Manifests', value: 1, trend: 5.2, trendLabel: 'this week' },
-        { label: 'Active', value: 1, trend: 0 },
-        { label: 'Total Bags', value: 0 },
-        { label: 'Total Boxes', value: 1 },
+        { label: 'Total Manifests', value: counts.total, trend: 0, trendLabel: 'all time' },
+        { label: 'Final', value: counts.final, trend: 0, trendLabel: 'all time' },
+        { label: 'Departed', value: counts.departed, trend: 0, trendLabel: 'all time' },
+        { label: 'Received', value: counts.received, trend: 0, trendLabel: 'all time' },
       ]} />
 
-      <div className="flex gap-1 overflow-x-auto rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs">
-        {MANIFEST_TABS.map(t => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={cn(
-              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium transition',
-              t.href === '/manifest/all'
-                ? 'bg-primary-base text-static-white'
-                : 'text-text-sub-600 hover:bg-bg-weak-50',
-            )}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+      <ManifestTabs active="/manifest/all" />
 
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
+        <div className="border-b border-stroke-soft-200 px-4 py-3">
+          <form method="GET">
+            <Input.Root size="small" className="w-full max-w-xs">
+              <Input.Wrapper>
+                <Input.Icon as={RiSearchLine} />
+                <Input.Input name="search" defaultValue={search ?? ''} placeholder="Search manifest no..." />
+              </Input.Wrapper>
+            </Input.Root>
+          </form>
+        </div>
         <Table.Root>
           <Table.Header>
-            <Table.Row>
-              {['Manifest No', 'Date', 'Verified By', 'Status', 'Origin', 'Destination', 'Coloader', 'Coloader No', 'PDF', 'Bags', 'Boxes', 'Weight', 'Orders', 'Images'].map(col => (
-                <Table.Head key={col}>{col}</Table.Head>
-              ))}
-            </Table.Row>
+            <Table.Row>{['Manifest No', 'Date', 'From → To', 'Mode', 'Vendor / Vehicle', 'AWB', 'Orders', 'Bags / Boxes', 'Weight (kg)', 'State'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
           </Table.Header>
           <Table.Body>
-            {MANIFESTS.map(m => (
-              <Table.Row key={m.no}>
-                <Table.Cell className="h-auto py-2.5 font-medium text-primary-base cursor-pointer hover:underline text-paragraph-sm whitespace-nowrap">{m.no}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{m.date}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.verifiedBy}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <Badge.Root size="medium" variant="light" color="green"><Badge.Dot />{m.status}</Badge.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.origin}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.destination}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.coloader}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.coloaderNo}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <Tooltip.Root>
-                    <Tooltip.Trigger asChild>
-                      <CompactButton.Root variant="ghost" size="large">
-                        <CompactButton.Icon as={RiDownloadLine} />
-                      </CompactButton.Root>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>Download PDF</Tooltip.Content>
-                  </Tooltip.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.bags}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.boxes}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.weight}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-xs text-text-sub-600">{m.orders}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <Tooltip.Root>
-                    <Tooltip.Trigger asChild>
-                      <CompactButton.Root variant="ghost" size="large">
-                        <CompactButton.Icon as={RiDownloadLine} />
-                      </CompactButton.Root>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>Download images</Tooltip.Content>
-                  </Tooltip.Root>
-                </Table.Cell>
-              </Table.Row>
-            ))}
+            {rows.length === 0 ? (
+              <Table.Row><Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No manifests found</Table.Cell></Table.Row>
+            ) : rows.map(m => {
+              const sl = STATE_LABEL[m.state] ?? { label: m.state, color: 'gray' as const };
+              return (
+                <Table.Row key={m.id}>
+                  <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{m.manifest_no}</span></Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.manifest_date}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name} <span className="text-text-disabled-300">→</span> {m.to_branch_name}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{MODE_LABEL[m.mode] ?? m.mode}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.vendor_name ?? m.vehicle_no ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.airway_bill_no ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.order_count}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_bags} / {m.total_boxes}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.coloader_chargeable_kg ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3"><Badge.Root size="medium" variant="light" color={sl.color}><Badge.Dot />{sl.label}</Badge.Root></Table.Cell>
+                </Table.Row>
+              );
+            })}
           </Table.Body>
         </Table.Root>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
-          <span className="text-paragraph-xs text-text-sub-600">Showing 1-1 of 1</span>
-          <Pagination.Root variant="rounded">
-            <Pagination.NavButton><Pagination.NavIcon as={RiArrowLeftSLine} /></Pagination.NavButton>
-            <Pagination.Item current>1</Pagination.Item>
-            <Pagination.NavButton><Pagination.NavIcon as={RiArrowRightSLine} /></Pagination.NavButton>
-          </Pagination.Root>
+          <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*MANIFEST_PAGE_SIZE+1}-{Math.min(page*MANIFEST_PAGE_SIZE, total)} of {total}</span>
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/manifest/all" query={{ search, state }} />
         </div>
       </div>
     </div>

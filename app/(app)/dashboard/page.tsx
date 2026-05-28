@@ -1,32 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
-import * as Select from '@/components/ui/select';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
 import StatTile, { type StatTone } from '@/components/stat-tile';
 import {
-  RiDashboard3Line,
-  RiArrowRightLine,
-  RiTruckLine,
-  RiTimeLine,
-  RiCheckboxCircleLine,
-  RiBox3Line,
-  RiCalendarLine,
-  RiMoreLine,
-  RiFilePaperLine,
-  RiSnowflakeLine,
-  RiAlertLine,
+  RiDashboard3Line, RiArrowRightLine, RiTruckLine, RiTimeLine,
+  RiCheckboxCircleLine, RiBox3Line, RiCalendarLine, RiMoreLine,
+  RiFilePaperLine, RiSnowflakeLine, RiAlertLine,
 } from '@remixicon/react';
-
-const RECENT_ACTIVITIES = [
-  { id: 1, docket: '738396', event: 'Order Received', branch: 'QIL-Amritsar', time: '10:32 AM', color: 'blue' as const },
-  { id: 2, docket: '4188696', event: 'Shipment In Transit', branch: 'QIL-Delhi', time: '10:15 AM', color: 'orange' as const },
-  { id: 3, docket: '738433', event: 'Delivered', branch: 'QIL-Amritsar', time: '09:58 AM', color: 'green' as const },
-  { id: 4, docket: '750424', event: 'Arrived At Hub', branch: 'QIL-Mumbai', time: '09:30 AM', color: 'blue' as const },
-  { id: 5, docket: '4187812', event: 'Manifest Created', branch: 'QIL-Delhi', time: '09:12 AM', color: 'purple' as const },
-  { id: 6, docket: '4187204', event: 'Out For Delivery', branch: 'QIL-Amritsar', time: '08:55 AM', color: 'orange' as const },
-  { id: 7, docket: '720011', event: 'Delivered', branch: 'QIL-Bengaluru', time: '08:40 AM', color: 'green' as const },
-];
+import { getDashboardMetrics, getRecentActivities } from '@/lib/db/dashboard';
+import { currentOrgId } from '@/lib/tenant';
+import { getSession } from '@/lib/auth';
 
 const EVENT_COLOR: Record<string, string> = {
   blue: 'bg-information-lighter text-information-base',
@@ -36,49 +20,46 @@ const EVENT_COLOR: Record<string, string> = {
   red: 'bg-error-lighter text-error-base',
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const orgId = await currentOrgId();
+  const session = await getSession();
+  const branchId = session?.homeBranchId ?? session?.branchIds[0] ?? null;
+
+  const [metrics, activities] = await Promise.all([
+    getDashboardMetrics(orgId, branchId),
+    getRecentActivities(orgId, 7),
+  ]);
+
+  const today = new Date();
+  const thirtyAgo = new Date(today.getTime() - 30 * 86400000);
+  const fmt = (d: Date) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <PageHeader
         icon={RiDashboard3Line}
         title="Dashboard"
-        subtitle="Summary Dashboard For 'Amritsar' Branch"
+        subtitle={`Summary for ${session?.fullName ?? 'your branch'}`}
         breadcrumbs={[{ label: 'Dashboard' }]}
       >
         <div className="flex items-center gap-1.5 rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-3 py-1.5 shadow-regular-xs">
           <RiCalendarLine size={14} className="text-text-sub-600" />
-          <span className="text-paragraph-sm text-text-sub-600">12-04-2026</span>
-          <span className="text-text-disabled-300 mx-1">&#8594;</span>
-          <span className="text-paragraph-sm text-text-sub-600">12-05-2026</span>
+          <span className="text-paragraph-sm text-text-sub-600">{fmt(thirtyAgo)}</span>
+          <span className="text-text-disabled-300 mx-1">→</span>
+          <span className="text-paragraph-sm text-text-sub-600">{fmt(today)}</span>
         </div>
-        <Select.Root defaultValue="all" size="small">
-          <Select.Trigger className="w-32">
-            <Select.Value />
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="all">All Types</Select.Item>
-            <Select.Item value="domestic">Domestic</Select.Item>
-            <Select.Item value="international">International</Select.Item>
-          </Select.Content>
-        </Select.Root>
       </PageHeader>
 
-      {/* Main layout: content + activity sidebar */}
       <div className="flex flex-col gap-5 xl:flex-row">
-        {/* Left: stats + sections */}
         <div className="flex-1 min-w-0 space-y-5">
-          {/* Top KPI strip */}
           <StatsStrip stats={[
-            { label: 'Total Outgoing', value: 11, trend: 7.1, trendLabel: 'vs prev' },
-            { label: 'Total Incoming', value: 40, trend: 12, trendLabel: 'vs prev' },
-            { label: 'Delivered Today', value: 39, trend: 5.3, trendLabel: 'vs prev' },
-            { label: 'Pending', value: 12, trend: -2.1, trendLabel: 'vs prev' },
+            { label: 'Total Outgoing', value: metrics.outgoing, trend: 0, trendLabel: 'from my branch' },
+            { label: 'Total Incoming', value: metrics.incoming, trend: 0, trendLabel: 'to my branch' },
+            { label: 'Delivered Today', value: metrics.delivered_today, trend: 0, trendLabel: 'today' },
+            { label: 'Pending', value: metrics.pending, trend: 0, trendLabel: 'in-progress' },
           ]} />
 
-          {/* Outgoing + Incoming */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* Outgoing */}
             <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -91,17 +72,16 @@ export default function DashboardPage() {
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {([
-                  { label: 'Outgoing', value: 11, tone: 'neutral' },
-                  { label: 'Delivered', value: 0, tone: 'success' },
-                  { label: 'Pending', value: 11, tone: 'warning' },
-                  { label: 'All Pending', value: 17, tone: 'error' },
+                  { label: 'Outgoing', value: metrics.outgoing_total, tone: 'neutral' },
+                  { label: 'Delivered', value: metrics.outgoing_delivered, tone: 'success' },
+                  { label: 'Pending', value: metrics.outgoing_pending, tone: 'warning' },
+                  { label: 'Aged Pending', value: metrics.outgoing_all_pending, tone: 'error' },
                 ] as { label: string; value: number; tone: StatTone }[]).map(s => (
                   <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
               </div>
             </div>
 
-            {/* Incoming */}
             <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -114,10 +94,10 @@ export default function DashboardPage() {
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {([
-                  { label: 'Incoming', value: 40, tone: 'neutral' },
-                  { label: 'Delivered', value: 39, tone: 'success' },
-                  { label: 'Pending', value: 1, tone: 'warning' },
-                  { label: 'All Pending', value: 2, tone: 'error' },
+                  { label: 'Incoming', value: metrics.incoming_total, tone: 'neutral' },
+                  { label: 'Delivered', value: metrics.incoming_delivered, tone: 'success' },
+                  { label: 'Pending', value: metrics.incoming_pending, tone: 'warning' },
+                  { label: 'Aged Pending', value: metrics.incoming_all_pending, tone: 'error' },
                 ] as { label: string; value: number; tone: StatTone }[]).map(s => (
                   <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
@@ -125,7 +105,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Cold Chain + Delay Orders */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs">
               <div className="mb-4 flex items-center gap-2">
@@ -136,8 +115,8 @@ export default function DashboardPage() {
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {([
-                  { label: 'Incoming', value: 24, tone: 'verified' },
-                  { label: 'Outgoing', value: 0, tone: 'muted' },
+                  { label: 'Incoming', value: metrics.cold_incoming, tone: 'verified' },
+                  { label: 'Outgoing', value: metrics.cold_outgoing, tone: 'muted' },
                 ] as { label: string; value: number; tone: StatTone }[]).map(s => (
                   <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
@@ -153,10 +132,10 @@ export default function DashboardPage() {
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {([
-                  { label: 'Incoming 24h', value: 40, tone: 'warning' },
-                  { label: 'Outgoing 24h', value: 11, tone: 'warning' },
-                  { label: 'Incoming 40h', value: 38, tone: 'error' },
-                  { label: 'Outgoing 40h', value: 11, tone: 'error' },
+                  { label: 'Incoming 24h', value: metrics.delay_incoming_24h, tone: 'warning' },
+                  { label: 'Outgoing 24h', value: metrics.delay_outgoing_24h, tone: 'warning' },
+                  { label: 'Incoming 40h', value: metrics.delay_incoming_40h, tone: 'error' },
+                  { label: 'Outgoing 40h', value: metrics.delay_outgoing_40h, tone: 'error' },
                 ] as { label: string; value: number; tone: StatTone }[]).map(s => (
                   <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
@@ -164,7 +143,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Manifest Hub + Quick Links */}
           <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 p-5 shadow-regular-xs">
             <div className="mb-4 flex items-center gap-2">
               <div className="flex size-7 items-center justify-center rounded-lg bg-feature-lighter">
@@ -174,8 +152,8 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {[
-                { title: 'Incoming Orders', received: 39, notReceived: 1 },
-                { title: 'Outgoing Orders', received: 8, notReceived: 3 },
+                { title: 'Incoming Manifests', received: metrics.manifest_incoming_received, notReceived: metrics.manifest_incoming_not_received },
+                { title: 'Outgoing Manifests', received: metrics.manifest_outgoing_received, notReceived: metrics.manifest_outgoing_not_received },
               ].map(g => (
                 <div key={g.title} className="space-y-2">
                   <p className="text-subheading-2xs uppercase tracking-wider text-text-sub-600">{g.title}</p>
@@ -194,7 +172,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Quick links */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               { label: 'Add Order', href: '/booking/orders/add', icon: RiTruckLine, color: 'bg-primary-alpha-10 text-primary-base' },
@@ -219,27 +196,28 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right: Recent Activity feed */}
         <div className="w-full shrink-0 xl:w-72">
           <div className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs xl:sticky xl:top-[80px]">
             <div className="flex items-center justify-between border-b border-stroke-soft-200 px-5 py-4">
               <div>
                 <p className="text-label-sm text-text-strong-950">Recent Activities</p>
-                <p className="text-paragraph-xs text-text-sub-600 mt-0.5">{RECENT_ACTIVITIES.length} events today</p>
+                <p className="text-paragraph-xs text-text-sub-600 mt-0.5">{activities.length} latest events</p>
               </div>
               <Link href="/booking/orders" className="text-paragraph-xs font-medium text-primary-base hover:underline no-underline">
                 View all
               </Link>
             </div>
             <div className="divide-y divide-stroke-soft-200">
-              {RECENT_ACTIVITIES.map(a => (
+              {activities.length === 0 ? (
+                <p className="px-5 py-4 text-paragraph-sm text-text-sub-600">No recent activity</p>
+              ) : activities.map(a => (
                 <div key={a.id} className="flex items-start gap-3 px-4 py-3 hover:bg-bg-weak-50 transition">
                   <div className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${EVENT_COLOR[a.color]}`}>
                     {a.docket.slice(-2)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-paragraph-sm font-medium text-text-strong-950">{a.event}</p>
-                    <p className="text-paragraph-xs text-text-sub-600">#{a.docket} &bull; {a.branch}</p>
+                    <p className="text-paragraph-xs text-text-sub-600">#{a.docket} • {a.branch}</p>
                   </div>
                   <p className="shrink-0 text-[11px] text-text-disabled-300">{a.time}</p>
                 </div>

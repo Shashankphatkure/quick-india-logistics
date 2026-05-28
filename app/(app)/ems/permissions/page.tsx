@@ -1,22 +1,14 @@
-'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import * as Button from '@/components/ui/button';
-import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
-import * as Pagination from '@/components/ui/pagination';
-import * as Drawer from '@/components/ui/drawer';
-import * as Label from '@/components/ui/label';
-import * as Select from '@/components/ui/select';
-import * as Divider from '@/components/ui/divider';
-import { Root as Checkbox } from '@/components/ui/checkbox';
 import PageHeader from '@/components/page-header';
-import {
-  RiAddLine, RiSearchLine, RiFilterLine, RiArrowUpDownLine,
-  RiArrowLeftSLine, RiArrowRightSLine, RiShieldCheckLine,
-} from '@remixicon/react';
+import StatsStrip from '@/components/stats-strip';
+import { RiShieldKeyholeLine, RiCheckLine, RiCloseLine } from '@remixicon/react';
 import { cn } from '@/utils/cn';
+import { canAccessPath, type UserType } from '@/lib/permissions';
+import { one } from '@/lib/db';
+import { currentOrgId } from '@/lib/tenant';
 
 const EMS_TABS = [
   { label: 'Login Details', href: '/ems/login-details' },
@@ -27,97 +19,112 @@ const EMS_TABS = [
   { label: 'Change Password', href: '/ems/change-password' },
 ];
 
-const PERMISSIONS = [
-  { model: 'Booking', category: 'Dashboard', subModel: 'Booking Date & Time', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Dashboard', category: 'Dashboard', subModel: 'Home +5', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Ems', category: 'Dashboard', subModel: 'Change Password', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Ems', category: 'Pages', subModel: 'Login Details +4', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Ewaybill', category: 'Pages', subModel: 'Eway Dashboard', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Master', category: 'Pages', subModel: 'Assets +12', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Booking', category: 'Pages', subModel: 'Orders +8', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Runsheet', category: 'Pages', subModel: 'Pending Delivery +4', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Manifest', category: 'Pages', subModel: 'Pending For Dispatch +6', createdBy: 'Elebcube', createdAt: '11-10-2024' },
-  { model: 'Analytics', category: 'Pages', subModel: 'Reports', createdBy: 'Elebcube', createdAt: '11-10-2024' },
+// Modules grouped by area for the matrix
+const MODULES: { area: string; routes: { label: string; path: string }[] }[] = [
+  {
+    area: 'Operations',
+    routes: [
+      { label: 'Dashboard', path: '/dashboard' },
+      { label: 'EwayBill', path: '/ewaybill' },
+      { label: 'Booking · Orders', path: '/booking/orders' },
+      { label: 'Booking · Delivery Info', path: '/booking/delivery-info' },
+      { label: 'Manifest · All', path: '/manifest/all' },
+      { label: 'Manifest · Pending Dispatch', path: '/manifest/pending-dispatch' },
+      { label: 'Manifest · Forwarding', path: '/manifest/forwarding' },
+      { label: 'Manifest · Pending Depart', path: '/manifest/pending-depart' },
+      { label: 'Manifest · Incoming', path: '/manifest/incoming' },
+      { label: 'Runsheet · All', path: '/runsheet/all' },
+      { label: 'Runsheet · Pending Delivery', path: '/runsheet/pending-delivery' },
+    ],
+  },
+  {
+    area: 'Master',
+    routes: [
+      { label: 'Commodities', path: '/master/commodities' },
+      { label: 'Branches', path: '/master/branches' },
+      { label: 'Vendors', path: '/master/vendors' },
+      { label: 'Vehicles', path: '/master/vehicles' },
+      { label: 'Assets', path: '/master/assets' },
+    ],
+  },
+  {
+    area: 'Analytics',
+    routes: [
+      { label: 'Reports', path: '/analytics/reports' },
+    ],
+  },
+  {
+    area: 'EMS (Admin)',
+    routes: [
+      { label: 'Users', path: '/ems/users' },
+      { label: 'Departments', path: '/ems/departments' },
+      { label: 'Designations', path: '/ems/designations' },
+      { label: 'Login Details', path: '/ems/login-details' },
+      { label: 'Permissions', path: '/ems/permissions' },
+      { label: 'Change Password', path: '/ems/change-password' },
+    ],
+  },
+  {
+    area: 'Organization',
+    routes: [
+      { label: 'Organization', path: '/organization' },
+    ],
+  },
 ];
 
-const CATEGORY_COLOR: Record<string, 'blue' | 'purple'> = {
-  Dashboard: 'blue',
-  Pages: 'purple',
-};
-
-interface PermissionFormField {
-  label: string;
-  required?: boolean;
-  isSelect?: boolean;
-  ph?: string;
-}
-
-const PERMISSION_FIELDS: PermissionFormField[] = [
-  { label: 'Model Name', required: true, isSelect: true },
-  { label: 'Category', required: true, isSelect: true },
-  { label: 'Sub Model Name', required: true, ph: 'Enter sub model name' },
+const ROLES: { type: UserType; label: string; color: 'gray' | 'blue' | 'purple' | 'green' }[] = [
+  { type: 'employee',    label: 'Employee',    color: 'gray' },
+  { type: 'manager',     label: 'Manager',     color: 'blue' },
+  { type: 'admin',       label: 'Admin',       color: 'purple' },
+  { type: 'super_admin', label: 'Super Admin', color: 'green' },
 ];
 
-function FormField({ field }: { field: PermissionFormField }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <Label.Root>
-        {field.label}
-        {field.required && <Label.Asterisk />}
-      </Label.Root>
-      {field.isSelect ? (
-        <Select.Root size="small">
-          <Select.Trigger>
-            <Select.Value placeholder={`Select ${field.label.toLowerCase()}`} />
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="placeholder">—</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      ) : (
-        <Input.Root size="small">
-          <Input.Wrapper>
-            <Input.Input placeholder={field.ph} />
-          </Input.Wrapper>
-        </Input.Root>
-      )}
-    </div>
+export default async function PermissionsPage() {
+  const orgId = await currentOrgId();
+  const counts = await one<Record<UserType, string>>(
+    `select
+       count(*) filter (where user_type='employee')::text as employee,
+       count(*) filter (where user_type='manager')::text as manager,
+       count(*) filter (where user_type='admin')::text as admin,
+       count(*) filter (where user_type='super_admin')::text as super_admin
+     from users where org_id=$1`,
+    [orgId],
   );
-}
 
-export default function PermissionsPage() {
-  const [showAdd, setShowAdd] = useState(false);
-  const [selected, setSelected] = useState<number[]>([]);
-  const allSelected = selected.length === PERMISSIONS.length;
-
-  const toggleAll = () => setSelected(allSelected ? [] : PERMISSIONS.map((_, i) => i));
-  const toggle = (i: number) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
+  const allowedCount: Record<UserType, number> = { employee: 0, manager: 0, admin: 0, super_admin: 0 };
+  const totalPaths = MODULES.reduce((s, m) => s + m.routes.length, 0);
+  for (const m of MODULES) {
+    for (const r of m.routes) {
+      for (const role of ROLES) {
+        if (canAccessPath(role.type, r.path)) allowedCount[role.type]++;
+      }
+    }
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PageHeader
-        icon={RiShieldCheckLine}
+        icon={RiShieldKeyholeLine}
         iconColor="bg-feature-lighter text-feature-base"
         title="Permissions"
-        subtitle="Manage module access control"
-        breadcrumbs={[{ label: 'EMS', href: '/ems/users' }, { label: 'Permission' }]}
-      >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
-        <Button.Root size="small" onClick={() => setShowAdd(true)}>
-          <Button.Icon as={RiAddLine} />Add Permission
-        </Button.Root>
-      </PageHeader>
+        subtitle="Role-based access — which routes each user role can reach"
+        breadcrumbs={[{ label: 'EMS' }, { label: 'Permissions' }]}
+      />
 
-      {/* EMS sub-tabs */}
+      <StatsStrip stats={ROLES.map((r) => ({
+        label: r.label,
+        value: `${allowedCount[r.type]} / ${totalPaths}`,
+        trend: 0,
+        trendLabel: `${counts?.[r.type] ?? 0} users`,
+      }))} />
+
       <div className="flex gap-0.5 overflow-x-auto rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs">
-        {EMS_TABS.map(t => (
+        {EMS_TABS.map((t) => (
           <Link
             key={t.href}
             href={t.href}
             className={cn(
-              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-xs font-medium no-underline transition',
+              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-sm font-medium no-underline transition',
               t.href === '/ems/permissions'
                 ? 'bg-primary-base text-static-white shadow-regular-xs'
                 : 'text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
@@ -128,101 +135,53 @@ export default function PermissionsPage() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
-        <div className="border-b border-stroke-soft-200 p-3">
-          <Input.Root size="small" className="w-full max-w-xs">
-            <Input.Wrapper>
-              <Input.Icon as={RiSearchLine} />
-              <Input.Input placeholder="Search permissions..." />
-            </Input.Wrapper>
-          </Input.Root>
-        </div>
-
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.Head className="w-10">
-                <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
-              </Table.Head>
-              {['Model Name', 'Category', 'Sub Model Name', 'Created By', 'Created At'].map(col => (
-                <Table.Head key={col}>
-                  <span className="flex items-center gap-1 whitespace-nowrap">
-                    {col}<RiArrowUpDownLine size={11} className="text-text-disabled-300" />
-                  </span>
-                </Table.Head>
-              ))}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {PERMISSIONS.map((p, i) => (
-              <Table.Row key={i}>
-                <Table.Cell className="h-auto py-2.5 w-10">
-                  <Checkbox checked={selected.includes(i)} onCheckedChange={() => toggle(i)} />
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <span className="text-paragraph-sm font-medium text-primary-base cursor-pointer hover:underline">
-                    {p.model}
-                  </span>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5">
-                  <Badge.Root size="small" variant="lighter" color={CATEGORY_COLOR[p.category] ?? 'gray'}>
-                    {p.category}
-                  </Badge.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-sm text-text-sub-600">{p.subModel}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-sm text-text-sub-600">{p.createdBy}</Table.Cell>
-                <Table.Cell className="h-auto py-2.5 text-paragraph-sm text-text-sub-600">{p.createdAt}</Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stroke-soft-200 px-4 py-3">
-          <span className="text-paragraph-xs text-text-sub-600">1-10 of 15</span>
-          <Pagination.Root variant="rounded">
-            <Pagination.NavButton><Pagination.NavIcon as={RiArrowLeftSLine} /></Pagination.NavButton>
-            <Pagination.Item current>1</Pagination.Item>
-            <Pagination.Item>2</Pagination.Item>
-            <Pagination.NavButton><Pagination.NavIcon as={RiArrowRightSLine} /></Pagination.NavButton>
-          </Pagination.Root>
-        </div>
+      <div className="rounded-xl border border-information-light bg-information-lighter p-4 text-paragraph-sm text-information-dark">
+        <p className="font-medium">Path-prefix rules — defined in <code className="font-mono text-paragraph-xs">lib/permissions.ts</code></p>
+        <p className="text-paragraph-xs text-information-base mt-1">
+          Most-specific path match wins. <strong>Super Admin</strong> always passes.
+          Granular per-action permissions (transcripts: &ldquo;Excel-importable matrix per department&rdquo;) are deferred — this current view shows route-level access only.
+        </p>
       </div>
 
-      {/* Add Permission Drawer */}
-      <Drawer.Root open={showAdd} onOpenChange={setShowAdd}>
-        <Drawer.Content>
-          <Drawer.Header>
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-feature-lighter text-feature-base">
-              <RiShieldCheckLine size={20} />
-            </div>
-            <div className="flex-1">
-              <Drawer.Title>Add Permission</Drawer.Title>
-              <p className="text-paragraph-sm text-text-sub-600">Define a new module access rule</p>
-            </div>
-          </Drawer.Header>
-          <Divider.Root />
-
-          <Drawer.Body className="space-y-4 overflow-y-auto p-5">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {PERMISSION_FIELDS.map(f => (
-                <FormField key={f.label} field={f} />
+      {MODULES.map((m) => (
+        <div key={m.area} className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
+          <div className="border-b border-stroke-soft-200 px-4 py-2.5">
+            <h3 className="text-subheading-xs uppercase tracking-wider text-text-sub-600">{m.area}</h3>
+          </div>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head>Module / Route</Table.Head>
+                {ROLES.map((r) => <Table.Head key={r.type} className="text-center">{r.label}</Table.Head>)}
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {m.routes.map((r) => (
+                <Table.Row key={r.path}>
+                  <Table.Cell className="h-auto py-3">
+                    <div>
+                      <p className="text-paragraph-sm font-medium text-text-strong-950">{r.label}</p>
+                      <p className="text-paragraph-xs text-text-disabled-300 font-mono">{r.path}</p>
+                    </div>
+                  </Table.Cell>
+                  {ROLES.map((role) => {
+                    const allowed = canAccessPath(role.type, r.path);
+                    return (
+                      <Table.Cell key={role.type} className="h-auto py-3 text-center">
+                        {allowed ? (
+                          <span className="inline-flex size-6 items-center justify-center rounded-full bg-success-lighter text-success-base"><RiCheckLine size={13} /></span>
+                        ) : (
+                          <span className="inline-flex size-6 items-center justify-center rounded-full bg-bg-weak-50 text-text-disabled-300"><RiCloseLine size={13} /></span>
+                        )}
+                      </Table.Cell>
+                    );
+                  })}
+                </Table.Row>
               ))}
-            </div>
-          </Drawer.Body>
-
-          <Divider.Root />
-          <Drawer.Footer>
-            <Drawer.Close asChild>
-              <Button.Root variant="neutral" mode="stroke" size="small" className="w-full">
-                Cancel
-              </Button.Root>
-            </Drawer.Close>
-            <Button.Root size="small" className="w-full" onClick={() => setShowAdd(false)}>
-              Save Permission
-            </Button.Root>
-          </Drawer.Footer>
-        </Drawer.Content>
-      </Drawer.Root>
+            </Table.Body>
+          </Table.Root>
+        </div>
+      ))}
     </div>
   );
 }

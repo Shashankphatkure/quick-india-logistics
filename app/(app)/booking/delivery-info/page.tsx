@@ -1,32 +1,34 @@
-'use client';
-import React, { useState } from 'react';
-import * as Input from '@/components/ui/input';
+import React from 'react';
 import * as Button from '@/components/ui/button';
+import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
-import * as Modal from '@/components/ui/modal';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Tooltip from '@/components/ui/tooltip';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import {
-  RiSearchLine, RiFilterLine, RiZoomInLine, RiRefreshLine,
-  RiExternalLinkLine, RiTruckLine, RiArrowUpDownLine,
-} from '@remixicon/react';
-import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
+import { RiSearchLine, RiFilterLine, RiTruckLine, RiArrowUpDownLine } from '@remixicon/react';
 import { cn } from '@/utils/cn';
+import { listDeliveries, countDeliveries, getDeliveryCounts, DELIVERY_PAGE_SIZE, type DeliveryTab } from '@/lib/db/deliveries';
+import { currentOrgId } from '@/lib/tenant';
+import PaginationLinks from '@/components/pagination-links';
 
-const TABS = ['Delivery Info', 'Undelivered Info', 'Mark Delivered'];
-
-const DELIVERIES = [
-  { docket: '4107204', branch: 'QIL-amritsar', person: 'CGHS WALLNESS', phone: 'null', dateTime: '07-05-2026 14:11', status: 'Active' },
-  { docket: '4107058', branch: 'QIL-amritsar', person: 'AMRITSAR EYE HOSPITAL', phone: 'null', dateTime: '07-05-2026 14:59', status: 'Active' },
-  { docket: '4106922', branch: 'QIL-amritsar', person: 'SINGH MEDICOS', phone: '9876543210', dateTime: '06-05-2026 11:30', status: 'Active' },
+const TABS: { key: DeliveryTab; label: string }[] = [
+  { key: 'delivered', label: 'Delivery Info' },
+  { key: 'undelivered', label: 'Undelivered Info' },
+  { key: 'pending_mark', label: 'Mark Delivered' },
 ];
 
-export default function DeliveryInfoPage() {
-  const [tab, setTab] = useState(0);
-  const [podOpen, setPodOpen] = useState(false);
+export default async function DeliveryInfoPage({ searchParams }: { searchParams?: { search?: string; tab?: string; page?: string } }) {
+  const orgId = await currentOrgId();
+  const search = searchParams?.search?.trim() || undefined;
+  const tabKey = (TABS.find(t => t.key === searchParams?.tab)?.key) ?? 'delivered';
+  const page = Math.max(1, Number(searchParams?.page) || 1);
+
+  const [rows, total, counts] = await Promise.all([
+    listDeliveries({ orgId, search, page, tab: tabKey }),
+    countDeliveries({ orgId, search, tab: tabKey }),
+    getDeliveryCounts(orgId),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / DELIVERY_PAGE_SIZE));
 
   return (
     <div className="space-y-4">
@@ -34,139 +36,82 @@ export default function DeliveryInfoPage() {
         icon={RiTruckLine}
         title="Delivery Info"
         subtitle="View and manage delivery confirmations"
-        breadcrumbs={[
-          { label: 'Booking', href: '/booking/orders' },
-          { label: 'Delivery Info' },
-        ]}
+        breadcrumbs={[{ label: 'Booking', href: '/booking/orders' }, { label: 'Delivery Info' }]}
       >
         <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />
-          Filter
+          <Button.Icon as={RiFilterLine} />Filter
         </Button.Root>
       </PageHeader>
 
       <StatsStrip stats={[
-        { label: 'Total Deliveries', value: 3, trend: 0 },
-        { label: 'Active', value: 3, trend: 0 },
-        { label: 'Undelivered', value: 0, trend: 0 },
-        { label: 'Pending Mark', value: 0, trend: 0 },
+        { label: 'Total Orders', value: counts.total, trend: 0, trendLabel: 'all time' },
+        { label: 'Delivered', value: counts.delivered, trend: 0, trendLabel: 'all time' },
+        { label: 'Undelivered', value: counts.undelivered, trend: 0, trendLabel: 'all time' },
+        { label: 'Pending Mark', value: counts.pending, trend: 0, trendLabel: 'awaiting POD' },
       ]} />
 
-      {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-1 shadow-regular-xs w-fit max-w-full">
-        {TABS.map((t, i) => (
-          <Button.Root
-            key={t}
-            variant={i === tab ? 'primary' : 'neutral'}
-            mode={i === tab ? 'filled' : 'ghost'}
-            size="xsmall"
-            onClick={() => setTab(i)}
-            className="shrink-0"
-          >
-            {t}
-          </Button.Root>
+        {TABS.map(t => (
+          <a key={t.key} href={`/booking/delivery-info?tab=${t.key}`}
+            className={cn(
+              'shrink-0 rounded-lg px-3 py-1.5 text-paragraph-sm font-medium no-underline transition',
+              t.key === tabKey
+                ? 'bg-primary-base text-static-white shadow-regular-xs'
+                : 'text-text-sub-600 hover:bg-bg-weak-50 hover:text-text-strong-950',
+            )}
+          >{t.label}</a>
         ))}
       </div>
 
-      {/* Table */}
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <div className="border-b border-stroke-soft-200 p-3">
-          <Input.Root size="small" className="w-full max-w-xs">
-            <Input.Wrapper>
-              <Input.Icon as={RiSearchLine} />
-              <Input.Input placeholder="Search docket..." />
-            </Input.Wrapper>
-          </Input.Root>
+          <form method="GET">
+            <input type="hidden" name="tab" value={tabKey} />
+            <Input.Root size="small" className="w-full max-w-xs">
+              <Input.Wrapper>
+                <Input.Icon as={RiSearchLine} />
+                <Input.Input name="search" defaultValue={search ?? ''} placeholder="Search docket / consignee..." />
+              </Input.Wrapper>
+            </Input.Root>
+          </form>
         </div>
-
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              {['Docket Number', 'Delivery Branch', 'Person Name', 'Phone', 'Delivered Date & Time', 'Signature', 'POD', 'Verified By', 'Status'].map((col) => (
+              {['Docket No', 'Delivery Branch', 'Consignee', 'Recipient', 'Phone', 'Delivered At', 'Status'].map(col => (
                 <Table.Head key={col} className="whitespace-nowrap">
                   <span className="flex items-center gap-1">
-                    {col}
-                    <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
+                    {col}<RiArrowUpDownLine size={11} className="text-text-disabled-300" />
                   </span>
                 </Table.Head>
               ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {DELIVERIES.map((d) => (
-              <Table.Row key={d.docket}>
-                <Table.Cell className="h-auto py-3 font-medium text-primary-base hover:underline cursor-pointer whitespace-nowrap">
-                  {d.docket}
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.branch}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-strong-950 whitespace-nowrap">{d.person}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.phone}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.dateTime}</Table.Cell>
+            {rows.length === 0 ? (
+              <Table.Row><Table.Cell colSpan={7} className="py-10 text-center text-paragraph-sm text-text-sub-600">No deliveries in this tab</Table.Cell></Table.Row>
+            ) : rows.map(d => (
+              <Table.Row key={d.id}>
+                <Table.Cell className="h-auto py-3 font-medium text-primary-base whitespace-nowrap">{d.docket_no}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.delivery_branch_name ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-strong-950 whitespace-nowrap">{d.consignee_name}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-strong-950 whitespace-nowrap">{d.pod_recipient_name ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.pod_recipient_phone ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.delivered_at ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3">
-                  <div className="size-8 rounded border border-stroke-soft-200 bg-bg-weak-50 flex items-center justify-center text-paragraph-xs text-text-disabled-300">
-                    Sig
-                  </div>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3">
-                  <Tooltip.Root>
-                    <Tooltip.Trigger asChild>
-                      <CompactButton.Root
-                        variant="ghost"
-                        size="large"
-                        onClick={() => setPodOpen(true)}
-                      >
-                        <CompactButton.Icon as={RiZoomInLine} />
-                      </CompactButton.Root>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>View POD image</Tooltip.Content>
-                  </Tooltip.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">
-                  Data Entry Executive
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3">
-                  <Badge.Root
-                    size="medium"
-                    variant="light"
-                    color={(STATUS_TO_BADGE_COLOR[d.status] ?? 'gray') as BadgeColor}
-                  >
-                    <Badge.Dot />{d.status}
+                  <Badge.Root size="medium" variant="light" color={d.status === 'delivered' ? 'green' : d.status === 'damaged' || d.status === 'not_received' ? 'red' : 'orange'}>
+                    <Badge.Dot />{d.status.replace(/_/g, ' ')}
                   </Badge.Root>
                 </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table.Root>
-
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
-          <span className="text-paragraph-xs text-text-sub-600">Showing 1-3 of 3</span>
+          <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*DELIVERY_PAGE_SIZE+1}-{Math.min(page*DELIVERY_PAGE_SIZE, total)} of {total}</span>
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/booking/delivery-info" query={{ search, tab: tabKey }} />
         </div>
       </div>
-
-      {/* POD Modal */}
-      <Modal.Root open={podOpen} onOpenChange={setPodOpen}>
-        <Modal.Content className="max-w-lg">
-          <Modal.Header
-            title="POD Image"
-            description="Proof of delivery image for this shipment"
-          />
-          <Modal.Body className="flex flex-col items-center gap-4 p-4 sm:p-6">
-            <div className="w-full aspect-[4/3] rounded-xl bg-bg-soft-200 flex items-center justify-center">
-              <span className="text-paragraph-sm text-text-sub-600">POD Image Preview</span>
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button.Root variant="neutral" mode="stroke" size="small">
-              <Button.Icon as={RiExternalLinkLine} />
-              Open
-            </Button.Root>
-            <Button.Root variant="neutral" mode="stroke" size="small">
-              <Button.Icon as={RiRefreshLine} />
-              Rotate
-            </Button.Root>
-          </Modal.Footer>
-        </Modal.Content>
-      </Modal.Root>
     </div>
   );
 }

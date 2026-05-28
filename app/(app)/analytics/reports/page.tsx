@@ -1,115 +1,175 @@
 import React from 'react';
-import Link from 'next/link';
-import * as Badge from '@/components/ui/badge';
 import * as Button from '@/components/ui/button';
+import * as Input from '@/components/ui/input';
+import * as Table from '@/components/ui/table';
+import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
-import {
-  RiBarChartLine, RiFileListLine, RiTruckLine, RiCheckboxCircleLine,
-  RiArrowRightLine, RiDownloadLine,
-} from '@remixicon/react';
+import StatsStrip from '@/components/stats-strip';
+import { RiBarChart2Line, RiDownloadLine, RiSearchLine } from '@remixicon/react';
+import { many, one } from '@/lib/db';
+import { currentOrgId } from '@/lib/tenant';
+import { orderStatusLabel } from '@/lib/order-status';
+import PaginationLinks from '@/components/pagination-links';
 
-const REPORT_GROUPS = [
-  {
-    title: 'Orders & Shipments',
-    icon: RiFileListLine,
-    iconColor: 'bg-primary-alpha-10 text-primary-base',
-    reports: [
-      { name: 'Detailed Report (MIS)', desc: 'Full order details with status, weight, and billing info', href: '/analytics/reports/mis', tag: 'Most used' },
-      { name: 'Incoming Shipment Report', desc: 'All incoming shipments by branch and date range', href: '/analytics/reports/incoming' },
-      { name: 'Pending Shipment Report', desc: 'Orders not yet delivered or in transit', href: '/analytics/reports/pending' },
-      { name: 'Daily Followup Report', desc: 'Co-loader daily tracking summary', href: '/analytics/reports/coloader-followup' },
-      { name: 'Vendor Bill Report', desc: 'Billing summary grouped by vendor', href: '/analytics/reports/vendor-bill' },
-      { name: 'Airport Order Report', desc: 'Airport-specific order tracking', href: '/analytics/reports/airport' },
-    ],
-  },
-  {
-    title: 'Runsheets',
-    icon: RiTruckLine,
-    iconColor: 'bg-success-lighter text-success-base',
-    reports: [
-      { name: 'Local Runsheet Report', desc: 'Daily local delivery runsheet summary', href: '/analytics/reports/local-runsheet', tag: 'Daily' },
-    ],
-  },
-  {
-    title: 'Manifest & Co-loader',
-    icon: RiBarChartLine,
-    iconColor: 'bg-feature-lighter text-feature-base',
-    reports: [
-      { name: 'Coloader Report', desc: 'Co-loader wise manifest and forwarding data', href: '/analytics/reports/coloader' },
-      { name: 'Weight Difference Report', desc: 'Actual vs charged weight discrepancies', href: '/analytics/reports/weight-diff' },
-    ],
-  },
-  {
-    title: 'Users & Assets',
-    icon: RiCheckboxCircleLine,
-    iconColor: 'bg-warning-lighter text-warning-base',
-    reports: [
-      { name: 'User Report', desc: 'User activity and login summary by branch', href: '/analytics/reports/user' },
-      { name: 'Branch Report', desc: 'Branch-wise order and delivery performance', href: '/analytics/reports/branch' },
-      { name: 'Asset Report', desc: 'Logger and temperature box asset inventory', href: '/analytics/reports/asset' },
-      { name: 'Asset Inventory Report', desc: 'Detailed asset calibration and usage', href: '/analytics/reports/asset-inventory' },
-    ],
-  },
-  {
-    title: 'Validation',
-    icon: RiCheckboxCircleLine,
-    iconColor: 'bg-error-lighter text-error-base',
-    reports: [
-      { name: 'Order Status Mismatch Report', desc: 'Orders where system status doesn\'t match actual delivery state', href: '/analytics/reports/status-mismatch' },
-    ],
-  },
-];
+const PAGE_SIZE = 25;
 
-export default function ReportsPage() {
+type Row = {
+  id: string;
+  docket_no: string;
+  booking_date: string;
+  client_name: string | null;
+  shipper_name: string;
+  consignee_name: string;
+  origin: string;
+  destination: string;
+  mode: string;
+  status: string;
+  actual_weight_kg: string | null;
+  invoice_value: string | null;
+};
+
+export default async function AnalyticsReportsPage({ searchParams }: { searchParams?: { from?: string; to?: string; client?: string; mode?: string; page?: string } }) {
+  const orgId = await currentOrgId();
+  const from = searchParams?.from || new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const to = searchParams?.to || new Date().toISOString().slice(0, 10);
+  const client = searchParams?.client?.trim() || null;
+  const mode = searchParams?.mode || null;
+  const page = Math.max(1, Number(searchParams?.page) || 1);
+
+  // Lookup clients for filter dropdown
+  const clientOptions = await many<{ id: string; name: string }>(
+    `select c.id, c.name from clients c join bill_to bt on bt.id = c.bill_to_id where bt.org_id = $1 order by c.name`,
+    [orgId],
+  );
+
+  const where = `o.org_id = $1
+    and o.booking_date between $2::date and $3::date
+    and ($4::uuid is null or o.client_id = $4::uuid)
+    and ($5::text is null or o.mode = $5)`;
+
+  const rows = await many<Row>(
+    `select o.id, o.docket_no,
+            to_char(o.booking_date, 'DD-MM-YYYY') as booking_date,
+            c.name as client_name,
+            o.shipper_name, o.consignee_name, o.origin, o.destination,
+            o.mode, o.status,
+            o.actual_weight_kg::text, o.invoice_value::text
+     from orders o left join clients c on c.id = o.client_id
+     where ${where}
+     order by o.booking_date desc
+     limit $6 offset $7`,
+    [orgId, from, to, client, mode, PAGE_SIZE, (page - 1) * PAGE_SIZE],
+  );
+
+  const totals = await one<{ count: string; weight: string; value: string; delivered: string }>(
+    `select count(*)::text as count,
+            coalesce(sum(actual_weight_kg), 0)::text as weight,
+            coalesce(sum(invoice_value), 0)::text as value,
+            count(*) filter (where status='delivered')::text as delivered
+     from orders o where ${where}`,
+    [orgId, from, to, client, mode],
+  );
+  const total = Number(totals?.count ?? 0);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
   return (
     <div className="space-y-6">
       <PageHeader
-        icon={RiBarChartLine}
+        icon={RiBarChart2Line}
         iconColor="bg-feature-lighter text-feature-base"
         title="Reports"
-        subtitle="Analytics and insights across all modules"
-        breadcrumbs={[{ label: 'Analytics', href: '/analytics/reports' }, { label: 'Reports' }]}
+        subtitle="Filter shipments by date range, client, mode"
+        breadcrumbs={[{ label: 'Analytics' }, { label: 'Reports' }]}
       >
         <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiDownloadLine} />
-          Export All
+          <Button.Icon as={RiDownloadLine} />Export CSV
         </Button.Root>
       </PageHeader>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {REPORT_GROUPS.map(group => (
-          <div key={group.title} className="rounded-2xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-stroke-soft-200 px-5 py-4">
-              <div className={`flex size-8 items-center justify-center rounded-xl ${group.iconColor}`}>
-                <group.icon size={16} />
-              </div>
-              <h2 className="text-label-sm text-text-strong-950">{group.title}</h2>
-              <span className="ml-auto text-paragraph-xs text-text-sub-600">{group.reports.length} reports</span>
-            </div>
-            <div className="divide-y divide-stroke-soft-200">
-              {group.reports.map(r => (
-                <Link
-                  key={r.href}
-                  href={r.href}
-                  className="flex items-center justify-between px-5 py-3.5 no-underline transition hover:bg-bg-weak-50 group"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-paragraph-sm font-medium text-text-strong-950 group-hover:text-primary-base transition-colors">
-                        {r.name}
-                      </span>
-                      {r.tag && (
-                        <Badge.Root size="small" variant="lighter" color="blue">{r.tag}</Badge.Root>
-                      )}
-                    </div>
-                    <p className="text-paragraph-xs text-text-sub-600 mt-0.5 truncate">{r.desc}</p>
-                  </div>
-                  <RiArrowRightLine size={14} className="ml-3 shrink-0 text-text-disabled-300 group-hover:text-primary-base transition-colors" />
-                </Link>
-              ))}
-            </div>
+      <StatsStrip stats={[
+        { label: 'Orders in Range', value: total, trend: 0, trendLabel: 'matching filter' },
+        { label: 'Delivered', value: Number(totals?.delivered ?? 0), trend: 0, trendLabel: 'in range' },
+        { label: 'Total Weight (kg)', value: Number(totals?.weight ?? 0).toFixed(1), trend: 0, trendLabel: 'in range' },
+        { label: 'Total Value (₹)', value: Number(totals?.value ?? 0).toLocaleString('en-IN'), trend: 0, trendLabel: 'in range' },
+      ]} />
+
+      <form method="GET" className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 shadow-regular-xs">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-paragraph-xs text-text-sub-600">From Date</label>
+            <Input.Root size="small">
+              <Input.Wrapper>
+                <Input.Input type="date" name="from" defaultValue={from} />
+              </Input.Wrapper>
+            </Input.Root>
           </div>
-        ))}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-paragraph-xs text-text-sub-600">To Date</label>
+            <Input.Root size="small">
+              <Input.Wrapper>
+                <Input.Input type="date" name="to" defaultValue={to} />
+              </Input.Wrapper>
+            </Input.Root>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-paragraph-xs text-text-sub-600">Client</label>
+            <select name="client" defaultValue={client ?? ''} className="rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-2 py-1.5 text-paragraph-sm text-text-strong-950">
+              <option value="">All Clients</option>
+              {clientOptions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-paragraph-xs text-text-sub-600">Mode</label>
+            <select name="mode" defaultValue={mode ?? ''} className="rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-2 py-1.5 text-paragraph-sm text-text-strong-950">
+              <option value="">All Modes</option>
+              <option value="air">Air</option>
+              <option value="surface">Surface</option>
+              <option value="cargo">Cargo</option>
+              <option value="train">Train</option>
+              <option value="local">Local</option>
+              <option value="courier">Courier</option>
+              <option value="warehouse">Warehouse</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <Button.Root size="small" type="submit" className="w-full">
+              <Button.Icon as={RiSearchLine} />Apply Filters
+            </Button.Root>
+          </div>
+        </div>
+      </form>
+
+      <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>{['Docket', 'Date', 'Client', 'Shipper → Consignee', 'Route', 'Mode', 'Weight (kg)', 'Value (₹)', 'Status'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {rows.length === 0 ? (
+              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No orders match the filter</Table.Cell></Table.Row>
+            ) : rows.map(r => (
+              <Table.Row key={r.id}>
+                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{r.docket_no}</span></Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.booking_date}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.client_name ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.shipper_name} → {r.consignee_name}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.origin} → {r.destination}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 capitalize">{r.mode}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.actual_weight_kg ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.invoice_value ? Number(r.invoice_value).toLocaleString('en-IN') : '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3">
+                  <Badge.Root size="small" variant="lighter" color={r.status === 'delivered' ? 'green' : r.status === 'cancelled' ? 'red' : 'blue'}>
+                    {orderStatusLabel(r.status)}
+                  </Badge.Root>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+        <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
+          <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*PAGE_SIZE+1}-{Math.min(page*PAGE_SIZE, total)} of {total}</span>
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/analytics/reports" query={{ from, to, client: client ?? undefined, mode: mode ?? undefined }} />
+        </div>
       </div>
     </div>
   );

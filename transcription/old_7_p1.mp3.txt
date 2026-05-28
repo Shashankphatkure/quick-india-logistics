@@ -1,0 +1,234 @@
+00:00:00,020 --> 00:00:24,110 [Speaker 0]
+
+delivery के लिए। तो उसको जो बनाते हैं details को उसको runsheet बोलते हैं। action हो गया आपका manifest, manifest होने के बाद आपके destination में चला जाता है वो। फिर उसके बाद destination में जब वो receive होता है तो वहां से वो जाएगा delivery के लिए। तो जब वहां से वो delivery के लिए जाता है तो हम लोग उसका runsheet बनाते हैं। उसमें हम लोग गाड़ी number डालते हैं कि भाई XYZ गाड़ी में ये पचास parcel delivery के लिए निकला है। 
+
+
+
+00:00:25,860 --> 00:00:33,960 [Speaker 0]
+
+हाँ, उसका भी, उसका भी एक runsheet का मैं आपको summary डालता हूँ। आप चालू रखिए। runsheet, 
+
+
+
+00:00:35,000 --> 00:00:46,080 [Speaker 0]
+
+runsheet, runsheet. जो कभी local रहेंगे उसी का runsheet बन सकता है। cross वाले का runsheet नहीं बनेगा क्योंकि आपको वापस से उसका connection डालना पड़ेगा। जब वापस आप connection डालेंगे तो it is also called manifest. 
+
+
+
+00:00:47,520 --> 00:00:55,980 [Speaker 0]
+
+वो last manifest बनेगा। वो last manifest बनेगा। जैसे runsheet बनाते हैं तो status में जाके out for delivery दे दो। 
+
+
+
+00:00:58,180 --> 00:01:02,840 [Speaker 0]
+
+गणेश sir इसका मतलब है कि हम जब दिल्ली से एक माल आया हुआ है वो पहले दिल्ली से उठेगा, 
+
+
+
+00:01:03,960 --> 00:01:26,010 [Speaker 0]
+
+भिवंडी आएगा, भिवंडी से पनवेल आएगा। जब पनवेल में local delivery होगी तब भी runsheet बनेंगे ना। नहीं उसके लिए आपको समझाता हूँ। जैसे उल्टा बोलता हूँ ना मुंबई से दिल्ली भेजा मैंने। हाँ। ठीक है। मुंबई से दिल्ली मैंने दो shipment भेजे हैं। एक दिल्ली का भेजा, एक लखनऊ का भेजा समझो। हाँ। तो जो दोनों shipment उनको receive हुआ तो उसमें से जो दिल्ली का shipment उसको receive हुआ वो runsheet बना देंगे। ये delivery के लिए जा रहा है। 
+
+
+
+00:01:27,160 --> 00:01:47,350 [Speaker 0]
+
+और जो उसका समझो लखनऊ का shipment है तो वो उसका फिर से एक manifest बनाएंगे कि उन्होंने कैसे connection किया दिल्ली से लखनऊ के लिए। तो वो proper connect में आता है तो वहां पे वापस एक बार manifest बनता है। वापस पूरा process होता है। फिर जब लखनऊ में receive होगा तो लखनऊ वाला फिर उसका runsheet बनाएगा। हमम, हमम, हमम, हमम। e-way bill 
+
+
+
+00:01:48,940 --> 00:01:59,220 [Speaker 0]
+
+बन नहीं, आपके हर एक step पे e-way bill बनेगा, हर एक step पे। आपने लिखा क्या no e-way bill मतलब कुछ e-way bill applicable नहीं रहेगा जिसका value पचास हज़ार के नीचे होता है ना। 
+
+
+
+00:02:00,660 --> 00:02:31,340 [Speaker 0]
+
+हाँ, तो उसको e-way bill compulsory नहीं होता। या पचास किलोमीटर या सौ किलोमीटर के अंदर deliver होगा तो e-way bill की जरूरत नहीं रहती है up to one लाख rupees. तो वो party का अपने को e-way bill नहीं दिया रहेगा उसने क्योंकि उसका local में delivery रहेगा तो भिवंडी to Vadpe. तो ये अपना पचास किलोमीटर के अंदर delivery है। नहीं मतलब वो तो party है। अगर e-way bill applicable नहीं है तो आपको नहीं डालते तो इसके लिए अपने को वहां पे no e-way bill दिखेगा। अगर हमने डाला है तो e-way bill number दिखेगा। एक ही pocket में चार ये deliver, चारों slash, slash करके दिखेगा। ये summary में दिख रहा है आपको क्या, क्या है आपका सारा details. 
+
+
+
+00:02:32,480 --> 00:02:47,080 [Speaker 0]
+
+हाँ create, जैसे create runsheet जब होता है जब आपके पास material मिल गया और अपना local delivery दिल्ली वाले को दिल्ली का material अगर मिल गया तो आगे वो delivery के लिए निकालेगा। हाँ। Yes, receive mark करने के बाद फिर वो आगे runsheet बनाएंगे। 
+
+
+
+00:02:48,400 --> 00:03:04,140 [Speaker 0]
+
+हाँ, अभी आपको थोड़ा सा time लगेगा ये सब चीज समझने के लिए। जैसे-जैसे बनाने लगेंगे तो और समझेगा। फिर practically आप entry करने लगेंगे तो और समझेगा। अभी तो मैंने खाली आपको runsheet क्या होता है वो समझाया है, ठीक है। अभी इसमें आपको मैं बताऊं जैसे first option क्या दिख रहा है आपको? 
+
+
+
+00:03:07,200 --> 00:03:45,160 [Speaker 0]
+
+runsheet में जाइए, runsheet में जाइए वापस। हाँ तो जब हम लोग उस पे click करते हैं ना तो आपको चार option दिखेगा runsheet में pending delivery, ठीक है hub dispatch runsheet, incoming runsheet और runsheet. ठीक है। अब pending delivery summary में आप click करेंगे तो आपको दिखेगा जितनी delivery आपकी pending है मतलब आपके पास मिल जाए आपको local का delivery करना है। जैसे मुंबई है तो मुंबई का delivery मुंबई में आ गया तो फिर मुंबई को फिर उसको runsheet बनाना पड़ेगा delivery के लिए। ठीक है तो उसमें तो नीचे option आई है। A में क्या summary दिख रहा है आपको? जैसे मुंबई से दिल्ली है, दिल्ली वाले ने जैसे receive किया। बराबर। तो जैसे ही वो receive दबाएगा तो उसको फिर ये option दिखेगा 
+
+
+
+00:03:46,280 --> 00:04:11,160 [Speaker 0]
+
+pending delivery में। सारा कुछ automatically pending delivery में दिखा देगा उसको। तो pending delivery के बाद वो क्या करेगा? या तो उसका runsheet बनाकर delivery करेगा या उसकी अगर और किसी branch को transfer करना है branch को transfer भी कर सकता है। जैसे मुंबई में आता है तो मुंबई का delivery नहीं है कुछ भिवंडी delivery है तो हम लोग मुंबई से फिर भिवंडी भेजते हैं तो branch transfer होता है। उसको हम लोग hub transfer भी बोलते हैं। हमम। या मैं direct delivery के लिए अगर गाड़ी निकाल रहा हूं, मैं गाड़ी number डालूंगा runsheet बना दूंगा। 
+
+
+
+00:04:12,720 --> 00:04:21,300 [Speaker 0]
+
+हाँ, हाँ hub transfer किए तो जिस branch में जाएगा फिर वहां से runsheet बनेगा यहां से नहीं। मैंने अगले branch को दिया तो उसका काम होगा आगे। 
+
+
+
+00:04:23,780 --> 00:04:34,860 [Speaker 0]
+
+नहीं manifest ये hub transfer is also a manifest. अच्छा। It's a kind of a manifest which will have only vehicle details कौन से गाड़ी से मैं वो branch में भेज रहा हूं। समझे? 
+
+
+
+00:04:36,020 --> 00:04:39,720 [Speaker 0]
+
+हमम। 
+
+
+
+00:04:40,800 --> 00:05:21,660 [Speaker 0]
+
+Correct. तो runsheet जो होता है वो last mile होता है। delivery के just पहले जो गाड़ी number डालके हम बोलते हैं ये गाड़ी में सारा delivery आ रहा है तो उसको हम लोग बोलते हैं runsheet. ठीक है। runsheet बनाने के time पे आपको गाड़ी number पूछेगा ही कि कौन सी गाड़ी में आप डाल रहे हो। वो डाल देंगे तो वैसे ही automatically e-way bill भी update हो जाएगा और हमारे out for delivery में status भी update हो जाएगा। अगर मैंने runsheet में नहीं डाला, अगर मैंने उसको किसी और branch में transfer किया तो आपको next column में दिखता है ये सब मैंने भेजा है। तो फिर उसमें credit करना है या उसको final करना है वो हम okay कर सकते हैं depart okay कर दिया, भेज दिया। hub dispatch में वही दिखेगा जो आपने internally branch transfer किया है। pending delivery से जब आप runsheet बना दोगे, एक minute, एक minute sorry. 
+
+
+
+00:05:23,900 --> 00:05:27,720 [Speaker 0]
+
+runsheet, runsheet, runsheet, runsheet, runsheet. 
+
+
+
+00:05:29,860 --> 00:05:34,120 [Speaker 0]
+
+हाँ pending delivery में जाके जब हम लोग ये entry करते हैं ना जो मैंने गाड़ी number डाल के 
+
+
+
+00:05:36,200 --> 00:05:47,610 [Speaker 0]
+
+तो उसका जो summary है वो next पे दिखेगा कि ये हमने बना दिया है। तो ये भी एक तरह का rough runsheet हो जाएगा। rough manifest के साथ आपने planning कर दिया। वैसे ये हो गया rough runsheet. 
+
+
+
+00:05:49,720 --> 00:06:15,674 [Speaker 0]
+
+तो अभी rough runsheet में जब next column में आएगा तो उसमें हमको उसका ये detail भरना पड़ता है। कौन सा? अअअ या तो edit करना है या फिर हमको उसको save करके आगे move on करना है। हाँ, hub dispatch मेंआपको जो दिख रहा है इसमें summary में कोई data नहीं दिख रहा है आपको। लेकिन जब हम runsheet बना देते हैं तो देखने summary दिखने लग जाता है hub dispatch में। 
+
+
+
+00:06:16,844 --> 00:06:31,724 [Speaker 0]
+
+ठीक है। और उसके बाद अगर उसमें कुछ edit करने का option देता है। हाँ तो edit का option आता है तो मैं कर सकता हूँ otherwise मैं उसको save करके आगे forward कर सकता हूँ। हाँ ठीक है। फिर incoming manifest 
+
+
+
+00:06:32,864 --> 00:06:39,544 [Speaker 0]
+
+sorry incoming runsheet उसमें जाइए। incoming runsheet जो होता है 
+
+
+
+00:06:40,964 --> 00:06:46,054 [Speaker 0]
+
+वो जो same है अपने को जो हम बनाते हैं ना। 
+
+
+
+00:06:49,284 --> 00:06:59,444 [Speaker 0]
+
+नहीं summary तो okay है। summary तो ठीक है। incoming runsheet में कौन से branch को दिखता है वो शायद दूसरे branch को दिखता है मेरे ख्याल से वो देखना पड़ेगा। incoming runsheet summary. 
+
+
+
+00:07:01,304 --> 00:07:03,604 [Speaker 0]
+
+हाँ, हाँ वही, वही yes. 
+
+
+
+00:07:04,844 --> 00:07:07,624 [Speaker 0]
+
+runsheet forwarding not delivered, 
+
+
+
+00:07:08,804 --> 00:07:20,364 [Speaker 0]
+
+not delivered. ठीक है और runsheet तो समझ में आ गया incoming runsheet मैं आपको यही लिख दीजिए। इसको discuss करेंगे बाद में। देखना पड़ेगा। incoming runsheet summary. 
+
+
+
+00:07:22,104 --> 00:07:41,984 [Speaker 0]
+
+दो pending हो गया अपना point एक तो running open था और एक incoming runsheet. और runsheet में आपको पूरा runsheet का status भी दिखेगा summary भी दिखेगा। अभी समझो एक runsheet आपका गया दस shipment लेके अगर दस के दस delivery हो जाएगा तो delivery status में delivered दिखेगा। अगर दस में से नौ delivery हो गया एक return आ गया तो वो pending दिखता रहेगा वहां पे। 
+
+
+
+00:07:43,344 --> 00:07:46,684 [Speaker 0]
+
+हाँ तो ये हो गया summary और runsheet का ठीक है। 
+
+
+
+00:07:47,784 --> 00:08:04,894 [Speaker 0]
+
+तो ये हमारा first mile to last mile हमने पूरा operation discuss किया अभी तक। आएगा वो reports आएगा। नहीं सर incoming runsheet summary में origin भी demanded है destination भी demanded है। runsheet थोड़ा वो आपको समझना पड़ेगा। हाँ। 
+
+
+
+00:08:06,804 --> 00:08:33,284 [Speaker 0]
+
+या फिर वो बना किसी और चीज के लिए नाम गलत डाल दिया गया हो तो। वो मैं देख लेता हूँ क्या है एक दो चीज pending है वो मैं discuss करके बताता हूँ। हाँ ये जब हम runsheet देखो नीचे summary है runsheet का। ये जब मैं print runsheet दबाता हूँ तो एक PDF में open हो जाता है तो इसको मैं A4 size में print करके लड़के को देता हूँ भाई ये फटाफट ले जा घर पे। ठीक है। अब जब print का option है ना अभी मेरा है ना docket wise हो रहा है मेरे ख्याल से 
+
+
+
+00:08:34,424 --> 00:08:37,784 [Speaker 0]
+
+या जो मैं first entry करता हूँ वो first ऊपर दिखता है 
+
+
+
+00:08:38,884 --> 00:08:39,064 [Speaker 0]
+
+तो 
+
+
+
+00:08:40,264 --> 00:09:07,984 [Speaker 0]
+
+sorting option नहीं है। मेरे को चाहिए print के पहले मुझे जैसे अगर मेरे को pincode के हिसाब से print चाहिए तो मैं pincode wise print करूं। अगर मेरे को समझो docket number के हिसाब से चाहिए तो मैं docket number के हिसाब से print, अगर मेरे को shipper के हिसाब से चाहिए तो मैं shipper के हिसाब से करूं या अगर मेरे को time के हिसाब से जो first entry है वो ही आना चाहिए तो उसके हिसाब से हो। report मेरे को चाहिए यहां पे तो मुझे complete manifest runsheet चाहिए। हाँ 
+
+
+
+00:09:09,304 --> 00:09:39,404 [Speaker 0]
+
+अभी reports में तो अभी जितने है वो तो बनाने में कुछ plus minus रहेगा जब हम लोग करेंगे ना। sir जब discuss करूंगा तब। ये मैंने basic reports बनवाए थे जो मुझे लगते हैं। जैसे first है detail report MIS. MIS हमारा बहुत important part है। हाँ MIS जो है हमारा बहुत important part है जो हम लोग client को भेजते हैं। every evening हर एक shipment उनका कितना pickup हुआ था। ठीक है उसमें हम लोग हर महीने का उनको रोजाना भेज देते हैं। एक तारीख को तो एक तारीख का सारा shipment उनको 
+
+
+
+00:09:40,724 --> 00:09:59,644 [Speaker 0]
+
+MIS में जाता है। दो तारीख को तो एक और दो तारीख का पूरा जाएगा। तो ऐसा पूरा month on month हमको daily base पे MIS भेजते हैं। तो MIS में columns आते हैं जितने भी हमने entry की है ना data entry shipper, consignee, date, docket number वो हम लोग है ना एक ये बना जैसे हमने permissions का भी ऐसा grouping बनाया था 
+
+
+
+00:10:01,084 --> 00:10:38,304 [Speaker 0]
+
+तो वैसा हम लोग client wise grouping बनाते हैं। एक client को चाहिए भाई मेरे को daily MIS में ना तू छह item लिख के भेजेगा shipper consignee भेजेगा invoice amount भेजेगा date भेजेगा docket number भेजेगा और delivery हुआ या नहीं भेजेगा। तो उसको हम लोग masters में जाके उनका MIS का format हम लोग predefine करते हैं कि ये client को MIS में ये, ये चीज चाहिए। दूसरा client ये बोलता है मेरे को पूरा detail चाहिए सारी चालीस चीजें उसमें dimension भी चाहिए origin भी चाहिए destination भी चाहिए piece चाहिए weight चाहिए। तो हम लोग उसके masters में जाके उसका predefine करते हैं MIS में क्या चाहिए। तो जब मैं उस client को select करके उसका MIS download करता हूँ reports में excel में तो मुझे उतने columns download हो के दिखाई देते हैं 
+
+
+
+00:10:39,864 --> 00:11:21,394 [Speaker 0]
+
+और वो जो है वो मैं client को direct mail कर देता हूँ भाई ये आपका MIS report है। इसमें एक option हमने बोला था जो हमने किया नहीं क्योंकि मेरा काम क्या है software वो उतना perfect नहीं पा रहा है कि direct MIS पे click करके direct software से ही MIS चले जाए client को। वो नहीं होता। हाँ, वो भी option चाहिए था लेकिन जैसे software में सब time पे हो नहीं रहा था इसके लिए हम लोग manual भेजते हैं अभी। अगर software perfect हो जाएगा तो फिर direct वहीं से one click पे चला जाए। ठीक है। incoming shipment report में जो मेरे को आने वाला है material उसका मेरे को पूरा data मिलना चाहिए। उसमें सारे columns आते हैं। एक लिख लीजिए मैं आपको WhatsApp करूंगा reports में। ठीक है जितने मेरे सारे columns...
+
+
+

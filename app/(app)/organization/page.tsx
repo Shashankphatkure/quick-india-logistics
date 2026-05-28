@@ -1,306 +1,84 @@
-'use client';
-import React, { useState } from 'react';
-import * as Button from '@/components/ui/button';
-import * as Input from '@/components/ui/input';
-import * as Avatar from '@/components/ui/avatar';
-import * as Select from '@/components/ui/select';
-import * as Label from '@/components/ui/label';
-import * as FileUpload from '@/components/ui/file-upload';
-import * as LinkButton from '@/components/ui/link-button';
+import React from 'react';
 import * as Table from '@/components/ui/table';
-import * as Drawer from '@/components/ui/drawer';
-import * as Divider from '@/components/ui/divider';
-import { Root as Checkbox } from '@/components/ui/checkbox';
+import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import {
-  RiAddLine,
-  RiSearchLine,
-  RiBuilding2Line,
-  RiUploadCloud2Line,
-} from '@remixicon/react';
+import { RiBuilding2Line } from '@remixicon/react';
+import { many, one } from '@/lib/db';
+import { currentOrgId } from '@/lib/tenant';
+import OrganizationForm, { type OrgRow } from './organization-form';
 
-const ORGS = [
-  {
-    name: 'Quick India Logistics Pvt Ltd',
-    pan: 'AAACQ2341G',
-    gst: '27AAACQ2341G1ZN',
-    regNo: 'U74120MH0014PTC251851',
-    website: 'https://tracking.quickindialogistics.com/',
-    email: 'ganesh@quickindialogistics.com',
-    mobile: '9821800165',
-    image: '',
-  },
-];
+type BranchSummary = {
+  id: string;
+  code: string;
+  name: string;
+  branch_type: string;
+  city: string | null;
+  state: string | null;
+  is_active: boolean;
+};
 
-const COLUMNS = [
-  'Organization Name',
-  'PAN Number',
-  'GST Number',
-  'Registration No',
-  'Website Address',
-  'Email',
-  'Mobile No',
-  'Image',
-];
-
-interface FieldDef {
-  label: string;
-  type?: string;
-  ph?: string;
-  required?: boolean;
-}
-
-const ORG_FIELDS: FieldDef[] = [
-  { label: 'PAN Number', required: true, type: 'text', ph: 'Please Enter PAN' },
-  { label: 'Name', required: true, type: 'text', ph: 'Enter Organization Name' },
-  { label: 'Alias Name', required: true, type: 'text', ph: 'Enter Alias Name' },
-  { label: 'Company Type', required: true, type: 'select' },
-  { label: 'Email', type: 'email', ph: 'Enter Email' },
-  { label: 'Toll Free Number', type: 'text', ph: 'Enter Toll Free Number' },
-  { label: 'Registration No', required: true, type: 'text', ph: 'Enter Registration Number' },
-  { label: 'TAN Number', required: true, type: 'text', ph: 'Enter Tax Number' },
-  { label: 'Primary Mobile No', required: true, type: 'text', ph: 'Enter Phone Number' },
-  { label: 'Secondary Mobile No', type: 'text', ph: 'Enter Phone Number' },
-  { label: 'Website Address', required: true, type: 'url', ph: 'Enter Website URL' },
-];
-
-const GST_FIELDS: FieldDef[] = [
-  { label: 'GST No', required: true, ph: 'Enter GST No' },
-  { label: 'City', required: true, ph: 'City' },
-  { label: 'Pincode', required: true, ph: 'Pincode' },
-  { label: 'Address', required: true, ph: 'Enter Address' },
-];
-
-const CONTACT_FIELDS: FieldDef[] = [
-  { label: 'Contact Person', required: true, type: 'text', ph: 'Enter Name' },
-  { label: 'Contact Person Email', required: true, type: 'email', ph: 'Email' },
-  { label: 'Contact Person Phone', required: true, type: 'text', ph: 'Phone' },
-];
-
-function initials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase();
-}
-
-function Field({ field }: { field: FieldDef }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <Label.Root>
-        {field.label}
-        {field.required && <Label.Asterisk />}
-      </Label.Root>
-      {field.type === 'select' ? (
-        <Select.Root size="small">
-          <Select.Trigger>
-            <Select.Value placeholder="Select type" />
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="pvt">Private Limited</Select.Item>
-            <Select.Item value="public">Public Limited</Select.Item>
-            <Select.Item value="llp">LLP</Select.Item>
-            <Select.Item value="proprietor">Proprietorship</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      ) : (
-        <Input.Root size="small">
-          <Input.Wrapper>
-            <Input.Input type={field.type ?? 'text'} placeholder={field.ph} />
-          </Input.Wrapper>
-        </Input.Root>
-      )}
-    </div>
+export default async function OrganizationPage() {
+  const orgId = await currentOrgId();
+  const org = await one<OrgRow>(`select id, name, legal_name, pan, tan, is_active from organizations where id = $1`, [orgId]);
+  const branches = await many<BranchSummary>(
+    `select id, code, name, branch_type, city, state, is_active
+     from branches where org_id=$1 order by name limit 10`,
+    [orgId],
   );
-}
+  const userCount = await one<{ n: string }>(`select count(*)::text as n from users where org_id=$1`, [orgId]);
+  const branchCount = await one<{ n: string }>(`select count(*)::text as n from branches where org_id=$1`, [orgId]);
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-subheading-xs uppercase tracking-wide text-text-soft-400">{children}</p>
-  );
-}
-
-export default function OrganizationPage() {
-  const [showAdd, setShowAdd] = useState(false);
+  if (!org) return <p>Organization not found</p>;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
         icon={RiBuilding2Line}
-        iconColor="bg-verified-lighter text-verified-base"
+        iconColor="bg-feature-lighter text-feature-base"
         title="Organization"
-        subtitle="Manage companies and multi-tenant configuration"
+        subtitle="Manage organization profile and view branches"
         breadcrumbs={[{ label: 'Organization' }]}
-      >
-        <Button.Root size="small" onClick={() => setShowAdd(true)}>
-          <Button.Icon as={RiAddLine} />
-          Add Organization
-        </Button.Root>
-      </PageHeader>
-
-      <StatsStrip
-        stats={[
-          { label: 'Organizations', value: 1, trend: 0 },
-          { label: 'Active Branches', value: 12, trend: 2, trendLabel: 'this month' },
-          { label: 'Total Users', value: 48, trend: 4, trendLabel: 'this month' },
-          { label: 'GST Registered', value: 1, trend: 0 },
-        ]}
       />
 
-      {/* Table card */}
-      <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
-        <div className="border-b border-stroke-soft-200 p-3">
-          <Input.Root size="small" className="w-full max-w-xs">
-            <Input.Wrapper>
-              <Input.Icon as={RiSearchLine} />
-              <Input.Input placeholder="Search organizations..." />
-            </Input.Wrapper>
-          </Input.Root>
-        </div>
+      <StatsStrip stats={[
+        { label: 'Organization Name', value: org.name, trend: 0, trendLabel: '' },
+        { label: 'Branches', value: Number(branchCount?.n ?? 0), trend: 0, trendLabel: 'total' },
+        { label: 'Users', value: Number(userCount?.n ?? 0), trend: 0, trendLabel: 'total' },
+        { label: 'Status', value: org.is_active ? 'Active' : 'Inactive', trend: 0, trendLabel: '' },
+      ]} />
 
-        <div className="p-2">
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.Head className="w-0">
-                  <Checkbox />
-                </Table.Head>
-                {COLUMNS.map((c) => (
-                  <Table.Head key={c} className="whitespace-nowrap text-paragraph-xs font-semibold">
-                    {c}
-                  </Table.Head>
-                ))}
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {ORGS.map((o) => (
-                <Table.Row key={o.pan}>
-                  <Table.Cell>
-                    <Checkbox />
-                  </Table.Cell>
-                  <Table.Cell className="cursor-pointer whitespace-nowrap text-paragraph-xs font-medium text-primary-base hover:underline">
-                    {o.name}
-                  </Table.Cell>
-                  <Table.Cell className="whitespace-nowrap text-paragraph-xs text-text-sub-600">{o.pan}</Table.Cell>
-                  <Table.Cell className="whitespace-nowrap text-paragraph-xs text-text-sub-600">{o.gst}</Table.Cell>
-                  <Table.Cell className="whitespace-nowrap text-paragraph-xs text-text-sub-600">{o.regNo}</Table.Cell>
-                  <Table.Cell className="whitespace-nowrap text-paragraph-xs text-primary-base">{o.website}</Table.Cell>
-                  <Table.Cell className="whitespace-nowrap text-paragraph-xs text-text-sub-600">{o.email}</Table.Cell>
-                  <Table.Cell className="whitespace-nowrap text-paragraph-xs text-text-sub-600">{o.mobile}</Table.Cell>
-                  <Table.Cell>
-                    {o.image ? (
-                      <Avatar.Root size="32" className="rounded-lg">
-                        <Avatar.Image src={o.image} alt={o.name} className="rounded-lg" />
-                      </Avatar.Root>
-                    ) : (
-                      <Avatar.Root size="32" color="blue" className="rounded-lg">
-                        {initials(o.name)}
-                      </Avatar.Root>
-                    )}
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </div>
-
-        <div className="border-t border-stroke-soft-200 px-4 py-3">
-          <span className="text-paragraph-xs text-text-sub-600">1-1 of 1</span>
-        </div>
+      <div>
+        <h3 className="text-label-sm text-text-strong-950 mb-3">Profile</h3>
+        <OrganizationForm org={org} />
       </div>
 
-      {/* Add Organization drawer */}
-      <Drawer.Root open={showAdd} onOpenChange={setShowAdd}>
-        <Drawer.Content className="max-w-[720px]">
-          <Drawer.Header>
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-verified-lighter text-verified-base">
-              <RiBuilding2Line size={20} />
-            </div>
-            <div className="flex-1">
-              <Drawer.Title>Add Organization</Drawer.Title>
-              <p className="text-paragraph-sm text-text-sub-600">
-                Create a new company / tenant configuration
-              </p>
-            </div>
-          </Drawer.Header>
-          <Divider.Root />
-
-          <Drawer.Body className="space-y-6 overflow-y-auto p-5">
-            {/* Organization Info */}
-            <div className="space-y-3">
-              <SectionTitle>Organization Info</SectionTitle>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {ORG_FIELDS.map((f) => (
-                  <Field key={f.label} field={f} />
-                ))}
-                <div className="flex flex-col gap-1 sm:col-span-2">
-                  <Label.Root>
-                    Upload Logo
-                    <Label.Asterisk />
-                  </Label.Root>
-                  <FileUpload.Root>
-                    <input type="file" accept="image/*" tabIndex={-1} className="hidden" />
-                    <FileUpload.Icon as={RiUploadCloud2Line} />
-                    <div className="space-y-1">
-                      <div className="text-label-sm text-text-strong-950">
-                        Choose a file or drag &amp; drop it here.
-                      </div>
-                      <div className="text-paragraph-xs text-text-sub-600">
-                        PNG, JPG or SVG, up to 2 MB.
-                      </div>
-                    </div>
-                    <FileUpload.Button>Browse File</FileUpload.Button>
-                  </FileUpload.Root>
-                </div>
-              </div>
-            </div>
-
-            {/* GST Address */}
-            <div className="space-y-3">
-              <SectionTitle>GST Address</SectionTitle>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {GST_FIELDS.map((f) => (
-                  <Field key={f.label} field={f} />
-                ))}
-                <Label.Root className="items-center gap-2 pt-6 sm:col-span-2">
-                  <Checkbox />
-                  H.O
-                </Label.Root>
-              </div>
-              <LinkButton.Root variant="primary" size="medium">
-                <LinkButton.Icon as={RiAddLine} />
-                Add Another GST
-              </LinkButton.Root>
-            </div>
-
-            {/* Contact Person Info */}
-            <div className="space-y-3">
-              <SectionTitle>Contact Person Info</SectionTitle>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {CONTACT_FIELDS.map((f) => (
-                  <Field key={f.label} field={f} />
-                ))}
-              </div>
-            </div>
-          </Drawer.Body>
-
-          <Divider.Root />
-          <Drawer.Footer>
-            <Drawer.Close asChild>
-              <Button.Root variant="neutral" mode="stroke" size="small" className="w-full">
-                Cancel
-              </Button.Root>
-            </Drawer.Close>
-            <Button.Root size="small" className="w-full" onClick={() => setShowAdd(false)}>
-              Save Organization
-            </Button.Root>
-          </Drawer.Footer>
-        </Drawer.Content>
-      </Drawer.Root>
+      <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
+        <div className="border-b border-stroke-soft-200 px-4 py-3 flex items-center justify-between">
+          <h3 className="text-label-sm text-text-strong-950">Branches (first 10)</h3>
+          <a href="/master/branches" className="text-paragraph-sm text-primary-base hover:underline no-underline">View all →</a>
+        </div>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>{['Code', 'Name', 'Type', 'Location', 'Status'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {branches.map(b => (
+              <Table.Row key={b.id}>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{b.code}</Table.Cell>
+                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{b.name}</span></Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 capitalize">{b.branch_type}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{[b.city, b.state].filter(Boolean).join(', ') || '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3">
+                  <Badge.Root size="medium" variant="light" color={b.is_active ? 'green' : 'gray'}>
+                    <Badge.Dot />{b.is_active ? 'Active' : 'Inactive'}
+                  </Badge.Root>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,162 @@
+00:00:00,760 --> 00:00:38,780 [Speaker 0]
+
+तो वो सारे shipment है ना मेरे को यहाँ दिखने लग जाते हैं। recording नहीं किया है camera से। हाँ, तो ये जो है filter लगा के है ना मैं planning करता हूँ पहले। क्योंकि ये जो entries है इसमें इतनी दस-पंद्रह entry नहीं होती है। ये लगभग सौ-दो सौ entry होती है। तो कौन सी entry किधर की है वो तो समझेगा नहीं तो इसके लिए हमने ना इसमें filter लगाया है. destination में filter लगा हुआ है। तो destination filter click करूंगा ना जैसे Excel में कैसे दिखता है सारा options मेरे को। वो सारा option इसमें दिखता है। तो उसमें समझो मेरे को तीन sector का दिल्ली भेजना है। दिल्ली हो गया, चंडीगढ़ हो गया, लखनऊ हो गया। तीनों को मुझे दिल्ली भेजना है। तो मैं तीनों को select करूंगा तो वो तीन destination के सारे docket यहां पे दिखेंगे मेरे को। 
+
+
+
+00:00:40,480 --> 00:00:45,060 [Speaker 0]
+
+ठीक है। तो उसके बाद मैं select all करके add करूंगा right side में option दिख रहा है add. 
+
+
+
+00:00:46,340 --> 00:00:49,220 [Speaker 0]
+
+तो जैसे मैं add करूंगा वो नीचे आ जाएगा सारा dockets। 
+
+
+
+00:00:50,360 --> 00:01:03,089 [Speaker 0]
+
+नहीं, नहीं उसी में, उसी में थोड़ा cut गया है। हाँ, इसमें वो नीचे दिखेगा आपको। हाँ, वो नीचे आ जाएगा। जैसे मैं add करूंगा वो नीचे, add करूंगा वो नीचे आ जाएगा। तो select all भी कर सकता हूँ या एक-एक करके भी मैं add कर सकता हूँ। 
+
+
+
+00:01:04,320 --> 00:01:12,520 [Speaker 0]
+
+तो जैसे ही वो नीचे आ गया वहां पे मेरे को option है देखो select branch to forward. ठीक है। तो यहां पे मैं select करूंगा Delhi branch. 
+
+
+
+00:01:13,920 --> 00:01:29,720 [Speaker 0]
+
+फिर उसके बाद select branch destination वो automatically आएगा जैसे मैं select करूंगा। ठीक है। through air है तो आगे जाकर मैं क्या करूंगा through air already tick, tick है। तो मैं आगे create manifest दबा दूंगा। तो मेरा जो data है तीन sector का 
+
+
+
+00:01:31,140 --> 00:01:41,920 [Speaker 0]
+
+एक manifest बन जाएगा उसको हम raw manifest बोलते हैं। क्योंकि ये मैंने अभी planning किया है। raw manifest क्यों बोलते हैं? क्योंकि मैंने plan किया है इसको। अभी तक मैंने actually लगाया नहीं है। 
+
+
+
+00:01:44,140 --> 00:02:26,740 [Speaker 0]
+
+तो उसके बाद फिर मैं दूसरा sector को filter करूंगा, उसका एक manifest बनाऊंगा। फिर तीसरे को select करूंगा, उसका manifest बनाऊंगा। ठीक है। थोड़ा सा ऊपर जाइए। अभी इसमें कभी-कभी क्या होता है हमारा जो branch है भिवंडी में तो कभी-कभी भिवंडी से हमारे Marol branch में भी आता है। तो वो internal हो जाता है। तो हम लोग उसको branch transfer करके select करते हैं। तो वो इधर आएगा फिर यहां से फिर आगे plan होगा same process. तो ये इधर के branch में दिखने लगेगा। ठीक है। तो ये जो हो गया ये मेरा planning हो गया। तो मेरे सौ document, दो सौ docket जो भी है उसको मैं plan करता हूँ। तो plan करके जो मैंने click कर दिया तो एक raw manifest बन जाता है। तो वो next step में दिखता है hub dispatch में। 
+
+
+
+00:02:27,880 --> 00:04:04,020 [Speaker 0]
+
+अब क्या होगा actual में ये docket या तो भेज दूंगा या समझो और कोई चार docket extra आया तो मैं edit दबा के उसमें चार add कर भी सकता हूँ। तो वो सारा option यहां पर दिया हुआ है। इसको अगर मैं bagging करता तो मैं bagging का count भी डाल सकता हूँ। Box का जितना count है वो भी डाल सकता हूँ अलग से। जैसे मेरे दस box है तो समझो मैंने तीन bag में pack कर दिया। तो bag में तीन आएगा, box में दस हो गया। हाँ, तो वो bagging का option भी है तो वो भी हम लोग उसमें डाल सकते हैं जो फिलहाल हम लोग use नहीं कर रहे because थोड़ा सा वो complicated हो जा रहा है। ठीक है। उसके बाद ये edit किया या जो भी final किया तो इसको हम लोग done करेंगे ना तो ये चला जाएगा next step पे। Hub dispatch. हाँ, forward D जो है hub dispatch ना। तो hub dispatch में आपको गाड़ी number डालनी पड़ती है कि यहां से ये गाड़ी निकली है connection के लिए। भले वो airport जाए या समझो मेरा internal branch में कहीं भी हो, गाड़ी number डालेंगे तो automatically E-way bill में मेरा update हो जाता है। नहीं, नहीं, अभी मैं B पे हूँ, C में नहीं आया अभी तक। forward details में नहीं गया। पहले मैंने planning किया तो मेरा hub dispatch में आ गया B में। hub dispatch में एक option दिखता है edit करने का। अगर कुछ और भी box add करना है या docket add करना है तो मैं edit वगैरह कर सकता हूँ और उसके बाद उसको forward करूंगा मैं। मतलब उसको ये करूंगा hub dispatch में देखेंगे ना उसमें एक vehicle number का भी options है। एक air हो गया, एक vehicle number हो गया। उसी में दो दिख रहा है hub dispatch के नीचे, हाँ। ऊपर-ऊपर। B के नीचे देखो hub dispatch, hub dispatch के नीचे देखो दो option दिख रहे हैं आपको। एक hub dispatch air, hub dispatch vehicle. 
+
+
+
+00:04:05,800 --> 00:04:11,760 [Speaker 0]
+
+तो वहां पे जाके मेरे को ना इसको done करना पड़ता है कि भाई ये जो rough manifest है ये final manifest बन गया मेरा। 
+
+
+
+00:04:13,060 --> 00:04:29,720 [Speaker 0]
+
+final manifest जब बनता है तो उसमें लोग गाड़ी number compulsory डालना पड़ता है। भले वो वहां से निकल के airport पे जाए या समझो third party के पास connection के लिए जाए या मेरा branch में भी आए तो भी मेरे को उसमें vehicle detail भरना पड़ता है। तो जैसे मैं vehicle detail भरूंगा ये next line में चला जाएगा forward details में। 
+
+
+
+00:04:31,200 --> 00:05:09,510 [Speaker 0]
+
+और vehicle details क्यों भरते हैं? क्योंकि vehicle details भरूंगा तो मेरे E-way bill में वो चीज update हो जाएगी। क्योंकि E-way bill का rule है आपकी गाड़ी का number anytime update रहना चाहिए सारा कुछ। तो forward details में आ गया next. अब क्या होता है मेरे लड़के को जाके air India में connection कर दिया या किसी third party को connection कर दिया तो वहां से हमको proof मिलता है, airway bill copy मिलेगा या उसका bill ti मिलेगा या उसका docket मिलेगा या उसका receipt मिलेगा। जब हम connection लगाते हैं। तो वो जो details है वो हम लोग forward details को click करके upload भी करते हैं कि किसने लगाया, किसने क्यों लगाया सारा details, कौन से vendor के through गया, 
+
+
+
+00:05:11,000 --> 00:06:21,336 [Speaker 0]
+
+कौन से mode से गया। तो forward details में आप थोड़ा नीचे आएंगे ना when we click forward तो देखो ये पूरा box आता है। ये सब detail भरना पड़ता है मुझे। final. ये final details है कि मैंने भाई ये इसमें connection कर दिया, इसमें इतने bag है या इतने ये है वो भी सब मैं manually fill करता हूँ। उसका airway bill number क्या है, कौन से party में लगाया वो मेरा खुद का airway bill है या फिर third party का है, वो सब का vendor का details है तो वो सब भरना पड़ता है। हाँ, तो इसमें जब मैं details भर के done करूंगा तो मेरा final manifest close हो जाता है। ठीक है। इसमें एक और step हमने रखा है pending for depart. DO. ठीक है, अभी ये step हमने क्यों बनाया वो आपको बताता हूँ मैं। जैसे हमने यहां से जाके Air India में लगा दिया material, सौ box लगा दिया। तो कभी-कभी क्या होता है सौ box upload हो जाता है, गया नहीं वो flight में।तो वो चला जाता है next flight में या कभी-कभी उसमें से 50 box चला गया 50 नहीं गया। तो ये जो है ना हमारी team आकर confirmation लेती है Air India से या Indigo से कि हमारा माल उड़ा कि नहीं यहां से। तो एक बार यहां से निकल गया तो हमने उसको depart दबा दिया मतलब यहां से चला गया। तो 
+
+
+
+00:06:22,516 --> 00:06:50,956 [Speaker 0]
+
+partial delivery का मतलब हम लोग depart दबाते नहीं है। बाकी staff लोग किस तरह से काम करेंगे मेरे को exactly idea नहीं है। but ये हमने option इसलिए बनाया था कि ये depart हुआ है कि नहीं हुआ confirmation को अपने को click करना पड़ता है। तो ये step को हम लोग कुछ change भी कर सकते हैं अगर easy to कुछ रहेगा तो। partially departed या fully departed या इसको हम लोग sync करके check कर सकते हैं तो वो भी अच्छा है अगर Air India का अपना API मिलता है tracking का तो। 
+
+
+
+00:06:52,016 --> 00:07:02,876 [Speaker 0]
+
+हाँ, तो ये अपन try कर सकते हैं। ठीक है। अभी मेरा एक वो ये था कि जो अभी हमने जो बनाया है software में ये आप लोग बनाएंगे ना जैसे हमने forward declared custom rough manifest plan करते हैं ना 
+
+
+
+00:07:04,316 --> 00:07:41,176 [Speaker 0]
+
+तो ये automatically सामने वाले को incoming manifest में दिखना चाहिए कि ये भाई rough manifest मार लिया है ये आपके पास आने वाला है। जैसे मैंने दिल्ली के लिए एक planning कर दी आज कि भाई ये 20 docket मैंने इसमें-इसमें Air India लगाऊंगा। लगाया नहीं तो नहीं लगाऊंगा। तो सामने वाले को दिखते रहना चाहिए कि भाई ये material मेरे पास आ रहा है। currently जब मैं depart दबाता हूँ तो सामने वाले को दिखता है but वो थोड़ा सा delay रहता है उनको मालूम पड़ने तक। जैसे मैं उनको आता है एक additional problem आपको आना रहेगा जैसे incoming आ नहीं रहा लेकिन आने का planning हुआ है। 
+
+
+
+00:07:43,476 --> 00:07:55,976 [Speaker 0]
+
+ये इसके पहले हमने किया था ना dashboard में incoming दिखता है उनको। हाँ तो वही पर एक landing में आ रहे हैं वो उनको दिखते रहना चाहिए कि भाई ये तुमको मुंबई से आ रहा है। ठीक है। 
+
+
+
+00:07:57,636 --> 00:08:02,176 [Speaker 0]
+
+ठीक है ये हो गया depart किया तो सामने चला जाता है incoming manifest में 
+
+
+
+00:08:03,736 --> 00:08:15,416 [Speaker 0]
+
+next step. हाँ, हाँ मतलब branch को दिखने लगता है कि भाई ये material मेरे पास आने वाला है और तो उसमें एक receive का option रहता है तो क्या करेगा receive दबाएगा का मतलब मेरे को मिल गया। चल नहीं रही। 
+
+
+
+00:08:16,516 --> 00:08:45,236 [Speaker 0]
+
+मुंबई में मैंने बनाया पूरा मुंबई में मैंने depart कर दिया दिल्ली के लिए तो दिल्ली वाले को उसके incoming में दिखने लग जाएगा कि ये incoming मेरे पास आ रहा है। और उसको अगर material नहीं जाता है तो receive दबाएगा। उसको अगर material जब तक मिलेगा नहीं वो receive नहीं दबाएगा। अच्छा sir उसको वो incoming material आ रहा है कि नहीं आ रहा क्या pop-up आता है या फिर वो by default दिखता रहता है जा-जाके। pop-up हमने अभी डला ही नहीं डाले हैं वो हुआ नहीं है। अच्छा। pop-up डलवा नहीं पाए। 
+
+
+
+00:08:47,316 --> 00:08:49,176 [Speaker 0]
+
+फिर उसके बाद pick the order क्या है 
+
+
+
+00:08:50,296 --> 00:08:59,976 [Speaker 0]
+
+ये? ये कुछ तो है मुझे idea नहीं है। हाँ, वो मुझे check करना पड़ेगा मुझे क्या होता है। incoming manifest में pick the order क्या होता है idea नहीं मेरे को। 
+
+
+
+00:09:01,276 --> 00:09:12,836 [Speaker 0]
+
+अच्छा कुछ technical error आ रहा होगा। नहीं वहां से फिर मेरे या तो office में जाएगा तो arrived at destination होता है या फिर directly delivery के लिए आएगा। उसके बाद कैसे कुछ crossing भी होती है। 
+
+
+
+00:09:13,916 --> 00:10:08,196 [Speaker 0]
+
+जैसे मैंने यहां से चंडीगढ़ का माल दिल्ली भेजा, दिल्ली वाला receive करेगा और उसको further connect करता है। वो हमने ऐसा एक option बनाया हुआ है। वो जब आप receive दबाओगे ना incoming manifest पे अगर जैसे मैंने यहां से 50 shipment भेजा 20 दिल्ली, 20 चंडीगढ़ और 10 लखनऊ तो 20 आप उसको आगे delivery के लिए दे सकते हो लेकिन बाकी आप delivery नहीं दिला सकते आपको तो connection करना ही पड़ेगा ना कि लखनऊ अलग है और दिल्ली अलग है ना। नहीं वो सब कुछ added है but वो receive दबाएंगे तो आपके option दिखेंगे वो। ठीक है ये pick the order क्या है थोड़ा सा query लिख दीजिए मैं एक बार check करके बताता हूं आपको. further connect. नहीं receive करेंगे ना तो further connect जो होता है ना वो आपके जैसे आपने receive किया 50 shipment उसमें से 20 आपका ये है local है बराबर और 30 आपको आगे connection करना है। तो आप receive करोगे ना तो ये automatically आपके pending for dispatch में आ जाएगा दिल्ली के। 
+
+
+
+00:10:09,816 --> 00:10:50,056 [Speaker 0]
+
+तो उसके बाद वापस अपने को pending for dispatch से tick, tick, tick करना है। अभी वो run sheet में आऊंगा समझाता हूं वो क्या होता है आगे। ठीक है। और ये pick the order को query लिखिए मेरे को अभी याद नहीं देखना पड़ेगा। जानी चाहिए। ये तो summary है जितने भी manifest हम लोग डालते हैं तो उसमें क्या-क्या options दिखता है, ऐसा image जो upload होता है। कुछ airway bill का copy बोलो या जो भी बोलो सब कुछ आ जाता है। कुछ print करना तो print कर सकता हूं, search करना तो search कर सकता हूं। तो वो सब रहेगा ये। ठीक है। जितने भी हमने अभी manifest बनाया है उसका summary दिखेगा। नहीं अभी आइए आप run sheet पे जो एक point हमने छोड़ दिया था ना सात number 
+
+
+
+00:10:51,116 --> 00:11:00,546 [Speaker 0]
+
+हम आठ पे आ गए थे ना direct. हाँ run sheet. अभी run sheet क्या होता है जब हम लोग delivery के लिए जाते हैं ना कोई भी shipment लेके 
+
+
+
+00:11:01,576 --> 00:11:16,416 [Speaker 0]
+
+तो कौन सी गाड़ी में गया है उसका detail हम लोग fill करते हैं। तो जैसे ही हम लोग fill करते हैं फिर वो delivery के लिए निकलता है तो उसको हम लोग बोलते हैं out for delivery status में. ठीक है। एक second हाँ एक second रुकिए.
+
+
+

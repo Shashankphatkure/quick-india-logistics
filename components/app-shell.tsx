@@ -6,7 +6,17 @@ import { cn } from '@/utils/cn';
 import Sidebar from './sidebar';
 import AppHeader from './app-header';
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+import type { UserType } from '@/lib/permissions';
+
+export type AppShellUser = { fullName: string; username: string; userType: UserType };
+
+export default function AppShell({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user?: AppShellUser;
+}) {
   // Desktop: collapse to icon rail. Mobile: off-canvas drawer.
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -42,11 +52,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onToggle={() => setCollapsed((p) => !p)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
+        userType={user?.userType}
+        userFullName={user?.fullName}
       />
 
       <AppHeader
         sidebarCollapsed={collapsed}
         onMenuToggle={() => setMobileOpen((p) => !p)}
+        user={user}
       />
 
       <div

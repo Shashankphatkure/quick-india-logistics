@@ -1,25 +1,41 @@
-'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import * as Button from '@/components/ui/button';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Divider from '@/components/ui/divider';
 import * as Input from '@/components/ui/input';
-import * as Select from '@/components/ui/select';
-import * as Label from '@/components/ui/label';
-import * as FileUpload from '@/components/ui/file-upload';
-import { Root as Checkbox } from '@/components/ui/checkbox';
+import * as Table from '@/components/ui/table';
+import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import {
-  RiAddLine, RiSearchLine, RiFilterLine, RiDownloadLine,
-  RiCloseLine, RiSuitcaseLine, RiUploadCloud2Line,
-} from '@remixicon/react';
+import { RiSearchLine, RiFilterLine, RiSuitcaseLine } from '@remixicon/react';
+import { listAssets, countAssets, getAssetCounts, ASSET_PAGE_SIZE } from '@/lib/db/assets';
+import { currentOrgId } from '@/lib/tenant';
+import { listBranchesForSelect } from '@/lib/db/branches';
+import PaginationLinks from '@/components/pagination-links';
+import AddAssetForm from './add-asset-form';
 
-type AssetType = 'Logger' | 'Temperature Control Box';
+const LOGGER_LABEL: Record<string, string> = {
+  single_use: 'Single Use', multi_use: 'Multi Use',
+  dry_ice_single: 'Dry Ice (Single)', dry_ice_multi: 'Dry Ice (Multi)',
+  liquid_nitrogen: 'Liquid Nitrogen',
+};
 
-export default function AssetsPage() {
-  const [showAdd, setShowAdd] = useState(false);
-  const [assetType, setAssetType] = useState<AssetType>('Logger');
+const BOX_LABEL: Record<string, string> = {
+  credo: 'Credo', vype: 'Vype', cool_guard: 'Cool Guard',
+  iqo: 'IQO', sytle: 'Sytle', vaq_tec: 'VAQ-TEC',
+};
+
+export default async function AssetsPage({ searchParams }: { searchParams?: { search?: string; page?: string; kind?: string } }) {
+  const orgId = await currentOrgId();
+  const search = searchParams?.search?.trim() || undefined;
+  const page = Math.max(1, Number(searchParams?.page) || 1);
+  const kind = (searchParams?.kind === 'logger' || searchParams?.kind === 'box') ? searchParams.kind : undefined;
+
+  const [rows, total, counts, branches] = await Promise.all([
+    listAssets({ orgId, search, page, kind }),
+    countAssets({ orgId, search, kind }),
+    getAssetCounts(orgId),
+    listBranchesForSelect(orgId),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / ASSET_PAGE_SIZE));
 
   return (
     <div className="space-y-6">
@@ -27,194 +43,85 @@ export default function AssetsPage() {
         icon={RiSuitcaseLine}
         iconColor="bg-feature-lighter text-feature-base"
         title="Assets"
-        subtitle="Manage loggers, temperature control boxes and calibration data"
+        subtitle="Loggers and temperature-control boxes for cold-chain shipments"
         breadcrumbs={[{ label: 'Master', href: '/master/assets' }, { label: 'Assets' }]}
       >
         <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiDownloadLine} />Download Report
-        </Button.Root>
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          Update Assets Calibration
-        </Button.Root>
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          Update Assign Branch
-        </Button.Root>
-        <Button.Root variant="neutral" mode="stroke" size="small">
           <Button.Icon as={RiFilterLine} />Filter
         </Button.Root>
-        <Button.Root size="small" onClick={() => setShowAdd(true)}>
-          <Button.Icon as={RiAddLine} />Add Asset
-        </Button.Root>
+        <AddAssetForm branches={branches} />
       </PageHeader>
 
       <StatsStrip stats={[
-        { label: 'Total Assets', value: 0, trend: 0, trendLabel: 'no change' },
-        { label: 'Loggers', value: 0, trend: 0, trendLabel: 'no change' },
-        { label: 'Temp Control Boxes', value: 0, trend: 0, trendLabel: 'no change' },
-        { label: 'Calibrated', value: 0, trend: 0, trendLabel: 'no change' },
+        { label: 'Total Assets', value: counts.total, trend: 0, trendLabel: 'all time' },
+        { label: 'Loggers', value: counts.loggers, trend: 0, trendLabel: 'all time' },
+        { label: 'Boxes', value: counts.boxes, trend: 0, trendLabel: 'all time' },
+        { label: 'In Use', value: counts.in_use, trend: 0, trendLabel: 'now' },
       ]} />
 
-      {showAdd && (
-        <div className="rounded-xl border border-stroke-soft-200 bg-bg-white-0 p-4 sm:p-5 shadow-regular-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-label-sm text-text-strong-950">Add Asset</h3>
-            <CompactButton.Root variant="ghost" size="large" onClick={() => setShowAdd(false)}>
-              <CompactButton.Icon as={RiCloseLine} />
-            </CompactButton.Root>
-          </div>
-
-          <Divider.Root />
-
-          <div className="space-y-4">
-            <p className="text-subheading-xs uppercase text-text-sub-600">Asset Info</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label.Root>Asset Type <Label.Asterisk /></Label.Root>
-                <Select.Root
-                  size="small"
-                  value={assetType}
-                  onValueChange={(v) => setAssetType(v as AssetType)}
-                >
-                  <Select.Trigger><Select.Value placeholder="Select asset type" /></Select.Trigger>
-                  <Select.Content>
-                    <Select.Item value="Logger">Logger</Select.Item>
-                    <Select.Item value="Temperature Control Box">Temperature Control Box</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </div>
-
-              {assetType === 'Logger' ? (
-                <>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Logger Type <Label.Asterisk /></Label.Root>
-                    <Select.Root size="small">
-                      <Select.Trigger><Select.Value placeholder="Select logger type" /></Select.Trigger>
-                      <Select.Content>
-                        <Select.Item value="single-use">Single Use</Select.Item>
-                        <Select.Item value="multi-use">Multi Use</Select.Item>
-                        <Select.Item value="dry-ice-single">Dry Ice Single Use</Select.Item>
-                        <Select.Item value="dry-ice-multi">Dry Ice Multi Use</Select.Item>
-                        <Select.Item value="liquid-nitrogen">Liquid Nitrogen</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Manufacture Name <Label.Asterisk /></Label.Root>
-                    <Select.Root size="small">
-                      <Select.Trigger><Select.Value placeholder="Select manufacturer" /></Select.Trigger>
-                      <Select.Content>
-                        <Select.Item value="placeholder">Select manufacturer</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <Label.Root>Logger Number <Label.Asterisk /></Label.Root>
-                    <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter logger number" /></Input.Wrapper></Input.Root>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Box Type <Label.Asterisk /></Label.Root>
-                    <Select.Root size="small">
-                      <Select.Trigger><Select.Value placeholder="Select box type" /></Select.Trigger>
-                      <Select.Content>
-                        <Select.Item value="credo">Credo</Select.Item>
-                        <Select.Item value="vype">Vype</Select.Item>
-                        <Select.Item value="cool-guard">Cool Guard</Select.Item>
-                        <Select.Item value="iqo">Iqo</Select.Item>
-                        <Select.Item value="sytle">Sytle</Select.Item>
-                        <Select.Item value="vaq-tec">VAQ-TEC</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Box Capacities <Label.Asterisk /></Label.Root>
-                    <Select.Root size="small">
-                      <Select.Trigger><Select.Value placeholder="Select capacity" /></Select.Trigger>
-                      <Select.Content>
-                        <Select.Item value="02l">02L</Select.Item>
-                        <Select.Item value="04l">04L</Select.Item>
-                        <Select.Item value="07l">07L</Select.Item>
-                        <Select.Item value="12l">12L</Select.Item>
-                        <Select.Item value="14l">14L</Select.Item>
-                        <Select.Item value="18l">18L</Select.Item>
-                        <Select.Item value="28l">28L</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Manufacture Product ID <Label.Asterisk /></Label.Root>
-                    <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter product ID" /></Input.Wrapper></Input.Root>
-                  </div>
-                </>
-              )}
-
-              <div className="flex flex-col gap-1.5">
-                <Label.Root>Initial Assign Branch <Label.Asterisk /></Label.Root>
-                <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Select branch" /></Input.Wrapper></Input.Root>
-              </div>
-
-              <Label.Root className="flex items-center gap-2 cursor-pointer pt-5">
-                <Checkbox />
-                <span className="text-paragraph-sm text-text-strong-950">Is Checked</span>
-              </Label.Root>
-            </div>
-
-            {assetType === 'Logger' && (
-              <div className="space-y-3 pt-2">
-                <p className="text-subheading-xs uppercase text-text-sub-600">Asset Calibration Info</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Calibration From <Label.Asterisk /></Label.Root>
-                    <Input.Root size="small"><Input.Wrapper><Input.Input type="date" /></Input.Wrapper></Input.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Calibration To <Label.Asterisk /></Label.Root>
-                    <Input.Root size="small"><Input.Wrapper><Input.Input type="date" /></Input.Wrapper></Input.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Certificate Issued By <Label.Asterisk /></Label.Root>
-                    <Input.Root size="small"><Input.Wrapper><Input.Input placeholder="Enter name" /></Input.Wrapper></Input.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label.Root>Issued Date <Label.Asterisk /></Label.Root>
-                    <Input.Root size="small"><Input.Wrapper><Input.Input type="date" /></Input.Wrapper></Input.Root>
-                  </div>
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <Label.Root>Document <Label.Asterisk /></Label.Root>
-                    <FileUpload.Root>
-                      <input type="file" tabIndex={-1} className="hidden" />
-                      <FileUpload.Icon as={RiUploadCloud2Line} />
-                      <div className="space-y-1">
-                        <div className="text-label-sm text-text-strong-950">Choose a file or drag &amp; drop it here.</div>
-                        <div className="text-paragraph-xs text-text-sub-600">PDF, PNG or JPG, up to 10 MB.</div>
-                      </div>
-                      <FileUpload.Button>Browse File</FileUpload.Button>
-                    </FileUpload.Root>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button.Root variant="neutral" mode="stroke" size="small" onClick={() => setShowAdd(false)}>Cancel</Button.Root>
-            <Button.Root variant="neutral" mode="stroke" size="small">Import</Button.Root>
-            <Button.Root size="small">Save</Button.Root>
-          </div>
-        </div>
-      )}
-
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
-        <div className="border-b border-stroke-soft-200 p-3">
-          <Input.Root size="small" className="w-full max-w-xs">
-            <Input.Wrapper><Input.Icon as={RiSearchLine} /><Input.Input placeholder="Search assets..." /></Input.Wrapper>
-          </Input.Root>
+        <div className="border-b border-stroke-soft-200 px-4 py-3 flex items-center gap-3">
+          <form method="GET" className="flex-1">
+            <input type="hidden" name="kind" value={kind ?? ''} />
+            <Input.Root size="small" className="w-full max-w-xs">
+              <Input.Wrapper>
+                <Input.Icon as={RiSearchLine} />
+                <Input.Input name="search" defaultValue={search ?? ''} placeholder="Search by asset ID / barcode..." />
+              </Input.Wrapper>
+            </Input.Root>
+          </form>
+          <div className="flex gap-1.5">
+            <a href="/master/assets" className={`rounded-md px-2 py-1 text-paragraph-sm no-underline transition ${!kind ? 'bg-primary-base text-static-white' : 'text-text-sub-600 hover:bg-bg-weak-50'}`}>All</a>
+            <a href="/master/assets?kind=logger" className={`rounded-md px-2 py-1 text-paragraph-sm no-underline transition ${kind === 'logger' ? 'bg-primary-base text-static-white' : 'text-text-sub-600 hover:bg-bg-weak-50'}`}>Loggers</a>
+            <a href="/master/assets?kind=box" className={`rounded-md px-2 py-1 text-paragraph-sm no-underline transition ${kind === 'box' ? 'bg-primary-base text-static-white' : 'text-text-sub-600 hover:bg-bg-weak-50'}`}>Boxes</a>
+          </div>
         </div>
-        <div className="px-4 py-8 text-center text-paragraph-sm text-text-sub-600">No data found</div>
-        <div className="border-t border-stroke-soft-200 px-4 py-3">
-          <span className="text-paragraph-xs text-text-sub-600">1-0 of 0</span>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              {['Asset ID', 'Barcode', 'Kind', 'Type', 'Manufacturer', 'Current Branch', 'Usage', 'Cal. Expiry', 'Status'].map(c => (
+                <Table.Head key={c}>{c}</Table.Head>
+              ))}
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {rows.length === 0 ? (
+              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No assets found</Table.Cell></Table.Row>
+            ) : rows.map(a => {
+              const typeText = a.asset_kind === 'logger'
+                ? (LOGGER_LABEL[a.logger_type ?? ''] ?? '—')
+                : (BOX_LABEL[a.box_type ?? ''] ?? '—');
+              return (
+                <Table.Row key={a.id}>
+                  <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{a.asset_id}</span></Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{a.barcode ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3">
+                    <Badge.Root size="small" variant="lighter" color={a.asset_kind === 'logger' ? 'purple' : 'sky'}>
+                      {a.asset_kind === 'logger' ? 'Logger' : 'Box'}
+                    </Badge.Root>
+                  </Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{typeText}{a.asset_kind === 'box' && a.capacity_liters ? ` (${a.capacity_liters}L)` : ''}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{a.manufacturer ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{a.current_branch_name ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{a.usage_count}×</Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{a.cal_to ?? '—'}</Table.Cell>
+                  <Table.Cell className="h-auto py-3">
+                    {a.is_defective ? (
+                      <Badge.Root size="medium" variant="light" color="red"><Badge.Dot />Defective</Badge.Root>
+                    ) : a.in_use ? (
+                      <Badge.Root size="medium" variant="light" color="orange"><Badge.Dot />In Use</Badge.Root>
+                    ) : (
+                      <Badge.Root size="medium" variant="light" color="green"><Badge.Dot />Available</Badge.Root>
+                    )}
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
+        </Table.Root>
+        <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
+          <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*ASSET_PAGE_SIZE+1}-{Math.min(page*ASSET_PAGE_SIZE, total)} of {total}</span>
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/master/assets" query={{ search, kind }} />
         </div>
       </div>
     </div>

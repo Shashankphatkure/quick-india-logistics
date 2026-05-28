@@ -1,0 +1,7 @@
+{
+  "migrations-dir": "migrations",
+  "migration-file-language": "sql",
+  "schema": "public",
+  "create-schema": false,
+  "verbose": true
+}

@@ -1,0 +1,162 @@
+00:00:15,860 --> 00:00:16,320 [Speaker 0]
+
+हाँ। 
+
+
+
+00:00:18,600 --> 00:00:20,820 [Speaker 0]
+
+सात number से पहले आठ number का है ये। 
+
+
+
+00:00:21,980 --> 00:00:27,960 [Speaker 0]
+
+फिर सात number का है। 
+
+
+
+00:00:29,160 --> 00:00:33,180 [Speaker 0]
+
+manifest क्या होता है वो बताता हूँ मैं। 
+
+
+
+00:00:39,360 --> 00:00:48,100 [Speaker 0]
+
+उसका जो connections होता है उसका detail जो हम लोग fill करते हैं उसको manifest बोलते हैं। जैसे मैंने अभी-आपको recording on किया हो गया? 
+
+
+
+00:00:50,040 --> 00:01:29,540 [Speaker 0]
+
+जैसे मैंने 100 pickup किया Bombay से 20 Delhi के लिए जा रहा है, 20 Kolkata के लिए जा रहा है, 20 Chennai के लिए जा रहा है तो मेरा single connection होता है। अगर air mode पे 20 है तो 20 के 20 का मैं एक Air India में लगा दिया। okay तो Air India से मुझे एक air waybill मिलता है कि मैंने एक इतना shipment air waybill में लगाया है bolti hu. तो वो जो connection details है वो मेरा manifest होता है। मैं एक screenshot भी आपको दिखा दूंगा एक बार manifest का। तो उसमें जो भी shipment कौन से इस पे गया है और उसमें क्या-क्या सारे docket के details होते हैं उसको हम लोग manifest बोलते हैं। 
+
+
+
+00:01:31,400 --> 00:01:53,700 [Speaker 0]
+
+ये देखो मैंने screenshot बनाया मैंने उसे print किया है। उसमें जितने भी docket जाते हैं वो सारे docket दिखते हैं。 docket मतलब जो हमारे air waybill copy होता है हमारा और वो किस तरीके से गया, किन से Air India में गया, Indigo में गया, by road गया, by road से गया तो किस से किसके through गया वो सारा detail उसमें रहता है। सामने वाले का number, docket का number, air waybill का number. 
+
+
+
+00:01:55,220 --> 00:02:06,300 [Speaker 0]
+
+हाँ, तो ये manifest का एक summary बनाया था आपको देखने के लिए उसको मैंने print किया है manifest का। ठीक है तो अब जब मैं summary पे click करता हूँ तो उसमें से पहला option है pending for dispatch. 
+
+
+
+00:02:08,259 --> 00:02:22,920 [Speaker 0]
+
+ठीक है अभी जो pending for dispatch है इसमें मेरे एक, दो, तीन, चार, पांच, छह item मेरे अंदर आते हैं। तो पहला option है pending for dispatch तो उसमें जो भी shipment मेरे godown पे आ गए और connection pending है वो वहां दिखेंगे 
+
+
+
+00:02:25,060 --> 00:02:28,140 [Speaker 0]
+
+A point में। 
+
+
+
+00:02:30,360 --> 00:02:35,720 [Speaker 0]
+
+जैसे मैंने pickup किया pickup करके मैं अपने godown पे लेकर आ गया हूँ। 
+
+
+
+00:02:46,020 --> 00:03:51,700 [Speaker 0]
+
+बोलिए ना। 
+
+
+
+00:03:58,240 --> 00:03:59,920 [Speaker 0]
+
+सही में pending for dispatch. 
+
+
+
+00:04:02,260 --> 00:04:15,820 [Speaker 0]
+
+जो मैं बोल रहा हूँ समझ में आपको? 
+
+
+
+00:04:29,220 --> 00:04:32,720 [Speaker 0]
+
+नहीं भाई, मैं आपको एक detail बताता हूँ। हमारा जो workflow होता है 
+
+
+
+00:04:33,740 --> 00:04:44,380 [Speaker 0]
+
+तो जैसे हम लोग कोई भी docket create करते हैं तो order में जाते हैं। order create किया वो order received हो गया। फिर उसके बाद order receive करने के बाद क्या होता है pickup. 
+
+
+
+00:04:45,840 --> 00:04:51,540 [Speaker 0]
+
+अब pickup जैसे हमने client के पास से material लिया तो हम लोग list करते हैं pickup, pickup done. 
+
+
+
+00:04:53,260 --> 00:05:03,360 [Speaker 0]
+
+pickup के बाद होता है दो step. Either वो पूरा material मेरे godown पे आएगा, sorting होगा और connection के लिए आगे जाएगा। 
+
+
+
+00:05:05,820 --> 00:05:08,060 [Speaker 0]
+
+नहीं, पहले या तो मेरे godown पे आएगा। 
+
+
+
+00:05:09,180 --> 00:05:42,960 [Speaker 0]
+
+अगर godown पे आएगा तो उसको sorting करेंगे और आगे connection के लिए भेजेंगे। या फिर अभी कैसा होता है कि direct pickup करके सीधा connection के लिए चला गया office लेकर नहीं आ रहा वो। हाँ, तो दोनों ही option में गाड़ी जैसे जब वहां से निकलती है तो हम लोग को ये भी update करना रहता है। बराबर। तो pickup के नीचे हम लोग डालते हैं गाड़ी number तो ये भी automatic update हो जाता है। ठीक है। उसके बाद जैसे समझो godown में आया example तो godown में हम लोग उसको करते हैं arrived at hub मतलब मेरे godown में आ गया। okay. 
+
+
+
+00:05:44,640 --> 00:05:48,420 [Speaker 0]
+
+अब करना पड़ता है कि ये मेरे godown में आया सारा material. 
+
+
+
+00:05:51,440 --> 00:05:52,840 [Speaker 0]
+
+फिर यहां से बनता है manifest. 
+
+
+
+00:05:55,440 --> 00:06:12,900 [Speaker 0]
+
+okay manifest भी बनाते हैं जब हम लोग तो जो भी material मेरे godown में आ गया तो मेरे को pending for dispatch में दिखता है। ये सब मेरे godown में पड़ा है। इसको किधर भेजना है वो उसका मेरे को manifest create करना पड़ता है। manifest मतलब मैं उसको कहां किधर connection लगाऊंगा। pending for dispatch. 
+
+
+
+00:06:16,360 --> 00:06:25,850 [Speaker 0]
+
+हाँ, ये manifest का एक part है। तो जब मैं जिसे आपको summary मैंने भेजा है ना उसमें देखो बहुत सारे item दिख रहे हैं आपको origin और destination दिख रहा है। 
+
+
+
+00:06:27,520 --> 00:06:29,340 [Speaker 0]
+
+ठीक है। अभी destination wise है ना। 
+
+
+
+00:06:30,500 --> 00:06:52,180 [Speaker 0]
+
+अभी ये क्योंकि super user था बोलकर सब branch दिख रहा है वैसे normal दिखेगा नहीं आपको। तो जैसे Bangalore हो तो Bangalore दिखेगा origin सबका। Bangalore या मेरे near by जो भी रहेगा तो जैसे Bangalore से origin same रहता है destination समझो अलग-अलग रहता है। दो document है Gulbarga का, चार document है Delhi का। तो उसमें ना filter option already है तो मैं अगर destination से filter लगा देता हूँ 
+
+
+
+00:06:53,820 --> 00:06:57,860 [Speaker 0]
+
+तो मुझे पता चल जाएगा कि कौन सा shipment कहां जाएगा। तो अगर Delhi का shipment Delhi जाएगा।
+
+
+
