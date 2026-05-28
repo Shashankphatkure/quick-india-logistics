@@ -4,22 +4,23 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomBytes } from 'node:crypto';
 
 export const S3_BUCKET = process.env.S3_BUCKET ?? 'qil-documents-523231703540';
-export const S3_REGION = process.env.AWS_REGION ?? 'ap-south-1';
+export const S3_REGION = process.env.S3_REGION ?? process.env.AWS_REGION ?? 'ap-south-1';
 
 declare global {
   // eslint-disable-next-line no-var
   var __qil_s3_client: S3Client | undefined;
 }
 
+// Amplify forbids env vars starting with "AWS_". Prefer S3_-prefixed names; fall back to AWS_ for local dev.
+const accessKeyId = process.env.S3_ACCESS_KEY_ID ?? process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
+
 function buildClient(): S3Client {
   return new S3Client({
     region: S3_REGION,
-    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
-      ? {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        }
-      : undefined,
+    credentials: accessKeyId && secretAccessKey
+      ? { accessKeyId, secretAccessKey }
+      : undefined, // falls back to default credential chain (IAM role on Amplify)
   });
 }
 
