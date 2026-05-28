@@ -15,6 +15,7 @@ import {
 import { listOrders, countOrders, getOrderCounts } from '@/lib/db/orders';
 import { currentOrgId } from '@/lib/tenant';
 import OrdersTable from './orders-table';
+import FilterPopover from '@/components/filter-popover';
 
 const PAGE_SIZE = 25;
 
@@ -54,10 +55,9 @@ export default async function OrdersPage({
           </Tooltip.Trigger>
           <Tooltip.Content>Export orders to Excel</Tooltip.Content>
         </Tooltip.Root>
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />
-          Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Docket / Shipper / Client', type: 'text', placeholder: 'Search...' },
+        ]} />
         <Button.Root size="small" asChild>
           <Link href="/booking/orders/add" className="no-underline">
             <Button.Icon as={RiAddLine} />
