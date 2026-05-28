@@ -5,7 +5,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiTruckLine } from '@remixicon/react';
+import { RiSearchLine, RiTruckLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import { listVendors, countVendors, getVendorCounts } from '@/lib/db/vendors';
 import { currentOrgId } from '@/lib/tenant';
@@ -47,9 +48,9 @@ export default async function VendorsPage({ searchParams }: { searchParams?: { s
         subtitle="Manage third-party logistics vendors"
         breadcrumbs={[{ label: 'Master', href: '/master/vendors' }, { label: 'Vendors' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Vendor Name', type: 'text', placeholder: 'Search...' },
+        ]} />
         <AddVendorForm />
       </PageHeader>
 

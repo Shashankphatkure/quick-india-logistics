@@ -5,7 +5,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiCarLine } from '@remixicon/react';
+import { RiSearchLine, RiCarLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { listVehicles, countVehicles, getVehicleCounts, VEHICLE_PAGE_SIZE } from '@/lib/db/vehicles';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
@@ -40,9 +41,9 @@ export default async function VehiclesPage({ searchParams }: { searchParams?: { 
         subtitle="Manage owned, partner and market vehicles"
         breadcrumbs={[{ label: 'Master', href: '/master/vehicles' }, { label: 'Vehicles' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Vehicle No / Model', type: 'text', placeholder: 'MH...' },
+        ]} />
         <AddVehicleForm />
       </PageHeader>
 

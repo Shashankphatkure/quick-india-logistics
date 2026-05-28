@@ -4,7 +4,8 @@ import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiFilePaperLine } from '@remixicon/react';
+import { RiSearchLine, RiFilePaperLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { listManifests, countManifests, getManifestCounts, MANIFEST_PAGE_SIZE } from '@/lib/db/manifests';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
@@ -36,9 +37,9 @@ export default async function HubDispatchPage({ searchParams }: { searchParams?:
         subtitle="Manifests being prepared at the hub (rough state)"
         breadcrumbs={[{ label: 'Manifest', href: '/manifest/hub-dispatch' }, { label: 'Hub Dispatch' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Manifest No', type: 'text', placeholder: 'MAN...' },
+        ]} />
       </PageHeader>
 
       <StatsStrip stats={[

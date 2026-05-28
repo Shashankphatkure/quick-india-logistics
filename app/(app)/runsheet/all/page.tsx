@@ -5,11 +5,12 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiListCheck2 } from '@remixicon/react';
+import { RiSearchLine, RiListCheck2 } from '@remixicon/react';
 import { listRunsheets, countRunsheets, getRunsheetCounts, RUNSHEET_PAGE_SIZE } from '@/lib/db/runsheets';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import RunsheetTabs from '@/components/runsheet-tabs';
+import FilterPopover from '@/components/filter-popover';
 
 const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'orange' | 'green' }> = {
   rough: { label: 'Rough', color: 'gray' },
@@ -39,9 +40,15 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
         subtitle="Local delivery runsheets across all branches"
         breadcrumbs={[{ label: 'Runsheet', href: '/runsheet/all' }, { label: 'All' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'state', label: 'State', type: 'select', options: [
+            { value: 'rough', label: 'Rough' },
+            { value: 'final', label: 'Final' },
+            { value: 'out_for_delivery', label: 'Out for Delivery' },
+            { value: 'completed', label: 'Completed' },
+          ]},
+          { name: 'search', label: 'Runsheet No', type: 'text', placeholder: 'RUN...' },
+        ]} />
       </PageHeader>
 
       <StatsStrip stats={[

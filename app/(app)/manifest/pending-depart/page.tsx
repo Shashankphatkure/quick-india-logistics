@@ -3,7 +3,8 @@ import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiFilePaperLine } from '@remixicon/react';
+import { RiFilePaperLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { many, one } from '@/lib/db';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
@@ -59,9 +60,7 @@ export default async function PendingDepartPage({ searchParams }: { searchParams
         subtitle="Manifests with vehicle / AWB assigned, awaiting physical depart"
         breadcrumbs={[{ label: 'Manifest', href: '/manifest/pending-depart' }, { label: 'Pending To Depart' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[]} />
       </PageHeader>
 
       <StatsStrip stats={[

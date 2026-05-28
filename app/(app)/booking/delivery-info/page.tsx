@@ -5,7 +5,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiTruckLine, RiArrowUpDownLine } from '@remixicon/react';
+import { RiSearchLine, RiTruckLine, RiArrowUpDownLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { cn } from '@/utils/cn';
 import { listDeliveries, countDeliveries, getDeliveryCounts, DELIVERY_PAGE_SIZE, type DeliveryTab } from '@/lib/db/deliveries';
 import { currentOrgId } from '@/lib/tenant';
@@ -38,9 +39,14 @@ export default async function DeliveryInfoPage({ searchParams }: { searchParams?
         subtitle="View and manage delivery confirmations"
         breadcrumbs={[{ label: 'Booking', href: '/booking/orders' }, { label: 'Delivery Info' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'tab', label: 'Tab', type: 'select', options: [
+            { value: 'delivered', label: 'Delivered' },
+            { value: 'undelivered', label: 'Undelivered / Damaged' },
+            { value: 'pending_mark', label: 'Pending POD Mark' },
+          ]},
+          { name: 'search', label: 'Docket / Consignee', type: 'text', placeholder: 'Search...' },
+        ]} />
       </PageHeader>
 
       <StatsStrip stats={[

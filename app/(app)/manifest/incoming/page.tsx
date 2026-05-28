@@ -4,7 +4,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiFilePaperLine } from '@remixicon/react';
+import { RiFilePaperLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { listManifests, getManifestCounts, MANIFEST_PAGE_SIZE } from '@/lib/db/manifests';
 import { currentOrgId } from '@/lib/tenant';
 import { getSession } from '@/lib/auth';
@@ -40,9 +41,7 @@ export default async function IncomingManifestPage({ searchParams }: { searchPar
         subtitle={`Manifests inbound to your branch${toBranchId ? '' : ' — no branch assigned'}`}
         breadcrumbs={[{ label: 'Manifest', href: '/manifest/incoming' }, { label: 'Incoming' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[]} />
       </PageHeader>
 
       <StatsStrip stats={[

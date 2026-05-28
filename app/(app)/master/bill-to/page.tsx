@@ -5,7 +5,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiAddLine, RiSearchLine, RiFilterLine, RiUserStarLine } from '@remixicon/react';
+import { RiAddLine, RiSearchLine, RiUserStarLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import {
   listBillTos, countBillTos, getBillToCounts, listClientsByBillTo,
   BILL_TO_PAGE_SIZE,
@@ -44,9 +45,9 @@ export default async function BillToPage({ searchParams }: { searchParams?: { se
         subtitle="Entities QIL invoices — each can have many Clients underneath (CFA pattern)"
         breadcrumbs={[{ label: 'Master', href: '/master/bill-to' }, { label: 'Bill-To' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Bill-To Name', type: 'text', placeholder: 'Search...' },
+        ]} />
         <Button.Root size="small">
           <Button.Icon as={RiAddLine} />Add Bill-To
         </Button.Root>

@@ -9,7 +9,6 @@ import StatsStrip from '@/components/stats-strip';
 import {
   RiAddLine,
   RiSearchLine,
-  RiFilterLine,
   RiDownloadLine,
   RiCalendarCheckLine,
 } from '@remixicon/react';

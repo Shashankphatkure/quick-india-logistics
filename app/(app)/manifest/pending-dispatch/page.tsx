@@ -2,7 +2,8 @@ import React from 'react';
 import * as Button from '@/components/ui/button';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiFilePaperLine } from '@remixicon/react';
+import { RiFilePaperLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { listPendingDispatchOrders, countPendingDispatchOrders } from '@/lib/db/manifests';
 import { currentOrgId } from '@/lib/tenant';
 import { many } from '@/lib/db';
@@ -39,9 +40,7 @@ export default async function PendingDispatchPage({ searchParams }: { searchPara
         subtitle="Orders ready to be added to a manifest"
         breadcrumbs={[{ label: 'Manifest', href: '/manifest/pending-dispatch' }, { label: 'Pending For Dispatch' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[]} />
       </PageHeader>
 
       <StatsStrip stats={[

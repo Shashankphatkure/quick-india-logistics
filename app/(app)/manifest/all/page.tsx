@@ -5,11 +5,12 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiFilePaperLine } from '@remixicon/react';
+import { RiSearchLine, RiFilePaperLine } from '@remixicon/react';
 import { listManifests, countManifests, getManifestCounts, MANIFEST_PAGE_SIZE } from '@/lib/db/manifests';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import ManifestTabs from '@/components/manifest-tabs';
+import FilterPopover from '@/components/filter-popover';
 
 const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'orange' | 'green' | 'purple' }> = {
   rough: { label: 'Rough', color: 'gray' },
@@ -45,9 +46,16 @@ export default async function AllManifestsPage({ searchParams }: { searchParams?
         subtitle="Outbound shipment manifests across all states"
         breadcrumbs={[{ label: 'Manifest', href: '/manifest/all' }, { label: 'All' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'state', label: 'State', type: 'select', options: [
+            { value: 'rough', label: 'Rough' },
+            { value: 'final', label: 'Final' },
+            { value: 'departed', label: 'Departed' },
+            { value: 'arrived', label: 'Arrived' },
+            { value: 'received', label: 'Received' },
+          ]},
+          { name: 'search', label: 'Manifest No', type: 'text', placeholder: 'MAN...' },
+        ]} />
       </PageHeader>
 
       <StatsStrip stats={[

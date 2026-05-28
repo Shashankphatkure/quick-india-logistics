@@ -2,7 +2,8 @@ import React from 'react';
 import * as Button from '@/components/ui/button';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiListCheck2 } from '@remixicon/react';
+import { RiListCheck2 } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { listPendingDeliveryOrders, countPendingDeliveryOrders } from '@/lib/db/runsheets';
 import { currentOrgId } from '@/lib/tenant';
 import { many } from '@/lib/db';
@@ -35,9 +36,7 @@ export default async function PendingDeliveryPage({ searchParams }: { searchPara
         subtitle="Orders ready to be assigned to a runsheet"
         breadcrumbs={[{ label: 'Runsheet', href: '/runsheet/pending-delivery' }, { label: 'Pending Delivery' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[]} />
       </PageHeader>
 
       <StatsStrip stats={[

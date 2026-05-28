@@ -4,7 +4,8 @@ import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiFilePaperLine } from '@remixicon/react';
+import { RiSearchLine, RiFilePaperLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { listManifests, countManifests, getManifestCounts, MANIFEST_PAGE_SIZE } from '@/lib/db/manifests';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
@@ -36,9 +37,9 @@ export default async function ForwardingPage({ searchParams }: { searchParams?: 
         subtitle="Final manifests ready to forward to coloader / airline"
         breadcrumbs={[{ label: 'Manifest', href: '/manifest/forwarding' }, { label: 'Forwarding' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Manifest No', type: 'text', placeholder: 'MAN...' },
+        ]} />
       </PageHeader>
 
       <StatsStrip stats={[

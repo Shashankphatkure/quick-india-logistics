@@ -5,7 +5,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiAddLine, RiSearchLine, RiFilterLine, RiMapPin2Line } from '@remixicon/react';
+import { RiAddLine, RiSearchLine, RiMapPin2Line } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { many, one } from '@/lib/db';
 import { currentOrgId } from '@/lib/tenant';
 
@@ -62,9 +63,9 @@ export default async function LocationsPage({ searchParams }: { searchParams?: {
         subtitle="Operating cities, states and pincodes (derived from branches)"
         breadcrumbs={[{ label: 'Master', href: '/master/locations' }, { label: 'Locations' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'City or State', type: 'text', placeholder: 'Search...' },
+        ]} />
         <Button.Root size="small">
           <Button.Icon as={RiAddLine} />Add Location
         </Button.Root>

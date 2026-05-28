@@ -5,7 +5,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiSearchLine, RiArrowUpDownLine, RiBox3Line } from '@remixicon/react';
+import { RiSearchLine, RiArrowUpDownLine, RiBox3Line } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import PaginationLinks from '@/components/pagination-links';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import {
@@ -52,10 +53,9 @@ export default async function CommoditiesPage({
           { label: 'Commodities' },
         ]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />
-          Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Commodity Name', type: 'text', placeholder: 'Search...' },
+        ]} />
         <AddCommodityForm types={types} />
       </PageHeader>
 

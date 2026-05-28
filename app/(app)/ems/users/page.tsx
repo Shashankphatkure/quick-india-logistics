@@ -3,7 +3,8 @@ import Link from 'next/link';
 import * as Button from '@/components/ui/button';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiTeamLine } from '@remixicon/react';
+import { RiTeamLine } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { cn } from '@/utils/cn';
 import {
   listUsers,
@@ -55,10 +56,9 @@ export default async function UsersPage({
         subtitle="Manage employees, roles and access"
         breadcrumbs={[{ label: 'EMS', href: '/ems/users' }, { label: 'Users' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />
-          Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Name / Username / Email', type: 'text', placeholder: 'Search...' },
+        ]} />
       </PageHeader>
 
       <StatsStrip

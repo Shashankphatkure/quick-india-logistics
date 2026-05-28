@@ -6,7 +6,8 @@ import * as Badge from '@/components/ui/badge';
 import PaginationLinks from '@/components/pagination-links';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiStore2Line } from '@remixicon/react';
+import { RiSearchLine, RiStore2Line } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import { listBranches, countBranches, getBranchCounts } from '@/lib/db/branches';
 import { currentOrgId } from '@/lib/tenant';
@@ -49,10 +50,9 @@ export default async function BranchesPage({
         subtitle="Manage branch locations and teams"
         breadcrumbs={[{ label: 'Master', href: '/master/branches' }, { label: 'Branches' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />
-          Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'search', label: 'Branch Code / Name', type: 'text', placeholder: 'QIL-...' },
+        ]} />
         <AddBranchForm />
       </PageHeader>
 

@@ -5,12 +5,13 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiSearchLine, RiFilterLine, RiSuitcaseLine } from '@remixicon/react';
+import { RiSearchLine, RiSuitcaseLine } from '@remixicon/react';
 import { listAssets, countAssets, getAssetCounts, ASSET_PAGE_SIZE } from '@/lib/db/assets';
 import { currentOrgId } from '@/lib/tenant';
 import { listBranchesForSelect } from '@/lib/db/branches';
 import PaginationLinks from '@/components/pagination-links';
 import AddAssetForm from './add-asset-form';
+import FilterPopover from '@/components/filter-popover';
 
 const LOGGER_LABEL: Record<string, string> = {
   single_use: 'Single Use', multi_use: 'Multi Use',
@@ -46,9 +47,13 @@ export default async function AssetsPage({ searchParams }: { searchParams?: { se
         subtitle="Loggers and temperature-control boxes for cold-chain shipments"
         breadcrumbs={[{ label: 'Master', href: '/master/assets' }, { label: 'Assets' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[
+          { name: 'kind', label: 'Kind', type: 'select', options: [
+            { value: 'logger', label: 'Logger' },
+            { value: 'box', label: 'Box' },
+          ]},
+          { name: 'search', label: 'Asset ID / Barcode', type: 'text', placeholder: 'LOG-... / BAR-...' },
+        ]} />
         <AddAssetForm branches={branches} />
       </PageHeader>
 

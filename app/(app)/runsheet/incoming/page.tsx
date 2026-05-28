@@ -4,7 +4,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiListCheck2 } from '@remixicon/react';
+import { RiListCheck2 } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { many } from '@/lib/db';
 import { currentOrgId } from '@/lib/tenant';
 import { getSession } from '@/lib/auth';
@@ -62,9 +63,7 @@ export default async function IncomingRunsheetPage({ searchParams }: { searchPar
         subtitle={`Runsheets active at your branch${myBranchId ? '' : ' — no branch assigned'}`}
         breadcrumbs={[{ label: 'Runsheet', href: '/runsheet/incoming' }, { label: 'Incoming' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[]} />
       </PageHeader>
 
       <StatsStrip stats={[

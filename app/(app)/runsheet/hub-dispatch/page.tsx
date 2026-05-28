@@ -4,7 +4,8 @@ import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
-import { RiFilterLine, RiListCheck2 } from '@remixicon/react';
+import { RiListCheck2 } from '@remixicon/react';
+import FilterPopover from '@/components/filter-popover';
 import { listManifests, MANIFEST_PAGE_SIZE, countManifests, getManifestCounts } from '@/lib/db/manifests';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
@@ -34,9 +35,7 @@ export default async function RunsheetHubDispatchPage({ searchParams }: { search
         subtitle="Cross-branch vehicle transfers"
         breadcrumbs={[{ label: 'Runsheet', href: '/runsheet/hub-dispatch' }, { label: 'Hub Dispatch' }]}
       >
-        <Button.Root variant="neutral" mode="stroke" size="small">
-          <Button.Icon as={RiFilterLine} />Filter
-        </Button.Root>
+        <FilterPopover fields={[]} />
       </PageHeader>
 
       <StatsStrip stats={[
