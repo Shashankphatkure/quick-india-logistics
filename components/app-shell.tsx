@@ -9,13 +9,18 @@ import AppHeader from './app-header';
 import type { UserType } from '@/lib/permissions';
 
 export type AppShellUser = { fullName: string; username: string; userType: UserType };
+export type AppShellBranch = { id: string; name: string };
 
 export default function AppShell({
   children,
   user,
+  branches = [],
+  currentBranchName,
 }: {
   children: React.ReactNode;
   user?: AppShellUser;
+  branches?: AppShellBranch[];
+  currentBranchName?: string;
 }) {
   // Desktop: collapse to icon rail. Mobile: off-canvas drawer.
   const [collapsed, setCollapsed] = useState(false);
@@ -60,6 +65,8 @@ export default function AppShell({
         sidebarCollapsed={collapsed}
         onMenuToggle={() => setMobileOpen((p) => !p)}
         user={user}
+        branches={branches}
+        currentBranchName={currentBranchName}
       />
 
       <div

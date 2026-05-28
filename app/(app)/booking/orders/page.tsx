@@ -48,12 +48,14 @@ export default async function OrdersPage({
       >
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
-            <Button.Root variant="neutral" mode="stroke" size="small">
-              <Button.Icon as={RiDownloadLine} />
-              Export
+            <Button.Root variant="neutral" mode="stroke" size="small" asChild>
+              <a href={`/api/export/orders${search ? `?search=${encodeURIComponent(search)}` : ''}`} className="no-underline">
+                <Button.Icon as={RiDownloadLine} />
+                Export
+              </a>
             </Button.Root>
           </Tooltip.Trigger>
-          <Tooltip.Content>Export orders to Excel</Tooltip.Content>
+          <Tooltip.Content>Download visible orders as CSV</Tooltip.Content>
         </Tooltip.Root>
         <FilterPopover fields={[
           { name: 'search', label: 'Docket / Shipper / Client', type: 'text', placeholder: 'Search...' },

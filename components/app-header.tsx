@@ -21,19 +21,21 @@ import {
 const ThemeSwitch = dynamic(() => import('./theme-switch'), { ssr: false });
 
 import { logoutAction } from '@/app/(auth)/login/actions';
-import type { AppShellUser } from './app-shell';
+import type { AppShellUser, AppShellBranch } from './app-shell';
 
 interface AppHeaderProps {
   onMenuToggle: () => void;
   sidebarCollapsed: boolean;
   user?: AppShellUser;
+  branches?: AppShellBranch[];
+  currentBranchName?: string;
 }
 
 function initials(name: string): string {
   return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 }
 
-export default function AppHeader({ onMenuToggle, sidebarCollapsed, user }: AppHeaderProps) {
+export default function AppHeader({ onMenuToggle, sidebarCollapsed, user, branches = [], currentBranchName }: AppHeaderProps) {
   const router = useRouter();
   const displayName = user?.fullName?.split(' ')[0] ?? 'User';
   const initialsText = user ? initials(user.fullName) : 'U';
@@ -82,15 +84,17 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed, user }: AppH
           <Dropdown.Trigger asChild>
             <button className="flex items-center gap-1.5 rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-2 py-1.5 text-paragraph-xs font-medium text-text-strong-950 shadow-regular-xs transition hover:bg-bg-weak-50 sm:px-3">
               <RiMapPinLine size={13} className="text-primary-base" />
-              <span className="hidden sm:inline">QIL-AMRITSAR</span>
+              <span className="hidden sm:inline">{currentBranchName ?? 'No Branch'}</span>
               <RiArrowDownSLine size={13} className="text-text-sub-600" />
             </button>
           </Dropdown.Trigger>
-          <Dropdown.Content align="end" className="w-52">
-            {['QIL-AMRITSAR', 'QIL-NEW-DELHI', 'QIL-MUMBAI', 'QIL-BENGALURU'].map((b) => (
-              <Dropdown.Item key={b} className="text-paragraph-sm">
+          <Dropdown.Content align="end" className="w-56 max-h-80 overflow-y-auto">
+            {branches.length === 0 ? (
+              <div className="px-3 py-2 text-paragraph-xs text-text-sub-600">No branches assigned</div>
+            ) : branches.map((b) => (
+              <Dropdown.Item key={b.id} className="text-paragraph-sm">
                 <RiMapPinLine size={13} />
-                {b}
+                {b.name}
               </Dropdown.Item>
             ))}
           </Dropdown.Content>

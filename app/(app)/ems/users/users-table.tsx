@@ -15,10 +15,11 @@ import * as Avatar from '@/components/ui/avatar';
 import * as CompactButton from '@/components/ui/compact-button';
 import * as Tooltip from '@/components/ui/tooltip';
 import { Root as Checkbox } from '@/components/ui/checkbox';
-import { RiAddLine, RiTeamLine, RiArrowUpDownLine, RiEyeLine, RiEditLine } from '@remixicon/react';
+import { RiAddLine, RiTeamLine, RiArrowUpDownLine, RiEyeLine, RiEditLine, RiToggleLine } from '@remixicon/react';
 import { cn } from '@/utils/cn';
-import { addUserAction } from './actions';
+import { addUserAction, bulkActivateUsersAction, bulkDeactivateUsersAction } from './actions';
 import type { UserRow } from '@/lib/db/users';
+import BulkActionBar from '@/components/bulk-action-bar';
 
 const AVATAR_TONES = [
   'bg-primary-alpha-16 text-primary-base',
@@ -106,6 +107,14 @@ export default function UsersTable({
 
   return (
     <>
+      <BulkActionBar
+        selected={selected}
+        onClear={() => setSelected([])}
+        actions={[
+          { label: 'Deactivate', icon: RiToggleLine, action: bulkDeactivateUsersAction, successMsg: 'Deactivated {n} users', confirmMsg: 'Deactivate {n} users?' },
+          { label: 'Activate', icon: RiToggleLine, action: bulkActivateUsersAction, successMsg: 'Activated {n} users' },
+        ]}
+      />
       <div className="flex justify-end">
         <Button.Root size="small" onClick={() => setShowAdd(true)}>
           <Button.Icon as={RiAddLine} />
