@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 const SESSION_COOKIE = 'qil_sid';
 
-const PUBLIC_PATHS = ['/login', '/signup', '/forgot-password', '/api/health', '/api/debug-env'];
+const PUBLIC_PATHS = ['/login', '/signup', '/forgot-password', '/api/health'];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

@@ -401,7 +401,7 @@ export default function Sidebar({
                   <RiTruckLine size={18} />
                 </div>
                 <div className='leading-none'>
-                  <p className='text-label-sm text-text-strong-950'>LogiCore</p>
+                  <p className='text-label-sm text-text-strong-950'>Quick India Logistics</p>
                   <p className='mt-1 text-subheading-2xs uppercase text-text-soft-400'>
                     Logistics Suite
                   </p>

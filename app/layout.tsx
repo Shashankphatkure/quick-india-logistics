@@ -19,8 +19,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'LogiCore - Logistics Management',
-  description: 'Modern logistics management platform',
+  title: 'Quick India Logistics',
+  description: 'Logistics management platform — Quick India Logistics Pvt Ltd',
 };
 
 export default function RootLayout({

@@ -31,7 +31,7 @@ export default function LoginPage() {
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary-base">
             <RiTruckLine size={18} className="text-white" />
           </div>
-          <span className="text-label-md font-bold text-white">LogiCore</span>
+          <span className="text-label-md font-bold text-white">Quick India Logistics</span>
         </div>
 
         <div className="space-y-6">
@@ -49,7 +49,7 @@ export default function LoginPage() {
               </div>
             ))}
           </div>
-          <p className="text-paragraph-xs text-white/25">&copy; 2026 LogiCore. All rights reserved.</p>
+          <p className="text-paragraph-xs text-white/25">&copy; 2026 Quick India Logistics. All rights reserved.</p>
         </div>
       </div>
 
@@ -61,12 +61,12 @@ export default function LoginPage() {
             <div className="flex size-9 items-center justify-center rounded-xl bg-[#0c1322]">
               <RiTruckLine size={18} className="text-white" />
             </div>
-            <span className="text-label-md font-bold text-text-strong-950">LogiCore</span>
+            <span className="text-label-md font-bold text-text-strong-950">Quick India Logistics</span>
           </div>
 
           <div className="space-y-1.5">
             <h1 className="text-title-h5 font-bold text-text-strong-950">Welcome back</h1>
-            <p className="text-paragraph-sm text-text-sub-600">Sign in to your LogiCore account to continue</p>
+            <p className="text-paragraph-sm text-text-sub-600">Sign in to your Quick India Logistics account to continue</p>
           </div>
 
           <div className="space-y-4">

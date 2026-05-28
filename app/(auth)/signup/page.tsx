@@ -21,7 +21,7 @@ export default function SignupPage() {
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary-base">
             <RiTruckLine size={18} className="text-white" />
           </div>
-          <span className="text-label-md font-bold text-white">LogiCore</span>
+          <span className="text-label-md font-bold text-white">Quick India Logistics</span>
         </div>
 
         <div className="space-y-5">
@@ -40,7 +40,7 @@ export default function SignupPage() {
           ))}
         </div>
 
-        <p className="text-paragraph-xs text-white/25">&copy; 2026 LogiCore. All rights reserved.</p>
+        <p className="text-paragraph-xs text-white/25">&copy; 2026 Quick India Logistics. All rights reserved.</p>
       </div>
 
       {/* Right form */}
