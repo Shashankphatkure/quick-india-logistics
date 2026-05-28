@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/utils/cn';
 import * as Input from '@/components/ui/input';
 import * as Avatar from '@/components/ui/avatar';
@@ -33,8 +34,17 @@ function initials(name: string): string {
 }
 
 export default function AppHeader({ onMenuToggle, sidebarCollapsed, user }: AppHeaderProps) {
+  const router = useRouter();
   const displayName = user?.fullName?.split(' ')[0] ?? 'User';
   const initialsText = user ? initials(user.fullName) : 'U';
+  const [docketSearch, setDocketSearch] = useState('');
+
+  function onDocketSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const v = docketSearch.trim();
+    if (!v) return;
+    router.push(`/booking/orders/${encodeURIComponent(v)}`);
+  }
   return (
     <header
       className={cn(
@@ -53,14 +63,18 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed, user }: AppH
       </button>
 
       {/* Docket search */}
-      <div className="min-w-0 flex-1">
+      <form onSubmit={onDocketSubmit} className="min-w-0 flex-1">
         <Input.Root size="small">
           <Input.Wrapper>
             <Input.Icon as={RiSearchLine} />
-            <Input.Input placeholder="Enter Docket No" />
+            <Input.Input
+              placeholder="Enter Docket No, press Enter to open"
+              value={docketSearch}
+              onChange={(e) => setDocketSearch(e.target.value)}
+            />
           </Input.Wrapper>
         </Input.Root>
-      </div>
+      </form>
 
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         {/* Branch selector */}
@@ -84,7 +98,9 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed, user }: AppH
 
         {/* Refresh */}
         <button
+          type="button"
           aria-label="Refresh"
+          onClick={() => router.refresh()}
           className="hidden size-8 items-center justify-center rounded-lg text-text-sub-600 transition hover:bg-bg-weak-50 hover:text-text-strong-950 sm:flex"
         >
           <RiRefreshLine size={16} />

@@ -35,6 +35,36 @@ export async function toggleCommodityActiveAction(id: string, active: boolean): 
   revalidatePath('/master/commodities');
 }
 
+export async function bulkDeactivateCommoditiesAction(ids: string[]): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireSession();
+  if (ids.length === 0) return { ok: false, error: 'Nothing selected' };
+  try {
+    await query(
+      `update commodities set is_active = false where id = any($1::uuid[])`,
+      [ids],
+    );
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+  }
+  revalidatePath('/master/commodities');
+  return { ok: true };
+}
+
+export async function bulkActivateCommoditiesAction(ids: string[]): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireSession();
+  if (ids.length === 0) return { ok: false, error: 'Nothing selected' };
+  try {
+    await query(
+      `update commodities set is_active = true where id = any($1::uuid[])`,
+      [ids],
+    );
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+  }
+  revalidatePath('/master/commodities');
+  return { ok: true };
+}
+
 export type EditCommodityResult = { ok: true } | { ok: false; error: string };
 
 export async function editCommodityAction(formData: FormData): Promise<EditCommodityResult> {

@@ -17,7 +17,7 @@ import {
 } from '@/lib/db/commodities';
 import { currentOrgId } from '@/lib/tenant';
 import AddCommodityForm from './add-commodity-form';
-import RowActions from './row-actions';
+import CommoditiesTable from './commodities-table';
 
 const PAGE_SIZE = 10;
 
@@ -86,66 +86,15 @@ export default async function CommoditiesPage({
             {total} {total === 1 ? 'commodity' : 'commodities'}
           </span>
         </div>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              {['Commodity Name', 'Type', 'Organization', 'Verified By', 'Status', ''].map((col) => (
-                <Table.Head key={col}>
-                  <span className="flex items-center gap-1">
-                    {col}
-                    <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
-                  </span>
-                </Table.Head>
-              ))}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rows.length === 0 ? (
-              <Table.Row>
-                <Table.Cell colSpan={5} className="py-10 text-center text-paragraph-sm text-text-sub-600">
-                  No commodities found
-                </Table.Cell>
-              </Table.Row>
-            ) : (
-              rows.map((c) => {
-                const statusLabel = c.is_active ? 'Active' : 'Inactive';
-                return (
-                  <Table.Row key={c.id}>
-                    <Table.Cell className="h-auto py-3">
-                      <span className="text-paragraph-sm font-semibold text-text-strong-950 cursor-pointer hover:text-primary-base transition-colors">
-                        {c.name}
-                      </span>
-                    </Table.Cell>
-                    <Table.Cell className="h-auto py-3">
-                      <Badge.Root size="small" variant="lighter" color="gray">
-                        {c.type_name}
-                      </Badge.Root>
-                    </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
-                      {c.org_name}
-                    </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
-                      {c.verified_by_name ?? '—'}
-                    </Table.Cell>
-                    <Table.Cell className="h-auto py-3">
-                      <Badge.Root
-                        size="medium"
-                        variant="light"
-                        color={(STATUS_TO_BADGE_COLOR[statusLabel] ?? 'gray') as BadgeColor}
-                      >
-                        <Badge.Dot />
-                        {statusLabel}
-                      </Badge.Root>
-                    </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-right">
-                      <RowActions row={{ id: c.id, name: c.name, type_id: c.type_id, is_active: c.is_active }} types={types} />
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })
-            )}
-          </Table.Body>
-        </Table.Root>
+        <div className="p-3">
+          <CommoditiesTable
+            rows={rows.map((c) => ({
+              id: c.id, name: c.name, type_id: c.type_id, type_name: c.type_name,
+              org_name: c.org_name, verified_by_name: c.verified_by_name, is_active: c.is_active,
+            }))}
+            types={types}
+          />
+        </div>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-5 py-3">
           <span className="text-paragraph-sm text-text-sub-600">
             Showing {fromRow}-{toRow} of {total}
