@@ -16,6 +16,7 @@ import { listOrderImages } from '@/lib/db/order-images';
 import { presignGet } from '@/lib/s3';
 import ImageGallery, { type ImageItem } from './image-gallery';
 import AssetAttach, { type AttachedAsset, type AssetOption } from './asset-attach';
+import StatusControl from './status-control';
 
 type OrderDetail = {
   id: string;
@@ -178,6 +179,12 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
         </Badge.Root>
         {order.is_cold_chain && <Badge.Root size="medium" variant="lighter" color="sky">Cold Chain</Badge.Root>}
         <Badge.Root size="small" variant="lighter" color="gray">Lock: {order.lock_state}</Badge.Root>
+        <StatusControl
+          orderId={order.id}
+          docketNo={order.docket_no}
+          currentStatus={order.status}
+          consignee={order.consignee_name}
+        />
       </PageHeader>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">

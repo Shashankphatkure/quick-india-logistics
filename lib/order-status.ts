@@ -35,6 +35,35 @@ export const DELIVERY_TYPE_LABEL: Record<string, string> = {
   international: 'International',
 };
 
+/**
+ * Allowed manual status transitions from the order-detail screen.
+ * The happy-path forward step plus exception paths. Some forward steps
+ * (connected, departed, out_for_delivery) are normally driven by the
+ * Create-Manifest / Mark-Departed / Create-Runsheet workflows but are
+ * also permitted manually here for flexibility.
+ * `delivered` is reachable but MUST go through the Mark-Delivered (POD) flow.
+ */
+export const STATUS_TRANSITIONS: Record<string, OrderStatusCode[]> = {
+  received: ['pickup_done', 'cancelled'],
+  pickup_done: ['arrived_at_hub', 'damaged', 'not_received', 'cancelled'],
+  arrived_at_hub: ['connected', 'damaged', 'not_received', 'cancelled'],
+  connected: ['departed', 'damaged', 'cancelled'],
+  departed: ['arrived_at_destination', 'damaged', 'not_received'],
+  arrived_at_destination: ['out_for_delivery', 'delivered', 'damaged', 'not_received'],
+  out_for_delivery: ['delivered', 'not_received', 'damaged'],
+  delivered: [],
+  damaged: [],
+  not_received: ['out_for_delivery'],
+  cancelled: [],
+};
+
+export function nextStatuses(current: string): OrderStatusCode[] {
+  return STATUS_TRANSITIONS[current] ?? [];
+}
+
+/** Statuses that need the POD capture flow rather than a plain status update. */
+export const DELIVER_STATUSES = new Set(['delivered']);
+
 export type OrderListItem = {
   id: string;
   docket_no: string;

@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Button from '@/components/ui/button';
+import Link from 'next/link';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { cn } from '@/utils/cn';
 import { listDeliveries, countDeliveries, getDeliveryCounts, DELIVERY_PAGE_SIZE, type DeliveryTab } from '@/lib/db/deliveries';
 import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
+import DeliverModal from '@/app/(app)/booking/orders/[docket]/deliver-modal';
 
 const TABS: { key: DeliveryTab; label: string }[] = [
   { key: 'delivered', label: 'Delivery Info' },
@@ -91,14 +92,17 @@ export default async function DeliveryInfoPage({ searchParams }: { searchParams?
                   </span>
                 </Table.Head>
               ))}
+              {tabKey === 'pending_mark' && <Table.Head className="whitespace-nowrap">Action</Table.Head>}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={7} className="py-10 text-center text-paragraph-sm text-text-sub-600">No deliveries in this tab</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={tabKey === 'pending_mark' ? 8 : 7} className="py-10 text-center text-paragraph-sm text-text-sub-600">No deliveries in this tab</Table.Cell></Table.Row>
             ) : rows.map(d => (
               <Table.Row key={d.id}>
-                <Table.Cell className="h-auto py-3 font-medium text-primary-base whitespace-nowrap">{d.docket_no}</Table.Cell>
+                <Table.Cell className="h-auto py-3 font-medium whitespace-nowrap">
+                  <Link href={`/booking/orders/${d.docket_no}`} className="text-primary-base hover:underline no-underline">{d.docket_no}</Link>
+                </Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.delivery_branch_name ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-strong-950 whitespace-nowrap">{d.consignee_name}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-strong-950 whitespace-nowrap">{d.pod_recipient_name ?? '—'}</Table.Cell>
@@ -109,6 +113,11 @@ export default async function DeliveryInfoPage({ searchParams }: { searchParams?
                     <Badge.Dot />{d.status.replace(/_/g, ' ')}
                   </Badge.Root>
                 </Table.Cell>
+                {tabKey === 'pending_mark' && (
+                  <Table.Cell className="h-auto py-3">
+                    <DeliverModal orderId={d.id} docketNo={d.docket_no} defaultConsignee={d.consignee_name} triggerLabel="Mark Delivered" triggerSize="xsmall" />
+                  </Table.Cell>
+                )}
               </Table.Row>
             ))}
           </Table.Body>
