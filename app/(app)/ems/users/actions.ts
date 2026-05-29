@@ -55,6 +55,52 @@ export async function addUserAction(formData: FormData): Promise<AddUserResult> 
   return { ok: true };
 }
 
+export async function editUserAction(formData: FormData): Promise<AddUserResult> {
+  await requireSession();
+  const orgId = await currentOrgId();
+
+  const id = String(formData.get('id') ?? '').trim();
+  const fullName = String(formData.get('fullName') ?? '').trim();
+  const email = String(formData.get('email') ?? '').trim() || null;
+  const phone = String(formData.get('phone') ?? '').trim() || null;
+  const userType = String(formData.get('userType') ?? 'employee');
+  const channelAccess = String(formData.get('channelAccess') ?? 'web');
+  const departmentId = String(formData.get('departmentId') ?? '').trim() || null;
+  const designationId = String(formData.get('designationId') ?? '').trim() || null;
+  const homeBranchId = String(formData.get('homeBranchId') ?? '').trim() || null;
+
+  if (!id) return { ok: false, error: 'Missing user ID' };
+  if (!fullName) return { ok: false, error: 'Full name is required' };
+  if (!USER_TYPES.has(userType)) return { ok: false, error: 'Invalid user type' };
+  if (!CHANNELS.has(channelAccess)) return { ok: false, error: 'Invalid channel' };
+
+  try {
+    await query(
+      `update users set
+         full_name=$1, email=$2, phone=$3, user_type=$4, channel_access=$5,
+         department_id=$6, designation_id=$7, home_branch_id=$8
+       where id=$9 and org_id=$10`,
+      [fullName, email, phone, userType, channelAccess, departmentId, designationId, homeBranchId, id, orgId],
+    );
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
+  }
+  revalidatePath('/ems/users');
+  return { ok: true };
+}
+
+export async function toggleUserActiveAction(id: string, active: boolean): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await requireSession();
+  if (!active && id === session.userId) return { ok: false, error: 'Cannot deactivate yourself' };
+  try {
+    await query(`update users set is_active=$1 where id=$2 and org_id=$3`, [active, id, await currentOrgId()]);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+  }
+  revalidatePath('/ems/users');
+  return { ok: true };
+}
+
 export async function bulkDeactivateUsersAction(ids: string[]): Promise<{ ok: true } | { ok: false; error: string }> {
   const session = await requireSession();
   if (ids.length === 0) return { ok: false, error: 'Nothing selected' };

@@ -12,6 +12,7 @@ import { listVendors, countVendors, getVendorCounts } from '@/lib/db/vendors';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import AddVendorForm from './add-vendor-form';
+import RowActions from './row-actions';
 
 const PAGE_SIZE = 25;
 
@@ -78,14 +79,15 @@ export default async function VendorsPage({ searchParams }: { searchParams?: { s
               {['Vendor Name', 'PAN', 'Email', 'Phone', 'Company Type', 'Service Region', 'Line of Business', 'Verified By', 'Status'].map(c => (
                 <Table.Head key={c}>{c}</Table.Head>
               ))}
+              <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vendors found</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vendors found</Table.Cell></Table.Row>
             ) : rows.map(v => (
-              <Table.Row key={v.id}>
-                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{v.name}</span></Table.Cell>
+              <Table.Row key={v.id} className={v.is_active ? '' : 'opacity-60'}>
+                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{v.name}{!v.is_active && <span className="ml-1.5 text-paragraph-xs text-text-soft-400">(inactive)</span>}</span></Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.pan ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{v.primary_email ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.primary_phone ?? '—'}</Table.Cell>
@@ -98,6 +100,7 @@ export default async function VendorsPage({ searchParams }: { searchParams?: { s
                     <Badge.Dot />{STATUS_LABEL[v.status] ?? v.status}
                   </Badge.Root>
                 </Table.Cell>
+                <Table.Cell className="h-auto py-3 text-right"><RowActions row={v} /></Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>

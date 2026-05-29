@@ -11,6 +11,7 @@ import { listVehicles, countVehicles, getVehicleCounts, VEHICLE_PAGE_SIZE } from
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import AddVehicleForm from './add-vehicle-form';
+import RowActions from './row-actions';
 
 const TYPE_LABEL: Record<string, string> = {
   truck: 'Truck', van: 'Van', bike: 'Bike', tempo: 'Tempo', mini_truck: 'Mini Truck',
@@ -71,11 +72,12 @@ export default async function VehiclesPage({ searchParams }: { searchParams?: { 
               {['Vehicle No', 'Type', 'Owner', 'Model', 'Capacity (kg)', 'Status'].map(c => (
                 <Table.Head key={c}>{c}</Table.Head>
               ))}
+              <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={6} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vehicles found</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={7} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vehicles found</Table.Cell></Table.Row>
             ) : rows.map(v => (
               <Table.Row key={v.id}>
                 <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{v.number}</span></Table.Cell>
@@ -88,6 +90,7 @@ export default async function VehiclesPage({ searchParams }: { searchParams?: { 
                     <Badge.Dot />{v.is_active ? 'Active' : 'Inactive'}
                   </Badge.Root>
                 </Table.Cell>
+                <Table.Cell className="h-auto py-3 text-right"><RowActions row={v} /></Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>

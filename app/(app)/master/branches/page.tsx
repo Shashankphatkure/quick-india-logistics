@@ -12,6 +12,7 @@ import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import { listBranches, countBranches, getBranchCounts } from '@/lib/db/branches';
 import { currentOrgId } from '@/lib/tenant';
 import AddBranchForm from './add-branch-form';
+import RowActions from './row-actions';
 
 const PAGE_SIZE = 10;
 
@@ -84,12 +85,13 @@ export default async function BranchesPage({
                   <Table.Head key={col}>{col}</Table.Head>
                 ),
               )}
+              <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
               <Table.Row>
-                <Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">
+                <Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">
                   No branches found
                 </Table.Cell>
               </Table.Row>
@@ -123,6 +125,7 @@ export default async function BranchesPage({
                         {statusLabel}
                       </Badge.Root>
                     </Table.Cell>
+                    <Table.Cell className="h-auto py-3 text-right"><RowActions row={b} /></Table.Cell>
                   </Table.Row>
                 );
               })

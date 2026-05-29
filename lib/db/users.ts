@@ -10,6 +10,9 @@ export type UserRow = {
   phone: string | null;
   user_type: string | null;
   channel_access: string | null;
+  department_id: string | null;
+  designation_id: string | null;
+  home_branch_id: string | null;
   department_name: string | null;
   designation_name: string | null;
   home_branch_name: string | null;
@@ -35,6 +38,7 @@ export async function listUsers(opts: {
   return many<UserRow>(
     `select
        u.id, u.username, u.email, u.full_name, u.phone, u.user_type, u.channel_access,
+       u.department_id, u.designation_id, u.home_branch_id,
        d.name as department_name,
        g.name as designation_name,
        b.name as home_branch_name,

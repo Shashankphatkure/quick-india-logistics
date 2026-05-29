@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
@@ -12,14 +11,13 @@ import * as Select from '@/components/ui/select';
 import * as Input from '@/components/ui/input';
 import * as Divider from '@/components/ui/divider';
 import * as Avatar from '@/components/ui/avatar';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Tooltip from '@/components/ui/tooltip';
 import { Root as Checkbox } from '@/components/ui/checkbox';
-import { RiAddLine, RiTeamLine, RiArrowUpDownLine, RiEyeLine, RiEditLine, RiToggleLine } from '@remixicon/react';
+import { RiAddLine, RiTeamLine, RiArrowUpDownLine, RiToggleLine } from '@remixicon/react';
 import { cn } from '@/utils/cn';
 import { addUserAction, bulkActivateUsersAction, bulkDeactivateUsersAction } from './actions';
 import type { UserRow } from '@/lib/db/users';
 import BulkActionBar from '@/components/bulk-action-bar';
+import UserRowActions from './user-row-actions';
 
 const AVATAR_TONES = [
   'bg-primary-alpha-16 text-primary-base',
@@ -209,26 +207,7 @@ export default function UsersTable({
                       </Badge.Root>
                     </Table.Cell>
                     <Table.Cell className="h-auto py-3">
-                      <div className="flex items-center gap-1">
-                        <Tooltip.Root>
-                          <Tooltip.Trigger asChild>
-                            <CompactButton.Root variant="ghost" size="large" asChild>
-                              <Link href={`/ems/users/${u.username}`}>
-                                <CompactButton.Icon as={RiEyeLine} />
-                              </Link>
-                            </CompactButton.Root>
-                          </Tooltip.Trigger>
-                          <Tooltip.Content>View user</Tooltip.Content>
-                        </Tooltip.Root>
-                        <Tooltip.Root>
-                          <Tooltip.Trigger asChild>
-                            <CompactButton.Root variant="ghost" size="large">
-                              <CompactButton.Icon as={RiEditLine} />
-                            </CompactButton.Root>
-                          </Tooltip.Trigger>
-                          <Tooltip.Content>Edit user</Tooltip.Content>
-                        </Tooltip.Root>
-                      </div>
+                      <UserRowActions user={u} selects={selects} />
                     </Table.Cell>
                   </Table.Row>
                 );
