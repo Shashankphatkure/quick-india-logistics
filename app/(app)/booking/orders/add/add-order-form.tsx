@@ -15,6 +15,8 @@ import {
 } from '@remixicon/react';
 import { cn } from '@/utils/cn';
 import { createOrderAction } from './actions';
+import { volumetricWeight, chargeableWeight, round3 } from '@/lib/utils/dimension-calc';
+import type { ClientDimensionFormula } from '@/lib/db/bill-to';
 
 const STEPS = [
   { label: 'Booking Info', key: 'booking' },
@@ -26,12 +28,13 @@ const STEPS = [
 ];
 
 type SelectItem = { id: string; name: string };
-type ClientItem = SelectItem & { bill_to_id: string };
+type ClientItem = SelectItem & { bill_to_id: string; use_dimension: string };
 
 export type AddOrderSelects = {
   billTos: SelectItem[];
   clients: ClientItem[];
   branches: SelectItem[];
+  formulas: ClientDimensionFormula[];
 };
 
 type FormState = {
@@ -118,6 +121,19 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
   const clientsForBillTo = state.billToId
     ? selects.clients.filter((c) => c.bill_to_id === state.billToId)
     : selects.clients;
+
+  // Live chargeable-weight calculation (mirrors the authoritative server computation).
+  const selectedClient = selects.clients.find((c) => c.id === state.clientId);
+  const formula = selects.formulas.find((f) => f.client_id === state.clientId && f.mode === state.mode);
+  const L = Number(state.length) || 0;
+  const B = Number(state.breadth) || 0;
+  const H = Number(state.height) || 0;
+  const actual = Number(state.actualWeightKg) || 0;
+  const usesDimension = selectedClient?.use_dimension === 'use_kg';
+  const volumetric = usesDimension && formula && L && B && H
+    ? round3(volumetricWeight(L, B, H, formula.divisor_x, formula.multiplier_y))
+    : 0;
+  const chargeable = round3(chargeableWeight(actual, volumetric));
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -374,6 +390,37 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
                 </Input.Wrapper>
               </Input.Root>
             </Field>
+          </div>
+
+          <div className="rounded-xl bg-bg-weak-50 p-4">
+            {!state.clientId ? (
+              <p className="text-paragraph-sm text-text-sub-600">Select a client in Step 1 to apply its dimension formula.</p>
+            ) : !usesDimension ? (
+              <p className="text-paragraph-sm text-text-sub-600">
+                This client bills by {selectedClient?.use_dimension === 'use_box' ? 'box count' : 'actual weight'} — chargeable weight = actual ({actual || 0} kg).
+              </p>
+            ) : !formula ? (
+              <p className="text-paragraph-sm text-text-sub-600">
+                No dimension formula configured for this client on <span className="font-medium">{state.mode}</span> mode — chargeable weight = actual ({actual || 0} kg).
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-paragraph-xs text-text-sub-600">Volumetric</p>
+                  <p className="text-title-h6 font-bold text-text-strong-950">{volumetric || 0}<span className="text-paragraph-xs font-normal text-text-sub-600"> kg</span></p>
+                  <p className="text-paragraph-xs text-text-disabled-300">L×B×H / {formula.divisor_x}{formula.multiplier_y !== 1 ? ` × ${formula.multiplier_y}` : ''}</p>
+                </div>
+                <div>
+                  <p className="text-paragraph-xs text-text-sub-600">Actual</p>
+                  <p className="text-title-h6 font-bold text-text-strong-950">{actual || 0}<span className="text-paragraph-xs font-normal text-text-sub-600"> kg</span></p>
+                </div>
+                <div>
+                  <p className="text-paragraph-xs text-text-sub-600">Chargeable</p>
+                  <p className="text-title-h6 font-bold text-primary-base">{chargeable || 0}<span className="text-paragraph-xs font-normal text-text-sub-600"> kg</span></p>
+                  <p className="text-paragraph-xs text-text-disabled-300">max(actual, volumetric)</p>
+                </div>
+              </div>
+            )}
           </div>
         </Section>
       </div>

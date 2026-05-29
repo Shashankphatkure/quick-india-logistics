@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { query, one } from '@/lib/db';
 import { currentOrgId } from '@/lib/tenant';
 import { requireSession } from '@/lib/auth';
+import { getClientDimensionConfig } from '@/lib/db/bill-to';
+import { volumetricWeight, chargeableWeight, round3 } from '@/lib/utils/dimension-calc';
 
 export type CreateOrderResult = { ok: true; docketNo: string } | { ok: false; error: string };
 
@@ -38,6 +40,9 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
   const actualWeight = Number(formData.get('actualWeightKg') ?? 0);
   const noOfPieces = Number(formData.get('noOfPieces') ?? 0);
   const noOfBoxes = Number(formData.get('noOfBoxes') ?? 0);
+  const length = Number(formData.get('length') ?? 0) || null;
+  const breadth = Number(formData.get('breadth') ?? 0) || null;
+  const height = Number(formData.get('height') ?? 0) || null;
 
   const ewaybillNo = String(formData.get('ewaybillNo') ?? '').trim() || null;
   const invoiceNumber = String(formData.get('invoiceNumber') ?? '').trim() || null;
@@ -53,6 +58,20 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
   if (!DELIVERY_TYPES.has(deliveryType)) return { ok: false, error: 'Invalid delivery type' };
   if (actualWeight <= 0) return { ok: false, error: 'Actual weight must be > 0' };
 
+  // Chargeable weight: volumetric (L×B×H / divisor × multiplier) vs actual, whichever
+  // is greater — but only when the client bills by dimension weight (use_kg) and a
+  // formula exists for this mode. Otherwise chargeable = actual.
+  let dimensionWeight: number | null = null;
+  let chargeable = round3(actualWeight);
+  if (clientId && length && breadth && height) {
+    const cfg = await getClientDimensionConfig(clientId, mode);
+    if (cfg && cfg.use_dimension === 'use_kg' && cfg.divisor_x) {
+      const vol = volumetricWeight(length, breadth, height, cfg.divisor_x, cfg.multiplier_y ?? 1);
+      dimensionWeight = round3(vol);
+      chargeable = round3(chargeableWeight(actualWeight, vol));
+    }
+  }
+
   // Auto-generate docket number from timestamp
   const docketNo = `D${Date.now().toString().slice(-9)}`;
 
@@ -65,7 +84,9 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         consignee_name, consignee_phone, consignee_address,
         origin, destination, origin_branch_id, destination_branch_id,
         mode, delivery_type, is_cold_chain, priority,
-        actual_weight_kg, chargeable_weight_kg, no_of_pieces, no_of_boxes,
+        actual_weight_kg, dimension_weight_kg, chargeable_weight_kg,
+        length_cm, breadth_cm, height_cm,
+        no_of_pieces, no_of_boxes,
         invoice_value, invoice_number, invoice_date, ewaybill_no,
         status, lock_state, created_branch_id, current_branch_id, created_by
       ) values (
@@ -75,9 +96,11 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         $9, $10, $11,
         $12, $13, $14, $15,
         $16, $17, $18, $19,
-        $20, $20, $21, $22,
-        $23, $24, $25, $26,
-        'received', 'data_entry', $14, $14, $27
+        $20, $21, $22,
+        $23, $24, $25,
+        $26, $27,
+        $28, $29, $30, $31,
+        'received', 'data_entry', $14, $14, $32
       ) returning docket_no`,
       [
         orgId, docketNo, bookingDate,
@@ -86,7 +109,9 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         consigneeName, consigneePhone, consigneeAddress,
         origin, destination, originBranchId, destinationBranchId,
         mode, deliveryType, isColdChain, priority,
-        actualWeight, noOfPieces, noOfBoxes,
+        actualWeight, dimensionWeight, chargeable,
+        length, breadth, height,
+        noOfPieces, noOfBoxes,
         invoiceValue, invoiceNumber, invoiceDate, ewaybillNo,
         session.userId,
       ],

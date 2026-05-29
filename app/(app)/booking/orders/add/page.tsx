@@ -5,18 +5,19 @@ import PageHeader from '@/components/page-header';
 import { RiCalendarCheckLine } from '@remixicon/react';
 import { many } from '@/lib/db';
 import { currentOrgId } from '@/lib/tenant';
+import { listClientDimensionFormulas } from '@/lib/db/bill-to';
 import AddOrderForm, { type AddOrderSelects } from './add-order-form';
 
 export default async function AddOrderPage() {
   const orgId = await currentOrgId();
 
-  const [billTos, clients, branches] = await Promise.all([
+  const [billTos, clients, branches, formulas] = await Promise.all([
     many<{ id: string; name: string }>(
       `select id, name from bill_to where org_id = $1 and is_active order by name`,
       [orgId],
     ),
-    many<{ id: string; name: string; bill_to_id: string }>(
-      `select c.id, c.name, c.bill_to_id
+    many<{ id: string; name: string; bill_to_id: string; use_dimension: string }>(
+      `select c.id, c.name, c.bill_to_id, c.use_dimension
        from clients c join bill_to bt on bt.id = c.bill_to_id
        where bt.org_id = $1 and c.is_active order by c.name`,
       [orgId],
@@ -25,9 +26,10 @@ export default async function AddOrderPage() {
       `select id, name from branches where org_id = $1 and is_active order by name`,
       [orgId],
     ),
+    listClientDimensionFormulas(orgId),
   ]);
 
-  const selects: AddOrderSelects = { billTos, clients, branches };
+  const selects: AddOrderSelects = { billTos, clients, branches, formulas };
 
   return (
     <div className="space-y-6">

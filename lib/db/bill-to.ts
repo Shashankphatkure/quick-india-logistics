@@ -81,3 +81,38 @@ export async function getBillToCounts(orgId: string) {
 }
 
 export const BILL_TO_PAGE_SIZE = PAGE_SIZE;
+
+export type ClientDimensionFormula = {
+  client_id: string;
+  mode: string;
+  divisor_x: number;
+  multiplier_y: number;
+};
+
+/** All client dimension formulas for an org, for the add-order live preview. */
+export async function listClientDimensionFormulas(orgId: string): Promise<ClientDimensionFormula[]> {
+  return many<ClientDimensionFormula>(
+    `select cdf.client_id, cdf.mode,
+            cdf.divisor_x::float8 as divisor_x, cdf.multiplier_y::float8 as multiplier_y
+     from client_dimension_formulas cdf
+     join clients c on c.id = cdf.client_id
+     join bill_to bt on bt.id = c.bill_to_id
+     where bt.org_id = $1`,
+    [orgId],
+  );
+}
+
+/** Client's weight-billing config + formula for a mode (authoritative, server-side). */
+export async function getClientDimensionConfig(
+  clientId: string,
+  mode: string,
+): Promise<{ use_dimension: string; divisor_x: number | null; multiplier_y: number | null } | null> {
+  return one<{ use_dimension: string; divisor_x: number | null; multiplier_y: number | null }>(
+    `select c.use_dimension,
+            f.divisor_x::float8 as divisor_x, f.multiplier_y::float8 as multiplier_y
+     from clients c
+     left join client_dimension_formulas f on f.client_id = c.id and f.mode = $2
+     where c.id = $1`,
+    [clientId, mode],
+  );
+}
