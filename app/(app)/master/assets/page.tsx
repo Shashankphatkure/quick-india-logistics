@@ -101,13 +101,13 @@ export default async function AssetsPage({ searchParams }: { searchParams?: { se
           <Table.Header>
             <Table.Row>
               <Table.Head><SortableHeader column="asset_id">Asset ID</SortableHeader></Table.Head>
-              <Table.Head>Barcode</Table.Head>
-              <Table.Head><SortableHeader column="kind">Kind</SortableHeader></Table.Head>
-              <Table.Head>Type</Table.Head>
-              <Table.Head>Manufacturer</Table.Head>
-              <Table.Head><SortableHeader column="branch">Current Branch</SortableHeader></Table.Head>
-              <Table.Head><SortableHeader column="usage">Usage</SortableHeader></Table.Head>
-              <Table.Head><SortableHeader column="expiry">Cal. Expiry</SortableHeader></Table.Head>
+              <Table.Head className="hidden lg:table-cell">Barcode</Table.Head>
+              <Table.Head className="hidden md:table-cell"><SortableHeader column="kind">Kind</SortableHeader></Table.Head>
+              <Table.Head className="hidden lg:table-cell">Type</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Manufacturer</Table.Head>
+              <Table.Head className="hidden md:table-cell"><SortableHeader column="branch">Current Branch</SortableHeader></Table.Head>
+              <Table.Head className="hidden lg:table-cell"><SortableHeader column="usage">Usage</SortableHeader></Table.Head>
+              <Table.Head className="hidden lg:table-cell"><SortableHeader column="expiry">Cal. Expiry</SortableHeader></Table.Head>
               <Table.Head>Status</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
@@ -122,17 +122,17 @@ export default async function AssetsPage({ searchParams }: { searchParams?: { se
               return (
                 <Table.Row key={a.id}>
                   <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{a.asset_id}</span></Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{a.barcode ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3">
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{a.barcode ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden md:table-cell h-auto py-3">
                     <Badge.Root size="small" variant="lighter" color={a.asset_kind === 'logger' ? 'purple' : 'sky'}>
                       {a.asset_kind === 'logger' ? 'Logger' : 'Box'}
                     </Badge.Root>
                   </Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{typeText}{a.asset_kind === 'box' && a.capacity_liters ? ` (${a.capacity_liters}L)` : ''}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{a.manufacturer ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{a.current_branch_name ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{a.usage_count}×</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{a.cal_to ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{typeText}{a.asset_kind === 'box' && a.capacity_liters ? ` (${a.capacity_liters}L)` : ''}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{a.manufacturer ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{a.current_branch_name ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{a.usage_count}×</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{a.cal_to ?? '—'}</Table.Cell>
                   <Table.Cell className="h-auto py-3">
                     {a.is_defective ? (
                       <Badge.Root size="medium" variant="light" color="red"><Badge.Dot />Defective</Badge.Root>

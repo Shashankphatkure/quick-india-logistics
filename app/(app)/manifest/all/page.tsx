@@ -87,13 +87,13 @@ export default async function AllManifestsPage({ searchParams }: { searchParams?
             <Table.Row>
               <Table.Head><SortableHeader column="manifest">Manifest No</SortableHeader></Table.Head>
               <Table.Head><SortableHeader column="date">Date</SortableHeader></Table.Head>
-              <Table.Head>From → To</Table.Head>
-              <Table.Head><SortableHeader column="mode">Mode</SortableHeader></Table.Head>
-              <Table.Head>Vendor / Vehicle</Table.Head>
-              <Table.Head>AWB</Table.Head>
-              <Table.Head>Orders</Table.Head>
-              <Table.Head>Bags / Boxes</Table.Head>
-              <Table.Head>Weight (kg)</Table.Head>
+              <Table.Head className="hidden md:table-cell">From → To</Table.Head>
+              <Table.Head className="hidden lg:table-cell"><SortableHeader column="mode">Mode</SortableHeader></Table.Head>
+              <Table.Head className="hidden md:table-cell">Vendor / Vehicle</Table.Head>
+              <Table.Head className="hidden lg:table-cell">AWB</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Orders</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Bags / Boxes</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Weight (kg)</Table.Head>
               <Table.Head><SortableHeader column="state">State</SortableHeader></Table.Head>
             </Table.Row>
           </Table.Header>
@@ -106,13 +106,13 @@ export default async function AllManifestsPage({ searchParams }: { searchParams?
                 <Table.Row key={m.id}>
                   <Table.Cell className="h-auto py-3"><Link href={`/manifest/${m.manifest_no}`} className="text-paragraph-sm font-medium text-primary-base hover:underline no-underline">{m.manifest_no}</Link></Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.manifest_date}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name} <span className="text-text-disabled-300">→</span> {m.to_branch_name}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{MODE_LABEL[m.mode] ?? m.mode}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.vendor_name ?? m.vehicle_no ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.airway_bill_no ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.order_count}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_bags} / {m.total_boxes}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.coloader_chargeable_kg ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name} <span className="text-text-disabled-300">→</span> {m.to_branch_name}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{MODE_LABEL[m.mode] ?? m.mode}</Table.Cell>
+                  <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{m.vendor_name ?? m.vehicle_no ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{m.airway_bill_no ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{m.order_count}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_bags} / {m.total_boxes}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{m.coloader_chargeable_kg ?? '—'}</Table.Cell>
                   <Table.Cell className="h-auto py-3"><Badge.Root size="medium" variant="light" color={sl.color}><Badge.Dot />{sl.label}</Badge.Root></Table.Cell>
                 </Table.Row>
               );

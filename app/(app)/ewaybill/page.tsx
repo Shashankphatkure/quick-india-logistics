@@ -74,7 +74,14 @@ export default async function EwayBillPage({ searchParams }: { searchParams?: { 
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              {['Docket No', 'EwayBill No', 'Booking Date', 'Shipper → Consignee', 'Route', 'Mode', 'Order Status', 'Part B'].map(c => <Table.Head key={c}>{c}</Table.Head>)}
+              <Table.Head>Docket No</Table.Head>
+              <Table.Head>EwayBill No</Table.Head>
+              <Table.Head className="hidden md:table-cell">Booking Date</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Shipper → Consignee</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Route</Table.Head>
+              <Table.Head className="hidden md:table-cell">Mode</Table.Head>
+              <Table.Head className="hidden md:table-cell">Order Status</Table.Head>
+              <Table.Head>Part B</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
@@ -85,11 +92,11 @@ export default async function EwayBillPage({ searchParams }: { searchParams?: { 
               <Table.Row key={o.id}>
                 <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{o.docket_no}</span></Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-strong-950 font-mono">{o.ewaybill_no}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{o.booking_date}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{o.shipper_name} → {o.consignee_name}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{o.origin} → {o.destination}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.mode}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{orderStatusLabel(o.status)}</Table.Cell>
+                <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{o.booking_date}</Table.Cell>
+                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{o.shipper_name} → {o.consignee_name}</Table.Cell>
+                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{o.origin} → {o.destination}</Table.Cell>
+                <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{o.mode}</Table.Cell>
+                <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{orderStatusLabel(o.status)}</Table.Cell>
                 <Table.Cell className="h-auto py-3">
                   <Badge.Root size="small" variant="lighter" color={o.part_b_done ? 'green' : 'orange'}>
                     {o.part_b_done ? 'Done' : 'Pending'}

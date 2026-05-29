@@ -43,6 +43,15 @@ function UserAvatar({ name }: { name: string }) {
   );
 }
 
+function SortLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="flex items-center gap-1">
+      {children}
+      <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
+    </span>
+  );
+}
+
 const USER_TYPE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'purple' | 'green' }> = {
   employee: { label: 'Employee', color: 'gray' },
   manager: { label: 'Manager', color: 'blue' },
@@ -137,18 +146,28 @@ export default function UsersTable({
               <Table.Head className="w-10">
                 <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
               </Table.Head>
-              {['User', 'Contact', 'Type', 'Home Branch', 'Channel', 'Department', 'Status', ''].map(
-                (col) => (
-                  <Table.Head key={col}>
-                    {col && (
-                      <span className="flex items-center gap-1">
-                        {col}
-                        <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
-                      </span>
-                    )}
-                  </Table.Head>
-                ),
-              )}
+              <Table.Head>
+                <SortLabel>User</SortLabel>
+              </Table.Head>
+              <Table.Head className="hidden lg:table-cell">
+                <SortLabel>Contact</SortLabel>
+              </Table.Head>
+              <Table.Head className="hidden md:table-cell">
+                <SortLabel>Type</SortLabel>
+              </Table.Head>
+              <Table.Head className="hidden md:table-cell">
+                <SortLabel>Home Branch</SortLabel>
+              </Table.Head>
+              <Table.Head className="hidden lg:table-cell">
+                <SortLabel>Channel</SortLabel>
+              </Table.Head>
+              <Table.Head className="hidden lg:table-cell">
+                <SortLabel>Department</SortLabel>
+              </Table.Head>
+              <Table.Head>
+                <SortLabel>Status</SortLabel>
+              </Table.Head>
+              <Table.Head />
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -180,24 +199,24 @@ export default function UsersTable({
                         </div>
                       </div>
                     </Table.Cell>
-                    <Table.Cell className="h-auto py-3">
+                    <Table.Cell className="h-auto py-3 hidden lg:table-cell">
                       <div>
                         <p className="text-paragraph-sm text-text-strong-950">{u.email ?? '—'}</p>
                         <p className="text-paragraph-xs text-text-sub-600">{u.phone ?? ''}</p>
                       </div>
                     </Table.Cell>
-                    <Table.Cell className="h-auto py-3">
+                    <Table.Cell className="h-auto py-3 hidden md:table-cell">
                       <Badge.Root size="small" variant="lighter" color={typeMeta.color}>
                         {typeMeta.label}
                       </Badge.Root>
                     </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">
                       {u.home_branch_name ?? '—'}
                     </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden lg:table-cell">
                       {CHANNEL_LABEL[u.channel_access ?? 'web'] ?? u.channel_access}
                     </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden lg:table-cell">
                       {u.department_name ?? '—'}
                     </Table.Cell>
                     <Table.Cell className="h-auto py-3">

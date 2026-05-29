@@ -76,9 +76,15 @@ export default async function VendorsPage({ searchParams }: { searchParams?: { s
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              {['Vendor Name', 'PAN', 'Email', 'Phone', 'Company Type', 'Service Region', 'Line of Business', 'Verified By', 'Status'].map(c => (
-                <Table.Head key={c}>{c}</Table.Head>
-              ))}
+              <Table.Head>Vendor Name</Table.Head>
+              <Table.Head className="hidden lg:table-cell">PAN</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Email</Table.Head>
+              <Table.Head className="hidden md:table-cell">Phone</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Company Type</Table.Head>
+              <Table.Head className="hidden md:table-cell">Service Region</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Line of Business</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Verified By</Table.Head>
+              <Table.Head>Status</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
@@ -88,13 +94,13 @@ export default async function VendorsPage({ searchParams }: { searchParams?: { s
             ) : rows.map(v => (
               <Table.Row key={v.id} className={v.is_active ? '' : 'opacity-60'}>
                 <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{v.name}{!v.is_active && <span className="ml-1.5 text-paragraph-xs text-text-soft-400">(inactive)</span>}</span></Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.pan ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{v.primary_email ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.primary_phone ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.company_type ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{REGION_LABEL[v.service_region ?? ''] ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.line_of_business ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.verified_by_name ?? '—'}</Table.Cell>
+                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.pan ?? '—'}</Table.Cell>
+                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{v.primary_email ?? '—'}</Table.Cell>
+                <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.primary_phone ?? '—'}</Table.Cell>
+                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.company_type ?? '—'}</Table.Cell>
+                <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{REGION_LABEL[v.service_region ?? ''] ?? '—'}</Table.Cell>
+                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.line_of_business ?? '—'}</Table.Cell>
+                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.verified_by_name ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3">
                   <Badge.Root size="medium" variant="light" color={(STATUS_TO_BADGE_COLOR[STATUS_LABEL[v.status] ?? v.status] ?? 'gray') as BadgeColor}>
                     <Badge.Dot />{STATUS_LABEL[v.status] ?? v.status}

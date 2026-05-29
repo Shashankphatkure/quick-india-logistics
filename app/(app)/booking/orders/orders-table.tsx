@@ -73,11 +73,11 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
               <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
             </Table.Head>
             <Table.Head><SortableHeader column="docket">Docket No</SortableHeader></Table.Head>
-            <Table.Head><SortableHeader column="client">Client</SortableHeader></Table.Head>
-            <Table.Head>Route</Table.Head>
-            <Table.Head><SortableHeader column="shipper">Shipper</SortableHeader></Table.Head>
+            <Table.Head className="hidden lg:table-cell"><SortableHeader column="client">Client</SortableHeader></Table.Head>
+            <Table.Head className="hidden md:table-cell">Route</Table.Head>
+            <Table.Head className="hidden lg:table-cell"><SortableHeader column="shipper">Shipper</SortableHeader></Table.Head>
             <Table.Head><SortableHeader column="status">Status</SortableHeader></Table.Head>
-            <Table.Head>Type</Table.Head>
+            <Table.Head className="hidden md:table-cell">Type</Table.Head>
             <Table.Head />
           </Table.Row>
         </Table.Header>
@@ -126,10 +126,10 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                       <p className="text-paragraph-xs text-text-sub-600 mt-0.5">{order.booking_date}</p>
                     </div>
                   </Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-strong-950">
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-strong-950 hidden lg:table-cell">
                     {order.client_name ?? '—'}
                   </Table.Cell>
-                  <Table.Cell className="h-auto py-3">
+                  <Table.Cell className="h-auto py-3 hidden md:table-cell">
                     <div className="flex items-center gap-1 text-paragraph-xs text-text-sub-600">
                       <RiMapPinLine size={11} className="text-text-disabled-300 shrink-0" />
                       <span className="truncate max-w-[90px]">{order.origin}</span>
@@ -137,7 +137,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                       <span className="truncate max-w-[90px]">{order.destination}</span>
                     </div>
                   </Table.Cell>
-                  <Table.Cell className="h-auto py-3">
+                  <Table.Cell className="h-auto py-3 hidden lg:table-cell">
                     <div className="flex items-center gap-2">
                       <ShipperAvatar name={order.shipper_name} />
                       <span className="text-paragraph-sm text-text-strong-950 truncate max-w-[100px]">
@@ -155,7 +155,7 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                       {statusLabel}
                     </Badge.Root>
                   </Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">
                     {DELIVERY_TYPE_LABEL[order.delivery_type] ?? order.delivery_type}
                   </Table.Cell>
                   <Table.Cell className="h-auto py-3">

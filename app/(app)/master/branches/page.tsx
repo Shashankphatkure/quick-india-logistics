@@ -80,11 +80,15 @@ export default async function BranchesPage({
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              {['Branch Code', 'Branch Name', 'Type', 'Location', 'Email', 'Phone', 'Head', 'Verified By', 'Status'].map(
-                (col) => (
-                  <Table.Head key={col}>{col}</Table.Head>
-                ),
-              )}
+              <Table.Head>Branch Code</Table.Head>
+              <Table.Head>Branch Name</Table.Head>
+              <Table.Head className="hidden md:table-cell">Type</Table.Head>
+              <Table.Head className="hidden md:table-cell">Location</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Email</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Phone</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Head</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Verified By</Table.Head>
+              <Table.Head>Status</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
@@ -105,14 +109,14 @@ export default async function BranchesPage({
                     <Table.Cell className="h-auto py-3">
                       <span className="text-paragraph-sm font-medium text-primary-base">{b.name}</span>
                     </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                    <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">
                       {BRANCH_TYPE_LABEL[b.branch_type] ?? b.branch_type}
                     </Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{location || '—'}</Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{b.email ?? '—'}</Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{b.phone ?? '—'}</Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{b.head_name ?? '—'}</Table.Cell>
-                    <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">
+                    <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{location || '—'}</Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{b.email ?? '—'}</Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{b.phone ?? '—'}</Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{b.head_name ?? '—'}</Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">
                       {b.verified_by_name ?? '—'}
                     </Table.Cell>
                     <Table.Cell className="h-auto py-3">

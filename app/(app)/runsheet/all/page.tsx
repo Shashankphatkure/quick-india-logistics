@@ -80,12 +80,12 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
             <Table.Row>
               <Table.Head><SortableHeader column="runsheet">Runsheet No</SortableHeader></Table.Head>
               <Table.Head><SortableHeader column="date">Date</SortableHeader></Table.Head>
-              <Table.Head><SortableHeader column="branch">Branch</SortableHeader></Table.Head>
-              <Table.Head>Route</Table.Head>
-              <Table.Head>Vehicle</Table.Head>
-              <Table.Head>Driver</Table.Head>
-              <Table.Head>Phone</Table.Head>
-              <Table.Head>Orders</Table.Head>
+              <Table.Head className="hidden md:table-cell"><SortableHeader column="branch">Branch</SortableHeader></Table.Head>
+              <Table.Head className="hidden lg:table-cell">Route</Table.Head>
+              <Table.Head className="hidden md:table-cell">Vehicle</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Driver</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Phone</Table.Head>
+              <Table.Head className="hidden md:table-cell">Orders</Table.Head>
               <Table.Head><SortableHeader column="state">State</SortableHeader></Table.Head>
             </Table.Row>
           </Table.Header>
@@ -98,12 +98,12 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
                 <Table.Row key={r.id}>
                   <Table.Cell className="h-auto py-3"><Link href={`/runsheet/${r.runsheet_no}`} className="text-paragraph-sm font-medium text-primary-base hover:underline no-underline">{r.runsheet_no}</Link></Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.runsheet_date}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.branch_name}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.route ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.vehicle_no ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.driver_name ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.driver_phone ?? '—'}</Table.Cell>
-                  <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.order_count}</Table.Cell>
+                  <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{r.branch_name}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{r.route ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{r.vehicle_no ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{r.driver_name ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{r.driver_phone ?? '—'}</Table.Cell>
+                  <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{r.order_count}</Table.Cell>
                   <Table.Cell className="h-auto py-3"><Badge.Root size="medium" variant="light" color={sl.color}><Badge.Dot />{sl.label}</Badge.Root></Table.Cell>
                 </Table.Row>
               );

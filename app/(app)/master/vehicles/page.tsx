@@ -69,9 +69,12 @@ export default async function VehiclesPage({ searchParams }: { searchParams?: { 
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              {['Vehicle No', 'Type', 'Owner', 'Model', 'Capacity (kg)', 'Status'].map(c => (
-                <Table.Head key={c}>{c}</Table.Head>
-              ))}
+              <Table.Head>Vehicle No</Table.Head>
+              <Table.Head className="hidden md:table-cell">Type</Table.Head>
+              <Table.Head className="hidden md:table-cell">Owner</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Model</Table.Head>
+              <Table.Head className="hidden md:table-cell">Capacity (kg)</Table.Head>
+              <Table.Head>Status</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
@@ -81,10 +84,10 @@ export default async function VehiclesPage({ searchParams }: { searchParams?: { 
             ) : rows.map(v => (
               <Table.Row key={v.id}>
                 <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{v.number}</span></Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{TYPE_LABEL[v.vehicle_type ?? ''] ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{OWNER_LABEL[v.owner_type ?? ''] ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.model ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{v.capacity_kg ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">{TYPE_LABEL[v.vehicle_type ?? ''] ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">{OWNER_LABEL[v.owner_type ?? ''] ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden lg:table-cell">{v.model ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">{v.capacity_kg ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3">
                   <Badge.Root size="medium" variant="light" color={v.is_active ? 'green' : 'gray'}>
                     <Badge.Dot />{v.is_active ? 'Active' : 'Inactive'}
