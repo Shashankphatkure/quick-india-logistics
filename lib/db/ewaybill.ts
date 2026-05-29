@@ -1,5 +1,5 @@
 import 'server-only';
-import { many, one } from '@/lib/db';
+import { many, one, query } from '@/lib/db';
 
 export type EwaybillRow = {
   id: string;
@@ -8,6 +8,9 @@ export type EwaybillRow = {
   ewaybill_no: string | null;
   ewaybill_valid_until: string | null;
   part_b_done: boolean;
+  part_b_vehicle_no: string | null;
+  part_b_transporter_name: string | null;
+  part_b_filled_at: string | null;
   shipper_name: string;
   consignee_name: string;
   origin: string;
@@ -33,6 +36,9 @@ export async function listEwaybillOrders(opts: { orgId: string; branchIds?: Bran
             o.ewaybill_no,
             to_char(o.ewaybill_valid_until, 'DD-MM-YYYY HH24:MI') as ewaybill_valid_until,
             o.ewaybill_part_b_done as part_b_done,
+            o.ewaybill_part_b_vehicle_no as part_b_vehicle_no,
+            o.ewaybill_part_b_transporter_name as part_b_transporter_name,
+            to_char(o.ewaybill_part_b_filled_at, 'DD-MM-YYYY HH24:MI') as part_b_filled_at,
             o.shipper_name, o.consignee_name, o.origin, o.destination, o.mode, o.status,
             c.name as client_name
      from orders o left join clients c on c.id = o.client_id
@@ -77,6 +83,24 @@ export async function getEwaybillCounts(orgId: string, branchIds: BranchIds = nu
     missing: Number(r?.missing ?? 0),
     part_b_done: Number(r?.part_b_done ?? 0),
   };
+}
+
+export async function updateEwaybillPartB(opts: {
+  orgId: string;
+  orderId: string;
+  vehicleNo: string;
+  transporterName: string | null;
+}): Promise<boolean> {
+  const r = await query(
+    `update orders
+       set ewaybill_part_b_vehicle_no = $1,
+           ewaybill_part_b_transporter_name = $2,
+           ewaybill_part_b_filled_at = now(),
+           ewaybill_part_b_done = true
+     where id = $3 and org_id = $4 and ewaybill_no is not null`,
+    [opts.vehicleNo, opts.transporterName, opts.orderId, opts.orgId],
+  );
+  return (r.rowCount ?? 0) > 0;
 }
 
 export const EWAYBILL_PAGE_SIZE = PAGE_SIZE;

@@ -49,6 +49,9 @@ type OrderDetail = {
   invoice_date: string | null;
   ewaybill_no: string | null;
   ewaybill_part_b_done: boolean;
+  ewaybill_part_b_vehicle_no: string | null;
+  ewaybill_part_b_transporter_name: string | null;
+  ewaybill_part_b_filled_at: string | null;
   pod_recipient_name: string | null;
   pod_recipient_phone: string | null;
   delivered_at: string | null;
@@ -90,6 +93,8 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
             o.invoice_value::text, o.invoice_number,
             to_char(o.invoice_date, 'DD-MM-YYYY') as invoice_date,
             o.ewaybill_no, o.ewaybill_part_b_done,
+            o.ewaybill_part_b_vehicle_no, o.ewaybill_part_b_transporter_name,
+            to_char(o.ewaybill_part_b_filled_at, 'DD-MM-YYYY HH24:MI') as ewaybill_part_b_filled_at,
             o.pod_recipient_name, o.pod_recipient_phone,
             to_char(o.delivered_at, 'DD-MM-YYYY HH24:MI') as delivered_at,
             cb.name as current_branch,
@@ -284,6 +289,13 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
             <Row label="Invoice Value" value={order.invoice_value ? `₹${Number(order.invoice_value).toLocaleString('en-IN')}` : '—'} />
             <Row label="EwayBill No" value={order.ewaybill_no ?? '—'} />
             <Row label="Part B Done" value={order.ewaybill_part_b_done ? 'Yes' : 'No'} />
+            {order.ewaybill_part_b_done && (
+              <>
+                <Row label="Part B Vehicle" value={order.ewaybill_part_b_vehicle_no ?? '—'} />
+                <Row label="Part B Transporter" value={order.ewaybill_part_b_transporter_name ?? '—'} />
+                <Row label="Part B Filled" value={order.ewaybill_part_b_filled_at ?? '—'} />
+              </>
+            )}
           </Card>
 
           {order.status === 'delivered' && (

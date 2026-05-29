@@ -10,6 +10,7 @@ import { listEwaybillOrders, countEwaybillOrders, getEwaybillCounts, EWAYBILL_PA
 import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import { orderStatusLabel } from '@/lib/order-status';
+import EwaybillRowActions from './ewaybill-row-actions';
 
 export default async function EwayBillPage({ searchParams }: { searchParams?: { search?: string; missing?: string; page?: string } }) {
   const { orgId, branchIds } = await tenantScope();
@@ -72,11 +73,14 @@ export default async function EwayBillPage({ searchParams }: { searchParams?: { 
         </div>
         <Table.Root>
           <Table.Header>
-            <Table.Row>{['Docket No', 'EwayBill No', 'Booking Date', 'Shipper → Consignee', 'Route', 'Mode', 'Order Status', 'Part B'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
+            <Table.Row>
+              {['Docket No', 'EwayBill No', 'Booking Date', 'Shipper → Consignee', 'Route', 'Mode', 'Order Status', 'Part B'].map(c => <Table.Head key={c}>{c}</Table.Head>)}
+              <Table.Head className="text-right">Actions</Table.Head>
+            </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={8} className="py-10 text-center text-paragraph-sm text-text-sub-600">No EwayBill orders found</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No EwayBill orders found</Table.Cell></Table.Row>
             ) : rows.map(o => (
               <Table.Row key={o.id}>
                 <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{o.docket_no}</span></Table.Cell>
@@ -90,7 +94,11 @@ export default async function EwayBillPage({ searchParams }: { searchParams?: { 
                   <Badge.Root size="small" variant="lighter" color={o.part_b_done ? 'green' : 'orange'}>
                     {o.part_b_done ? 'Done' : 'Pending'}
                   </Badge.Root>
+                  {o.part_b_done && o.part_b_vehicle_no && (
+                    <p className="text-paragraph-xs text-text-sub-600 mt-0.5">{o.part_b_vehicle_no}</p>
+                  )}
                 </Table.Cell>
+                <Table.Cell className="h-auto py-3 text-right"><EwaybillRowActions row={o} /></Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
