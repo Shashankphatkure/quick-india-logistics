@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { cn } from '@/utils/cn';
 import * as Input from '@/components/ui/input';
 import * as Avatar from '@/components/ui/avatar';
@@ -16,11 +18,13 @@ import {
   RiSettings3Line,
   RiLogoutBoxLine,
   RiMenuLine,
+  RiCheckLine,
 } from '@remixicon/react';
 
 const ThemeSwitch = dynamic(() => import('./theme-switch'), { ssr: false });
 
 import { logoutAction } from '@/app/(auth)/login/actions';
+import { setHomeBranchAction } from '@/app/(app)/branch-actions';
 import type { AppShellUser, AppShellBranch } from './app-shell';
 
 interface AppHeaderProps {
@@ -40,12 +44,26 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed, user, branch
   const displayName = user?.fullName?.split(' ')[0] ?? 'User';
   const initialsText = user ? initials(user.fullName) : 'U';
   const [docketSearch, setDocketSearch] = useState('');
+  const [pending, startTransition] = useTransition();
 
   function onDocketSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const v = docketSearch.trim();
     if (!v) return;
     router.push(`/booking/orders/${encodeURIComponent(v)}`);
+  }
+
+  function switchBranch(branchId: string, name: string) {
+    if (name === currentBranchName) return;
+    startTransition(async () => {
+      const r = await setHomeBranchAction(branchId);
+      if (r.ok) {
+        toast.success(`Switched to ${name}`);
+        router.refresh();
+      } else {
+        toast.error(r.error);
+      }
+    });
   }
   return (
     <header
@@ -92,9 +110,10 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed, user, branch
             {branches.length === 0 ? (
               <div className="px-3 py-2 text-paragraph-xs text-text-sub-600">No branches assigned</div>
             ) : branches.map((b) => (
-              <Dropdown.Item key={b.id} className="text-paragraph-sm">
+              <Dropdown.Item key={b.id} className="text-paragraph-sm" disabled={pending} onSelect={() => switchBranch(b.id, b.name)}>
                 <RiMapPinLine size={13} />
-                {b.name}
+                <span className="flex-1">{b.name}</span>
+                {b.name === currentBranchName && <RiCheckLine size={13} className="text-primary-base" />}
               </Dropdown.Item>
             ))}
           </Dropdown.Content>
@@ -129,13 +148,17 @@ export default function AppHeader({ onMenuToggle, sidebarCollapsed, user, branch
             </button>
           </Dropdown.Trigger>
           <Dropdown.Content align="end" className="w-48">
-            <Dropdown.Item>
-              <Dropdown.ItemIcon as={RiUserLine} />
-              Profile
+            <Dropdown.Item asChild>
+              <Link href="/ems/change-password" className="no-underline">
+                <Dropdown.ItemIcon as={RiUserLine} />
+                Account &amp; Password
+              </Link>
             </Dropdown.Item>
-            <Dropdown.Item>
-              <Dropdown.ItemIcon as={RiSettings3Line} />
-              Settings
+            <Dropdown.Item asChild>
+              <Link href="/organization" className="no-underline">
+                <Dropdown.ItemIcon as={RiSettings3Line} />
+                Organization
+              </Link>
             </Dropdown.Item>
             <Dropdown.Separator />
             <form action={logoutAction}>

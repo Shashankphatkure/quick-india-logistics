@@ -18,7 +18,10 @@ interface StatsStripProps {
 }
 
 function StatCard({ stat }: { stat: Stat }) {
-  const hasTrend = stat.trend !== undefined;
+  // Only show the coloured trend pill for a real, non-zero delta. A trend of 0
+  // (the common case where we have no period-over-period comparison) renders the
+  // label as a plain caption instead of a misleading "+0%".
+  const showPill = typeof stat.trend === 'number' && stat.trend !== 0;
   const isPositive = (stat.trend ?? 0) >= 0;
 
   return (
@@ -29,7 +32,7 @@ function StatCard({ stat }: { stat: Stat }) {
         {stat.value}
         {stat.suffix && <span className="text-label-md">{stat.suffix}</span>}
       </p>
-      {hasTrend && (
+      {showPill ? (
         <div className={cn(
           'flex w-fit max-w-full items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-semibold',
           isPositive
@@ -44,6 +47,8 @@ function StatCard({ stat }: { stat: Stat }) {
             <span className="ml-0.5 truncate font-normal text-text-sub-600">{stat.trendLabel}</span>
           )}
         </div>
+      ) : (
+        stat.trendLabel && <p className="text-paragraph-xs text-text-disabled-300 truncate">{stat.trendLabel}</p>
       )}
     </div>
   );
