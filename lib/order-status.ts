@@ -64,6 +64,44 @@ export function nextStatuses(current: string): OrderStatusCode[] {
 /** Statuses that need the POD capture flow rather than a plain status update. */
 export const DELIVER_STATUSES = new Set(['delivered']);
 
+// ── Maker-checker lock_state ────────────────────────────────────────────────
+export type LockStateCode = 'data_entry' | 'customer_care' | 'operation' | 'accounts' | 'admin_locked';
+
+export const LOCK_STATE_ORDER: LockStateCode[] = [
+  'data_entry', 'customer_care', 'operation', 'accounts', 'admin_locked',
+];
+
+const LOCK_STATE_LABEL: Record<string, string> = {
+  data_entry: 'Data Entry',
+  customer_care: 'Customer Care',
+  operation: 'Operation',
+  accounts: 'Accounts',
+  admin_locked: 'Admin Locked',
+};
+
+export function lockStateLabel(state: string): string {
+  return LOCK_STATE_LABEL[state] ?? state;
+}
+
+/** The next stage in the maker-checker chain, or null if already fully locked. */
+export function nextLockState(current: string): LockStateCode | null {
+  const i = LOCK_STATE_ORDER.indexOf(current as LockStateCode);
+  return i >= 0 && i < LOCK_STATE_ORDER.length - 1 ? LOCK_STATE_ORDER[i + 1] : null;
+}
+
+/**
+ * Permissive + admin-lock policy: any logged-in role (employee/manager/admin) may
+ * advance the workflow up to `accounts`; only admin (and super_admin) may apply the
+ * final `accounts → admin_locked` step. super_admin may advance any stage.
+ */
+export function canAdvanceLockState(userType: string, current: string): boolean {
+  const next = nextLockState(current);
+  if (!next) return false;
+  if (userType === 'super_admin') return true;
+  if (next === 'admin_locked') return userType === 'admin';
+  return userType === 'employee' || userType === 'manager' || userType === 'admin';
+}
+
 export type OrderListItem = {
   id: string;
   docket_no: string;

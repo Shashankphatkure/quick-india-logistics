@@ -10,13 +10,15 @@ import {
 import { cn } from '@/utils/cn';
 import { one, many } from '@/lib/db';
 import { currentOrgId } from '@/lib/tenant';
-import { orderStatusLabel, DELIVERY_TYPE_LABEL } from '@/lib/order-status';
+import { getSession } from '@/lib/auth';
+import { orderStatusLabel, DELIVERY_TYPE_LABEL, lockStateLabel } from '@/lib/order-status';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import { listOrderImages } from '@/lib/db/order-images';
 import { presignGet } from '@/lib/s3';
 import ImageGallery, { type ImageItem } from './image-gallery';
 import AssetAttach, { type AttachedAsset, type AssetOption } from './asset-attach';
 import StatusControl from './status-control';
+import LockStateControl from './lock-state-control';
 
 type OrderDetail = {
   id: string;
@@ -73,9 +75,18 @@ type StatusEvent = {
 
 type Manifest = { id: string; manifest_no: string; state: string };
 type Runsheet = { id: string; runsheet_no: string; state: string };
+type LockEvent = {
+  id: string;
+  from_state: string;
+  to_state: string;
+  performed_by_name: string | null;
+  performed_at: string;
+  note: string | null;
+};
 
 export default async function OrderDetailPage({ params }: { params: { docket: string } }) {
   const orgId = await currentOrgId();
+  const session = await getSession();
   const docketNo = decodeURIComponent(params.docket);
 
   const order = await one<OrderDetail>(
@@ -162,6 +173,17 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
       [orgId],
     ),
   ]);
+
+  const lockEvents = await many<LockEvent>(
+    `select le.id, le.from_state, le.to_state,
+            u.full_name as performed_by_name,
+            to_char(le.performed_at, 'DD-MM-YYYY HH24:MI') as performed_at,
+            le.note
+     from order_lock_events le
+     left join users u on u.id = le.performed_by
+     where le.order_id = $1 order by le.performed_at desc`,
+    [order.id],
+  );
 
   const images: ImageItem[] = await Promise.all(
     imageRows.map(async (img) => ({
@@ -339,6 +361,27 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
               ))}
             </Card>
           )}
+
+          <Card title="Maker-Checker Lock">
+            <LockStateControl
+              orderId={order.id}
+              currentLockState={order.lock_state}
+              userType={session?.userType ?? 'employee'}
+            />
+            {lockEvents.length > 0 && (
+              <div className="mt-3 space-y-2 border-t border-stroke-soft-200 pt-3">
+                {lockEvents.map((e) => (
+                  <div key={e.id} className="text-paragraph-xs">
+                    <p className="text-text-strong-950">
+                      {lockStateLabel(e.from_state)} <span className="text-text-disabled-300">→</span> {lockStateLabel(e.to_state)}
+                    </p>
+                    <p className="text-text-sub-600">{e.performed_at}{e.performed_by_name ? ` · ${e.performed_by_name}` : ''}</p>
+                    {e.note && <p className="text-text-disabled-300">{e.note}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
 
           <Card title="Status Timeline">
             {events.length === 0 ? (

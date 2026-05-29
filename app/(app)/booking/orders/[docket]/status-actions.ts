@@ -5,9 +5,60 @@ import { requireSession } from '@/lib/auth';
 import { currentOrgId } from '@/lib/tenant';
 import { one, pool } from '@/lib/db';
 import { uploadToS3, makeOrderImageKey, S3_BUCKET, deleteFromS3 } from '@/lib/s3';
-import { STATUS_TRANSITIONS } from '@/lib/order-status';
+import { STATUS_TRANSITIONS, nextLockState, canAdvanceLockState, lockStateLabel } from '@/lib/order-status';
 
 export type StatusResult = { ok: true } | { ok: false; error: string };
+
+/** Advance an order's maker-checker lock_state to the next stage, with role-gating + audit log. */
+export async function advanceLockStateAction(formData: FormData): Promise<StatusResult> {
+  const session = await requireSession();
+  const orgId = await currentOrgId();
+
+  const orderId = String(formData.get('orderId') ?? '').trim();
+  const note = String(formData.get('note') ?? '').trim() || null;
+  if (!orderId) return { ok: false, error: 'Order required' };
+
+  const order = await one<{ id: string; docket_no: string; lock_state: string }>(
+    `select id, docket_no, lock_state from orders where id=$1 and org_id=$2`,
+    [orderId, orgId],
+  );
+  if (!order) return { ok: false, error: 'Order not found' };
+
+  const next = nextLockState(order.lock_state);
+  if (!next) return { ok: false, error: 'Order is already fully locked' };
+  if (!canAdvanceLockState(session.userType ?? '', order.lock_state)) {
+    return { ok: false, error: `Your role cannot advance to ${lockStateLabel(next)}` };
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+    // Guard against concurrent advancement: only update if still in the expected state.
+    const u = await client.query(
+      `update orders set lock_state=$1, updated_at=now() where id=$2 and org_id=$3 and lock_state=$4`,
+      [next, orderId, orgId, order.lock_state],
+    );
+    if ((u.rowCount ?? 0) === 0) {
+      await client.query('rollback');
+      return { ok: false, error: 'Lock state changed concurrently — refresh and retry' };
+    }
+    await client.query(
+      `insert into order_lock_events (order_id, from_state, to_state, performed_by, note)
+       values ($1, $2, $3, $4, $5)`,
+      [orderId, order.lock_state, next, session.userId, note],
+    );
+    await client.query('commit');
+  } catch (e) {
+    await client.query('rollback');
+    return { ok: false, error: e instanceof Error ? e.message : 'Lock advance failed' };
+  } finally {
+    client.release();
+  }
+
+  revalidatePath(`/booking/orders/${order.docket_no}`);
+  revalidatePath('/booking/orders');
+  return { ok: true };
+}
 
 const MAX_BYTES = 8 * 1024 * 1024;
 
