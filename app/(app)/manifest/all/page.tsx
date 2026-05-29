@@ -12,6 +12,7 @@ import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import ManifestTabs from '@/components/manifest-tabs';
 import FilterPopover from '@/components/filter-popover';
+import SortableHeader from '@/components/sortable-header';
 
 const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'orange' | 'green' | 'purple' }> = {
   rough: { label: 'Rough', color: 'gray' },
@@ -26,14 +27,16 @@ const MODE_LABEL: Record<string, string> = {
   train: 'Train', courier: 'Courier', warehouse: 'Warehouse', hub_transfer: 'Hub Transfer',
 };
 
-export default async function AllManifestsPage({ searchParams }: { searchParams?: { search?: string; state?: string; page?: string } }) {
+export default async function AllManifestsPage({ searchParams }: { searchParams?: { search?: string; state?: string; page?: string; sort?: string; dir?: string } }) {
   const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
   const state = searchParams?.state;
+  const sort = searchParams?.sort;
+  const dir = searchParams?.dir;
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, total, counts] = await Promise.all([
-    listManifests({ orgId, branchIds, search, state, page }),
+    listManifests({ orgId, branchIds, search, state, page, sort, dir }),
     countManifests({ orgId, branchIds, search, state }),
     getManifestCounts(orgId, branchIds),
   ]);
@@ -81,7 +84,18 @@ export default async function AllManifestsPage({ searchParams }: { searchParams?
         </div>
         <Table.Root>
           <Table.Header>
-            <Table.Row>{['Manifest No', 'Date', 'From → To', 'Mode', 'Vendor / Vehicle', 'AWB', 'Orders', 'Bags / Boxes', 'Weight (kg)', 'State'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
+            <Table.Row>
+              <Table.Head><SortableHeader column="manifest">Manifest No</SortableHeader></Table.Head>
+              <Table.Head><SortableHeader column="date">Date</SortableHeader></Table.Head>
+              <Table.Head>From → To</Table.Head>
+              <Table.Head><SortableHeader column="mode">Mode</SortableHeader></Table.Head>
+              <Table.Head>Vendor / Vehicle</Table.Head>
+              <Table.Head>AWB</Table.Head>
+              <Table.Head>Orders</Table.Head>
+              <Table.Head>Bags / Boxes</Table.Head>
+              <Table.Head>Weight (kg)</Table.Head>
+              <Table.Head><SortableHeader column="state">State</SortableHeader></Table.Head>
+            </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
@@ -107,7 +121,7 @@ export default async function AllManifestsPage({ searchParams }: { searchParams?
         </Table.Root>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
           <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*MANIFEST_PAGE_SIZE+1}-{Math.min(page*MANIFEST_PAGE_SIZE, total)} of {total}</span>
-          <PaginationLinks page={page} totalPages={totalPages} basePath="/manifest/all" query={{ search, state }} />
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/manifest/all" query={{ search, state, sort, dir }} />
         </div>
       </div>
     </div>

@@ -14,13 +14,13 @@ import {
   RiPrinterLine,
   RiEyeLine,
   RiBarcodeLine,
-  RiArrowUpDownLine,
   RiArrowRightLine,
   RiMapPinLine,
 } from '@remixicon/react';
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import { cn } from '@/utils/cn';
 import { orderStatusLabel, DELIVERY_TYPE_LABEL, type OrderListItem as OrderRow } from '@/lib/order-status';
+import SortableHeader from '@/components/sortable-header';
 
 const AVATAR_TONES = [
   'bg-primary-alpha-16 text-primary-base',
@@ -71,16 +71,13 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
             <Table.Head className="w-10">
               <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
             </Table.Head>
-            {['Docket No', 'Client', 'Route', 'Shipper', 'Status', 'Type', ''].map((col) => (
-              <Table.Head key={col}>
-                {col && (
-                  <span className="flex items-center gap-1">
-                    {col}
-                    <RiArrowUpDownLine size={11} className="text-text-disabled-300" />
-                  </span>
-                )}
-              </Table.Head>
-            ))}
+            <Table.Head><SortableHeader column="docket">Docket No</SortableHeader></Table.Head>
+            <Table.Head><SortableHeader column="client">Client</SortableHeader></Table.Head>
+            <Table.Head>Route</Table.Head>
+            <Table.Head><SortableHeader column="shipper">Shipper</SortableHeader></Table.Head>
+            <Table.Head><SortableHeader column="status">Status</SortableHeader></Table.Head>
+            <Table.Head>Type</Table.Head>
+            <Table.Head />
           </Table.Row>
         </Table.Header>
         <Table.Body>

@@ -12,6 +12,7 @@ import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import RunsheetTabs from '@/components/runsheet-tabs';
 import FilterPopover from '@/components/filter-popover';
+import SortableHeader from '@/components/sortable-header';
 
 const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'orange' | 'green' }> = {
   rough: { label: 'Rough', color: 'gray' },
@@ -20,14 +21,16 @@ const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'ora
   completed: { label: 'Completed', color: 'green' },
 };
 
-export default async function AllRunsheetsPage({ searchParams }: { searchParams?: { search?: string; state?: string; page?: string } }) {
+export default async function AllRunsheetsPage({ searchParams }: { searchParams?: { search?: string; state?: string; page?: string; sort?: string; dir?: string } }) {
   const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
   const state = searchParams?.state;
+  const sort = searchParams?.sort;
+  const dir = searchParams?.dir;
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, total, counts] = await Promise.all([
-    listRunsheets({ orgId, branchIds, search, state, page }),
+    listRunsheets({ orgId, branchIds, search, state, page, sort, dir }),
     countRunsheets({ orgId, branchIds, search, state }),
     getRunsheetCounts(orgId, branchIds),
   ]);
@@ -74,7 +77,17 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
         </div>
         <Table.Root>
           <Table.Header>
-            <Table.Row>{['Runsheet No', 'Date', 'Branch', 'Route', 'Vehicle', 'Driver', 'Phone', 'Orders', 'State'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
+            <Table.Row>
+              <Table.Head><SortableHeader column="runsheet">Runsheet No</SortableHeader></Table.Head>
+              <Table.Head><SortableHeader column="date">Date</SortableHeader></Table.Head>
+              <Table.Head><SortableHeader column="branch">Branch</SortableHeader></Table.Head>
+              <Table.Head>Route</Table.Head>
+              <Table.Head>Vehicle</Table.Head>
+              <Table.Head>Driver</Table.Head>
+              <Table.Head>Phone</Table.Head>
+              <Table.Head>Orders</Table.Head>
+              <Table.Head><SortableHeader column="state">State</SortableHeader></Table.Head>
+            </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
@@ -99,7 +112,7 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
         </Table.Root>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
           <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*RUNSHEET_PAGE_SIZE+1}-{Math.min(page*RUNSHEET_PAGE_SIZE, total)} of {total}</span>
-          <PaginationLinks page={page} totalPages={totalPages} basePath="/runsheet/all" query={{ search, state }} />
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/runsheet/all" query={{ search, state, sort, dir }} />
         </div>
       </div>
     </div>

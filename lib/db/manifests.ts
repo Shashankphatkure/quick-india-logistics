@@ -1,5 +1,13 @@
 import 'server-only';
 import { many, one } from '@/lib/db';
+import { resolveSort } from '@/lib/sort';
+
+const MANIFEST_SORT: Record<string, string> = {
+  date: 'm.manifest_date',
+  manifest: 'm.manifest_no',
+  mode: 'm.mode',
+  state: 'm.state',
+};
 
 export type ManifestRow = {
   id: string;
@@ -29,9 +37,10 @@ const MANIFEST_BRANCH = (n: number) =>
 const ORDER_BRANCH = (n: number) =>
   `and ($${n}::uuid[] is null or o.current_branch_id = any($${n}) or o.origin_branch_id = any($${n}) or o.destination_branch_id = any($${n}))`;
 
-export async function listManifests(opts: { orgId: string; branchIds?: BranchIds; search?: string; state?: string; toBranchId?: string; page?: number }) {
+export async function listManifests(opts: { orgId: string; branchIds?: BranchIds; search?: string; state?: string; toBranchId?: string; page?: number; sort?: string; dir?: string }) {
   const page = Math.max(1, opts.page ?? 1);
   const branchIds = opts.branchIds ?? null;
+  const order = resolveSort(opts.sort, opts.dir, MANIFEST_SORT, 'date');
   return many<ManifestRow>(
     `select m.id, m.manifest_no,
             to_char(m.manifest_date, 'DD-MM-YYYY') as manifest_date,
@@ -49,7 +58,7 @@ export async function listManifests(opts: { orgId: string; branchIds?: BranchIds
        and ($2::text is null or m.manifest_no ilike '%' || $2 || '%')
        and ($3::text is null or m.state = $3)
        and ($4::uuid is null or m.to_branch_id = $4::uuid)
-     order by m.manifest_date desc, m.created_at desc
+     order by ${order.sql} nulls last, m.created_at desc
      limit $5 offset $6`,
     [opts.orgId, opts.search ?? null, opts.state ?? null, opts.toBranchId ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE, branchIds],
   );

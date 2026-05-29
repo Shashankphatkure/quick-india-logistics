@@ -1,5 +1,13 @@
 import 'server-only';
 import { many, one } from '@/lib/db';
+import { resolveSort } from '@/lib/sort';
+
+const RUNSHEET_SORT: Record<string, string> = {
+  date: 'r.runsheet_date',
+  runsheet: 'r.runsheet_no',
+  branch: 'b.name',
+  state: 'r.state',
+};
 
 export type RunsheetRow = {
   id: string;
@@ -21,9 +29,10 @@ const RUNSHEET_BRANCH = (n: number) => `and ($${n}::uuid[] is null or r.branch_i
 const ORDER_BRANCH = (n: number) =>
   `and ($${n}::uuid[] is null or o.current_branch_id = any($${n}) or o.origin_branch_id = any($${n}) or o.destination_branch_id = any($${n}))`;
 
-export async function listRunsheets(opts: { orgId: string; branchIds?: BranchIds; search?: string; state?: string; page?: number }) {
+export async function listRunsheets(opts: { orgId: string; branchIds?: BranchIds; search?: string; state?: string; page?: number; sort?: string; dir?: string }) {
   const page = Math.max(1, opts.page ?? 1);
   const branchIds = opts.branchIds ?? null;
+  const order = resolveSort(opts.sort, opts.dir, RUNSHEET_SORT, 'date');
   return many<RunsheetRow>(
     `select r.id, r.runsheet_no,
             to_char(r.runsheet_date, 'DD-MM-YYYY') as runsheet_date,
@@ -35,7 +44,7 @@ export async function listRunsheets(opts: { orgId: string; branchIds?: BranchIds
        ${RUNSHEET_BRANCH(6)}
        and ($2::text is null or r.runsheet_no ilike '%' || $2 || '%')
        and ($3::text is null or r.state = $3)
-     order by r.runsheet_date desc, r.created_at desc
+     order by ${order.sql} nulls last, r.created_at desc
      limit $4 offset $5`,
     [opts.orgId, opts.search ?? null, opts.state ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE, branchIds],
   );

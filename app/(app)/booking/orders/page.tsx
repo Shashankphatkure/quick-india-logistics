@@ -22,21 +22,39 @@ const PAGE_SIZE = 25;
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams?: { search?: string; page?: string };
+  searchParams?: {
+    search?: string; page?: string; sort?: string; dir?: string;
+    status?: string; mode?: string; cold?: string; from?: string; to?: string;
+  };
 }) {
   const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
+  const status = searchParams?.status || undefined;
+  const mode = searchParams?.mode || undefined;
+  const coldChain = searchParams?.cold === '1' ? true : undefined;
+  const from = searchParams?.from || undefined;
+  const to = searchParams?.to || undefined;
+  const sort = searchParams?.sort;
+  const dir = searchParams?.dir;
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
+  const filters = { orgId, branchIds, search, status, mode, coldChain, from, to };
+
   const [orders, total, counts] = await Promise.all([
-    listOrders({ orgId, branchIds, search, page, pageSize: PAGE_SIZE }),
-    countOrders({ orgId, branchIds, search }),
+    listOrders({ ...filters, page, pageSize: PAGE_SIZE, sort, dir }),
+    countOrders(filters),
     getOrderCounts(orgId, branchIds),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const fromRow = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const toRow = Math.min(page * PAGE_SIZE, total);
+
+  // Carry every active filter through pagination + export links.
+  const query: Record<string, string | undefined> = { search, status, mode, cold: searchParams?.cold, from, to, sort, dir };
+  const exportQs = new URLSearchParams(
+    Object.entries(query).filter(([, v]) => v) as [string, string][],
+  ).toString();
 
   return (
     <div className="space-y-6">
@@ -49,15 +67,37 @@ export default async function OrdersPage({
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
             <Button.Root variant="neutral" mode="stroke" size="small" asChild>
-              <a href={`/api/export/orders${search ? `?search=${encodeURIComponent(search)}` : ''}`} className="no-underline">
+              <a href={`/api/export/orders${exportQs ? `?${exportQs}` : ''}`} className="no-underline">
                 <Button.Icon as={RiDownloadLine} />
                 Export
               </a>
             </Button.Root>
           </Tooltip.Trigger>
-          <Tooltip.Content>Download visible orders as CSV</Tooltip.Content>
+          <Tooltip.Content>Download filtered orders as CSV</Tooltip.Content>
         </Tooltip.Root>
         <FilterPopover fields={[
+          { name: 'status', label: 'Status', type: 'select', options: [
+            { value: 'received', label: 'New' },
+            { value: 'pickup_done', label: 'Picked Up' },
+            { value: 'arrived_at_hub', label: 'At Hub' },
+            { value: 'connected', label: 'Connected' },
+            { value: 'departed', label: 'In Transit' },
+            { value: 'arrived_at_destination', label: 'At Destination' },
+            { value: 'out_for_delivery', label: 'Out for Delivery' },
+            { value: 'delivered', label: 'Delivered' },
+            { value: 'damaged', label: 'Damaged' },
+            { value: 'not_received', label: 'Not Received' },
+            { value: 'cancelled', label: 'Cancelled' },
+          ]},
+          { name: 'mode', label: 'Mode', type: 'select', options: [
+            { value: 'air', label: 'Air' }, { value: 'surface', label: 'Surface' },
+            { value: 'cargo', label: 'Cargo' }, { value: 'train', label: 'Train' },
+            { value: 'local', label: 'Local' }, { value: 'courier', label: 'Courier' },
+            { value: 'warehouse', label: 'Warehouse' },
+          ]},
+          { name: 'cold', label: 'Cold Chain', type: 'select', options: [{ value: '1', label: 'Cold chain only' }] },
+          { name: 'from', label: 'Booked From', type: 'date' },
+          { name: 'to', label: 'Booked To', type: 'date' },
           { name: 'search', label: 'Docket / Shipper / Client', type: 'text', placeholder: 'Search...' },
         ]} />
         <Button.Root size="small" asChild>
@@ -91,6 +131,7 @@ export default async function OrdersPage({
               </Input.Wrapper>
             </Input.Root>
           </form>
+          <span className="text-paragraph-sm text-text-sub-600">{total} {total === 1 ? 'order' : 'orders'}</span>
         </div>
 
         <OrdersTable orders={orders} />
@@ -103,7 +144,7 @@ export default async function OrdersPage({
             page={page}
             totalPages={totalPages}
             basePath="/booking/orders"
-            query={{ search }}
+            query={query}
           />
         </div>
       </div>
