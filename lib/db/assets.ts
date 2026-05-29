@@ -1,5 +1,6 @@
 import 'server-only';
 import { many, one } from '@/lib/db';
+import { resolveSort } from '@/lib/sort';
 
 export type AssetRow = {
   id: string;
@@ -10,6 +11,7 @@ export type AssetRow = {
   box_type: string | null;
   capacity_liters: string | null;
   manufacturer: string | null;
+  current_branch_id: string | null;
   current_branch_name: string | null;
   in_use: boolean;
   usage_count: number;
@@ -19,30 +21,64 @@ export type AssetRow = {
 
 const PAGE_SIZE = 25;
 
-export async function listAssets(opts: { orgId: string; search?: string; page?: number; kind?: 'logger' | 'box' }) {
+// Whitelisted sortable columns. Status is derived (defective/in_use/available) so it is not sortable.
+const ASSET_SORT: Record<string, string> = {
+  asset_id: 'a.asset_id',
+  kind: 'a.asset_kind',
+  branch: 'b.name',
+  usage: 'a.usage_count',
+  expiry: 'a.cal_to',
+};
+
+export type AssetStatusFilter = 'defective' | 'in_use' | 'available';
+
+type AssetFilters = {
+  orgId: string;
+  search?: string;
+  kind?: 'logger' | 'box';
+  branchId?: string;
+  status?: AssetStatusFilter;
+};
+
+// Shared WHERE. Params: $1 orgId, $2 search, $3 kind, $4 branchId(uuid), $5 status(text)
+const ASSET_WHERE = `
+  a.org_id = $1
+  and ($2::text is null or a.asset_id ilike '%' || $2 || '%' or a.barcode ilike '%' || $2 || '%')
+  and ($3::text is null or a.asset_kind = $3)
+  and ($4::uuid is null or a.current_branch_id = $4::uuid)
+  and ($5::text is null
+       or ($5 = 'defective' and a.is_defective)
+       or ($5 = 'in_use' and a.in_use and not a.is_defective)
+       or ($5 = 'available' and not a.in_use and not a.is_defective))
+`;
+
+function whereParams(f: AssetFilters): unknown[] {
+  return [f.orgId, f.search ?? null, f.kind ?? null, f.branchId ?? null, f.status ?? null];
+}
+
+export async function listAssets(
+  opts: AssetFilters & { page?: number; sort?: string; dir?: string },
+): Promise<AssetRow[]> {
   const page = Math.max(1, opts.page ?? 1);
+  const order = resolveSort(opts.sort, opts.dir, ASSET_SORT, 'asset_id');
   return many<AssetRow>(
     `select a.id, a.asset_id, a.asset_kind, a.barcode,
             a.logger_type, a.box_type, a.capacity_liters::text,
-            a.manufacturer, b.name as current_branch_name,
+            a.manufacturer, a.current_branch_id, b.name as current_branch_name,
             a.in_use, a.usage_count, a.is_defective,
             to_char(a.cal_to, 'DD-MM-YYYY') as cal_to
      from assets a left join branches b on b.id = a.current_branch_id
-     where a.org_id=$1
-       and ($2::text is null or a.asset_id ilike '%' || $2 || '%' or a.barcode ilike '%' || $2 || '%')
-       and ($3::text is null or a.asset_kind = $3)
-     order by a.asset_id
-     limit $4 offset $5`,
-    [opts.orgId, opts.search ?? null, opts.kind ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE],
+     where ${ASSET_WHERE}
+     order by ${order.sql} nulls last, a.asset_id
+     limit $6 offset $7`,
+    [...whereParams(opts), PAGE_SIZE, (page - 1) * PAGE_SIZE],
   );
 }
 
-export async function countAssets(opts: { orgId: string; search?: string; kind?: 'logger' | 'box' }) {
+export async function countAssets(opts: AssetFilters) {
   const r = await one<{ n: string }>(
-    `select count(*)::text as n from assets where org_id=$1
-       and ($2::text is null or asset_id ilike '%' || $2 || '%' or barcode ilike '%' || $2 || '%')
-       and ($3::text is null or asset_kind = $3)`,
-    [opts.orgId, opts.search ?? null, opts.kind ?? null],
+    `select count(*)::text as n from assets a where ${ASSET_WHERE}`,
+    whereParams(opts),
   );
   return Number(r?.n ?? 0);
 }

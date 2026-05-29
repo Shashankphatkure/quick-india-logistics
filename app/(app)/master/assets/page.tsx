@@ -6,12 +6,16 @@ import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
 import { RiSearchLine, RiSuitcaseLine } from '@remixicon/react';
-import { listAssets, countAssets, getAssetCounts, ASSET_PAGE_SIZE } from '@/lib/db/assets';
+import { listAssets, countAssets, getAssetCounts, ASSET_PAGE_SIZE, type AssetStatusFilter } from '@/lib/db/assets';
 import { currentOrgId } from '@/lib/tenant';
 import { listBranchesForSelect } from '@/lib/db/branches';
 import PaginationLinks from '@/components/pagination-links';
 import AddAssetForm from './add-asset-form';
 import FilterPopover from '@/components/filter-popover';
+import SortableHeader from '@/components/sortable-header';
+import RowActions from './row-actions';
+
+const ASSET_STATUSES = new Set(['defective', 'in_use', 'available']);
 
 const LOGGER_LABEL: Record<string, string> = {
   single_use: 'Single Use', multi_use: 'Multi Use',
@@ -24,15 +28,21 @@ const BOX_LABEL: Record<string, string> = {
   iqo: 'IQO', sytle: 'Sytle', vaq_tec: 'VAQ-TEC',
 };
 
-export default async function AssetsPage({ searchParams }: { searchParams?: { search?: string; page?: string; kind?: string } }) {
+export default async function AssetsPage({ searchParams }: { searchParams?: { search?: string; page?: string; kind?: string; branch_id?: string; status?: string; sort?: string; dir?: string } }) {
   const orgId = await currentOrgId();
   const search = searchParams?.search?.trim() || undefined;
   const page = Math.max(1, Number(searchParams?.page) || 1);
-  const kind = (searchParams?.kind === 'logger' || searchParams?.kind === 'box') ? searchParams.kind : undefined;
+  const rawKind = searchParams?.kind;
+  const kind: 'logger' | 'box' | undefined = rawKind === 'logger' || rawKind === 'box' ? rawKind : undefined;
+  const branchId = searchParams?.branch_id || undefined;
+  const status = (searchParams?.status && ASSET_STATUSES.has(searchParams.status)) ? (searchParams.status as AssetStatusFilter) : undefined;
+  const sort = searchParams?.sort;
+  const dir = searchParams?.dir;
 
+  const filters = { orgId, search, kind, branchId, status };
   const [rows, total, counts, branches] = await Promise.all([
-    listAssets({ orgId, search, page, kind }),
-    countAssets({ orgId, search, kind }),
+    listAssets({ ...filters, page, sort, dir }),
+    countAssets(filters),
     getAssetCounts(orgId),
     listBranchesForSelect(orgId),
   ]);
@@ -52,6 +62,12 @@ export default async function AssetsPage({ searchParams }: { searchParams?: { se
             { value: 'logger', label: 'Logger' },
             { value: 'box', label: 'Box' },
           ]},
+          { name: 'status', label: 'Status', type: 'select', options: [
+            { value: 'available', label: 'Available' },
+            { value: 'in_use', label: 'In Use' },
+            { value: 'defective', label: 'Defective' },
+          ]},
+          { name: 'branch_id', label: 'Branch', type: 'select', options: branches.map((b) => ({ value: b.id, label: b.name })) },
           { name: 'search', label: 'Asset ID / Barcode', type: 'text', placeholder: 'LOG-... / BAR-...' },
         ]} />
         <AddAssetForm branches={branches} />
@@ -84,14 +100,21 @@ export default async function AssetsPage({ searchParams }: { searchParams?: { se
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              {['Asset ID', 'Barcode', 'Kind', 'Type', 'Manufacturer', 'Current Branch', 'Usage', 'Cal. Expiry', 'Status'].map(c => (
-                <Table.Head key={c}>{c}</Table.Head>
-              ))}
+              <Table.Head><SortableHeader column="asset_id">Asset ID</SortableHeader></Table.Head>
+              <Table.Head>Barcode</Table.Head>
+              <Table.Head><SortableHeader column="kind">Kind</SortableHeader></Table.Head>
+              <Table.Head>Type</Table.Head>
+              <Table.Head>Manufacturer</Table.Head>
+              <Table.Head><SortableHeader column="branch">Current Branch</SortableHeader></Table.Head>
+              <Table.Head><SortableHeader column="usage">Usage</SortableHeader></Table.Head>
+              <Table.Head><SortableHeader column="expiry">Cal. Expiry</SortableHeader></Table.Head>
+              <Table.Head>Status</Table.Head>
+              <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No assets found</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No assets found</Table.Cell></Table.Row>
             ) : rows.map(a => {
               const typeText = a.asset_kind === 'logger'
                 ? (LOGGER_LABEL[a.logger_type ?? ''] ?? '—')
@@ -119,6 +142,7 @@ export default async function AssetsPage({ searchParams }: { searchParams?: { se
                       <Badge.Root size="medium" variant="light" color="green"><Badge.Dot />Available</Badge.Root>
                     )}
                   </Table.Cell>
+                  <Table.Cell className="h-auto py-3 text-right"><RowActions row={a} branches={branches} /></Table.Cell>
                 </Table.Row>
               );
             })}
@@ -126,7 +150,7 @@ export default async function AssetsPage({ searchParams }: { searchParams?: { se
         </Table.Root>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
           <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*ASSET_PAGE_SIZE+1}-{Math.min(page*ASSET_PAGE_SIZE, total)} of {total}</span>
-          <PaginationLinks page={page} totalPages={totalPages} basePath="/master/assets" query={{ search, kind }} />
+          <PaginationLinks page={page} totalPages={totalPages} basePath="/master/assets" query={{ search, kind, branch_id: branchId, status, sort, dir }} />
         </div>
       </div>
     </div>
