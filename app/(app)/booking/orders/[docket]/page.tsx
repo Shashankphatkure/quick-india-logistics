@@ -265,7 +265,7 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
             <Card title="Linked Manifests">
               {manifests.map((m) => (
                 <div key={m.id} className="flex items-center justify-between py-1.5">
-                  <Link href={`/manifest/all?search=${m.manifest_no}`} className="text-paragraph-sm font-medium text-primary-base no-underline hover:underline">{m.manifest_no}</Link>
+                  <Link href={`/manifest/${m.manifest_no}`} className="text-paragraph-sm font-medium text-primary-base no-underline hover:underline">{m.manifest_no}</Link>
                   <Badge.Root size="small" variant="lighter" color="gray">{m.state}</Badge.Root>
                 </div>
               ))}
@@ -276,7 +276,7 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
             <Card title="Linked Runsheets">
               {runsheets.map((r) => (
                 <div key={r.id} className="flex items-center justify-between py-1.5">
-                  <Link href={`/runsheet/all?search=${r.runsheet_no}`} className="text-paragraph-sm font-medium text-primary-base no-underline hover:underline">{r.runsheet_no}</Link>
+                  <Link href={`/runsheet/${r.runsheet_no}`} className="text-paragraph-sm font-medium text-primary-base no-underline hover:underline">{r.runsheet_no}</Link>
                   <Badge.Root size="small" variant="lighter" color="gray">{r.state}</Badge.Root>
                 </div>
               ))}

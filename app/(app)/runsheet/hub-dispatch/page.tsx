@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
 import * as Badge from '@/components/ui/badge';
@@ -57,7 +58,7 @@ export default async function RunsheetHubDispatchPage({ searchParams }: { search
               <Table.Row><Table.Cell colSpan={8} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vehicle manifests</Table.Cell></Table.Row>
             ) : vehicleRows.map(m => (
               <Table.Row key={m.id}>
-                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{m.manifest_no}</span></Table.Cell>
+                <Table.Cell className="h-auto py-3"><Link href={`/manifest/${m.manifest_no}`} className="text-paragraph-sm font-medium text-primary-base hover:underline no-underline">{m.manifest_no}</Link></Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.manifest_date}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name} → {m.to_branch_name}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.vehicle_no ?? '—'}</Table.Cell>

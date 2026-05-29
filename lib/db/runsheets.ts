@@ -123,4 +123,60 @@ export async function countPendingDeliveryOrders(orgId: string, branchIds: Branc
   };
 }
 
+export type RunsheetDetail = {
+  id: string;
+  runsheet_no: string;
+  runsheet_date: string;
+  branch_name: string;
+  route: string | null;
+  vehicle_no: string | null;
+  driver_name: string | null;
+  driver_phone: string | null;
+  state: string;
+  created_by_name: string | null;
+};
+
+export type RunsheetStop = {
+  id: string;
+  docket_no: string;
+  status: string;
+  sequence_no: number | null;
+  consignee_name: string;
+  destination: string;
+  client_name: string | null;
+  actual_weight_kg: string | null;
+  no_of_pieces: number;
+  delivered_at: string | null;
+};
+
+export async function getRunsheetByNo(orgId: string, runsheetNo: string, branchIds: BranchIds = null): Promise<RunsheetDetail | null> {
+  return one<RunsheetDetail>(
+    `select r.id, r.runsheet_no,
+            to_char(r.runsheet_date, 'DD-MM-YYYY') as runsheet_date,
+            b.name as branch_name, r.route, r.vehicle_no, r.driver_name, r.driver_phone, r.state,
+            u.full_name as created_by_name
+     from runsheets r
+     join branches b on b.id = r.branch_id
+     left join users u on u.id = r.created_by
+     where r.org_id = $1 and lower(r.runsheet_no) = lower($2)
+       ${RUNSHEET_BRANCH(3)}`,
+    [orgId, runsheetNo, branchIds],
+  );
+}
+
+export async function listRunsheetStops(runsheetId: string): Promise<RunsheetStop[]> {
+  return many<RunsheetStop>(
+    `select o.id, o.docket_no, o.status, ro.sequence_no,
+            o.consignee_name, o.destination, c.name as client_name,
+            o.actual_weight_kg::text, o.no_of_pieces,
+            to_char(o.delivered_at, 'DD-MM HH24:MI') as delivered_at
+     from runsheet_orders ro
+     join orders o on o.id = ro.order_id
+     left join clients c on c.id = o.client_id
+     where ro.runsheet_id = $1
+     order by ro.sequence_no nulls last, o.docket_no`,
+    [runsheetId],
+  );
+}
+
 export const RUNSHEET_PAGE_SIZE = PAGE_SIZE;

@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import * as Button from '@/components/ui/button';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
@@ -82,7 +83,7 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
               const sl = STATE_LABEL[r.state] ?? { label: r.state, color: 'gray' as const };
               return (
                 <Table.Row key={r.id}>
-                  <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{r.runsheet_no}</span></Table.Cell>
+                  <Table.Cell className="h-auto py-3"><Link href={`/runsheet/${r.runsheet_no}`} className="text-paragraph-sm font-medium text-primary-base hover:underline no-underline">{r.runsheet_no}</Link></Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{r.runsheet_date}</Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.branch_name}</Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{r.route ?? '—'}</Table.Cell>

@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import * as Button from '@/components/ui/button';
 import * as Input from '@/components/ui/input';
 import * as Table from '@/components/ui/table';
@@ -89,7 +90,7 @@ export default async function AllManifestsPage({ searchParams }: { searchParams?
               const sl = STATE_LABEL[m.state] ?? { label: m.state, color: 'gray' as const };
               return (
                 <Table.Row key={m.id}>
-                  <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{m.manifest_no}</span></Table.Cell>
+                  <Table.Cell className="h-auto py-3"><Link href={`/manifest/${m.manifest_no}`} className="text-paragraph-sm font-medium text-primary-base hover:underline no-underline">{m.manifest_no}</Link></Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.manifest_date}</Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name} <span className="text-text-disabled-300">→</span> {m.to_branch_name}</Table.Cell>
                   <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{MODE_LABEL[m.mode] ?? m.mode}</Table.Cell>

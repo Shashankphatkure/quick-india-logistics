@@ -144,4 +144,74 @@ export async function countPendingDispatchOrders(orgId: string, branchIds: Branc
   };
 }
 
+export type ManifestDetail = {
+  id: string;
+  manifest_no: string;
+  manifest_date: string;
+  from_branch_name: string;
+  to_branch_name: string;
+  mode: string;
+  vendor_name: string | null;
+  airway_bill_no: string | null;
+  vehicle_no: string | null;
+  total_bags: number;
+  total_boxes: number;
+  coloader_chargeable_kg: string | null;
+  rate_per_kg: string | null;
+  state: string;
+  forwarding_date: string | null;
+  departed_at: string | null;
+  received_at: string | null;
+  created_by_name: string | null;
+};
+
+export type ManifestMemberOrder = {
+  id: string;
+  docket_no: string;
+  status: string;
+  origin: string;
+  destination: string;
+  shipper_name: string;
+  consignee_name: string;
+  client_name: string | null;
+  chargeable_weight_kg: string | null;
+  no_of_pieces: number;
+};
+
+export async function getManifestByNo(orgId: string, manifestNo: string, branchIds: BranchIds = null): Promise<ManifestDetail | null> {
+  return one<ManifestDetail>(
+    `select m.id, m.manifest_no,
+            to_char(m.manifest_date, 'DD-MM-YYYY') as manifest_date,
+            fb.name as from_branch_name, tb.name as to_branch_name,
+            m.mode, v.name as vendor_name, m.airway_bill_no, m.vehicle_no,
+            m.total_bags, m.total_boxes, m.coloader_chargeable_kg::text, m.rate_per_kg::text, m.state,
+            to_char(m.forwarding_date, 'DD-MM-YYYY HH24:MI') as forwarding_date,
+            to_char(m.departed_at, 'DD-MM-YYYY HH24:MI') as departed_at,
+            to_char(m.received_at, 'DD-MM-YYYY HH24:MI') as received_at,
+            u.full_name as created_by_name
+     from manifests m
+     join branches fb on fb.id = m.from_branch_id
+     join branches tb on tb.id = m.to_branch_id
+     left join vendors v on v.id = m.vendor_id
+     left join users u on u.id = m.created_by
+     where m.org_id = $1 and lower(m.manifest_no) = lower($2)
+       ${MANIFEST_BRANCH(3)}`,
+    [orgId, manifestNo, branchIds],
+  );
+}
+
+export async function listManifestOrders(manifestId: string): Promise<ManifestMemberOrder[]> {
+  return many<ManifestMemberOrder>(
+    `select o.id, o.docket_no, o.status, o.origin, o.destination,
+            o.shipper_name, o.consignee_name, c.name as client_name,
+            o.chargeable_weight_kg::text, o.no_of_pieces
+     from manifest_orders mo
+     join orders o on o.id = mo.order_id
+     left join clients c on c.id = o.client_id
+     where mo.manifest_id = $1
+     order by o.docket_no`,
+    [manifestId],
+  );
+}
+
 export const MANIFEST_PAGE_SIZE = PAGE_SIZE;
