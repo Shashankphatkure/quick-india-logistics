@@ -7,20 +7,20 @@ import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
 import { RiReceiptLine, RiSearchLine, RiAlertLine } from '@remixicon/react';
 import { listEwaybillOrders, countEwaybillOrders, getEwaybillCounts, EWAYBILL_PAGE_SIZE } from '@/lib/db/ewaybill';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import { orderStatusLabel } from '@/lib/order-status';
 
 export default async function EwayBillPage({ searchParams }: { searchParams?: { search?: string; missing?: string; page?: string } }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
   const onlyMissingPartB = searchParams?.missing === '1';
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, total, counts] = await Promise.all([
-    listEwaybillOrders({ orgId, search, page, onlyMissingPartB }),
-    countEwaybillOrders({ orgId, search, onlyMissingPartB }),
-    getEwaybillCounts(orgId),
+    listEwaybillOrders({ orgId, branchIds, search, page, onlyMissingPartB }),
+    countEwaybillOrders({ orgId, branchIds, search, onlyMissingPartB }),
+    getEwaybillCounts(orgId, branchIds),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / EWAYBILL_PAGE_SIZE));
   const missingPartB = counts.with_eway - counts.part_b_done;

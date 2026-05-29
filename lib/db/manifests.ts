@@ -20,9 +20,18 @@ export type ManifestRow = {
 };
 
 const PAGE_SIZE = 25;
+type BranchIds = string[] | null;
 
-export async function listManifests(opts: { orgId: string; search?: string; state?: string; toBranchId?: string; page?: number }) {
+// Branch scope for manifests: from/to branch. $n is a uuid[] param.
+const MANIFEST_BRANCH = (n: number) =>
+  `and ($${n}::uuid[] is null or m.from_branch_id = any($${n}) or m.to_branch_id = any($${n}))`;
+// Branch scope for orders inside pending-dispatch.
+const ORDER_BRANCH = (n: number) =>
+  `and ($${n}::uuid[] is null or o.current_branch_id = any($${n}) or o.origin_branch_id = any($${n}) or o.destination_branch_id = any($${n}))`;
+
+export async function listManifests(opts: { orgId: string; branchIds?: BranchIds; search?: string; state?: string; toBranchId?: string; page?: number }) {
   const page = Math.max(1, opts.page ?? 1);
+  const branchIds = opts.branchIds ?? null;
   return many<ManifestRow>(
     `select m.id, m.manifest_no,
             to_char(m.manifest_date, 'DD-MM-YYYY') as manifest_date,
@@ -36,36 +45,41 @@ export async function listManifests(opts: { orgId: string; search?: string; stat
      join branches tb on tb.id = m.to_branch_id
      left join vendors v on v.id = m.vendor_id
      where m.org_id = $1
+       ${MANIFEST_BRANCH(7)}
        and ($2::text is null or m.manifest_no ilike '%' || $2 || '%')
        and ($3::text is null or m.state = $3)
        and ($4::uuid is null or m.to_branch_id = $4::uuid)
      order by m.manifest_date desc, m.created_at desc
      limit $5 offset $6`,
-    [opts.orgId, opts.search ?? null, opts.state ?? null, opts.toBranchId ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE],
+    [opts.orgId, opts.search ?? null, opts.state ?? null, opts.toBranchId ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE, branchIds],
   );
 }
 
-export async function countManifests(opts: { orgId: string; search?: string; state?: string; toBranchId?: string }) {
+export async function countManifests(opts: { orgId: string; branchIds?: BranchIds; search?: string; state?: string; toBranchId?: string }) {
+  const branchIds = opts.branchIds ?? null;
   const r = await one<{ n: string }>(
-    `select count(*)::text as n from manifests
-     where org_id=$1
-       and ($2::text is null or manifest_no ilike '%' || $2 || '%')
-       and ($3::text is null or state = $3)
-       and ($4::uuid is null or to_branch_id = $4::uuid)`,
-    [opts.orgId, opts.search ?? null, opts.state ?? null, opts.toBranchId ?? null],
+    `select count(*)::text as n from manifests m
+     where m.org_id=$1
+       ${MANIFEST_BRANCH(5)}
+       and ($2::text is null or m.manifest_no ilike '%' || $2 || '%')
+       and ($3::text is null or m.state = $3)
+       and ($4::uuid is null or m.to_branch_id = $4::uuid)`,
+    [opts.orgId, opts.search ?? null, opts.state ?? null, opts.toBranchId ?? null, branchIds],
   );
   return Number(r?.n ?? 0);
 }
 
-export async function getManifestCounts(orgId: string) {
+export async function getManifestCounts(orgId: string, branchIds: BranchIds = null) {
   const r = await one<{ total: string; rough: string; final: string; departed: string; received: string }>(
     `select count(*)::text as total,
        count(*) filter (where state='rough')::text as rough,
        count(*) filter (where state='final')::text as final,
        count(*) filter (where state='departed')::text as departed,
        count(*) filter (where state='received')::text as received
-     from manifests where org_id=$1`,
-    [orgId],
+     from manifests m
+     where m.org_id=$1
+       ${MANIFEST_BRANCH(2)}`,
+    [orgId, branchIds],
   );
   return {
     total: Number(r?.total ?? 0),
@@ -76,11 +90,6 @@ export async function getManifestCounts(orgId: string) {
   };
 }
 
-/**
- * Orders that are ready to be manifested:
- *   - status = pickup_done OR arrived_at_hub
- *   - NOT already on a manifest
- */
 export type PendingDispatchOrder = {
   id: string;
   docket_no: string;
@@ -94,8 +103,9 @@ export type PendingDispatchOrder = {
   is_cold_chain: boolean;
 };
 
-export async function listPendingDispatchOrders(opts: { orgId: string; page?: number }) {
+export async function listPendingDispatchOrders(opts: { orgId: string; branchIds?: BranchIds; page?: number }) {
   const page = Math.max(1, opts.page ?? 1);
+  const branchIds = opts.branchIds ?? null;
   return many<PendingDispatchOrder>(
     `select o.id, o.docket_no,
             to_char(o.booking_date, 'DD-MM-YYYY') as booking_date,
@@ -108,13 +118,14 @@ export async function listPendingDispatchOrders(opts: { orgId: string; page?: nu
      where o.org_id=$1
        and o.status in ('received', 'pickup_done', 'arrived_at_hub')
        and not exists (select 1 from manifest_orders mo where mo.order_id = o.id)
+       ${ORDER_BRANCH(4)}
      order by o.booking_date desc, o.created_at desc
      limit $2 offset $3`,
-    [opts.orgId, PAGE_SIZE, (page - 1) * PAGE_SIZE],
+    [opts.orgId, PAGE_SIZE, (page - 1) * PAGE_SIZE, branchIds],
   );
 }
 
-export async function countPendingDispatchOrders(orgId: string) {
+export async function countPendingDispatchOrders(orgId: string, branchIds: BranchIds = null) {
   const r = await one<{ n: string; weight: string | null; pcs: string | null }>(
     `select count(*)::text as n,
        coalesce(sum(chargeable_weight_kg), 0)::text as weight,
@@ -122,8 +133,9 @@ export async function countPendingDispatchOrders(orgId: string) {
      from orders o
      where o.org_id=$1
        and o.status in ('received', 'pickup_done', 'arrived_at_hub')
-       and not exists (select 1 from manifest_orders mo where mo.order_id = o.id)`,
-    [orgId],
+       and not exists (select 1 from manifest_orders mo where mo.order_id = o.id)
+       ${ORDER_BRANCH(2)}`,
+    [orgId, branchIds],
   );
   return {
     count: Number(r?.n ?? 0),

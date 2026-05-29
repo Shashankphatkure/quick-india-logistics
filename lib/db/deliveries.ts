@@ -16,22 +16,27 @@ export type DeliveryRow = {
 };
 
 const PAGE_SIZE = 25;
+type BranchIds = string[] | null;
 
 export type DeliveryTab = 'delivered' | 'undelivered' | 'pending_mark';
 
+function tabClause(tab: DeliveryTab, alias = ''): string {
+  const p = alias ? `${alias}.` : '';
+  if (tab === 'undelivered') return ` and ${p}status in ('not_received', 'damaged')`;
+  if (tab === 'pending_mark') return ` and ${p}status in ('out_for_delivery', 'arrived_at_destination')`;
+  return ` and ${p}status = 'delivered'`;
+}
+
 export async function listDeliveries(opts: {
   orgId: string;
+  branchIds?: BranchIds;
   search?: string;
   page?: number;
   tab?: DeliveryTab;
 }): Promise<DeliveryRow[]> {
   const page = Math.max(1, opts.page ?? 1);
   const tab: DeliveryTab = opts.tab ?? 'delivered';
-
-  let where = `o.org_id = $1`;
-  if (tab === 'delivered') where += ` and o.status = 'delivered'`;
-  else if (tab === 'undelivered') where += ` and o.status in ('not_received', 'damaged')`;
-  else if (tab === 'pending_mark') where += ` and o.status in ('out_for_delivery', 'arrived_at_destination')`;
+  const branchIds = opts.branchIds ?? null;
 
   return many<DeliveryRow>(
     `select o.id, o.docket_no,
@@ -42,38 +47,39 @@ export async function listDeliveries(opts: {
             o.consignee_name, o.destination, o.status
      from orders o
      left join branches b on b.id = o.destination_branch_id
-     where ${where}
+     where o.org_id = $1${tabClause(tab, 'o')}
+       and ($5::uuid[] is null or o.destination_branch_id = any($5) or o.current_branch_id = any($5))
        and ($2::text is null or o.docket_no ilike '%' || $2 || '%' or o.consignee_name ilike '%' || $2 || '%')
      order by coalesce(o.delivered_at, o.updated_at) desc nulls last
      limit $3 offset $4`,
-    [opts.orgId, opts.search ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE],
+    [opts.orgId, opts.search ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE, branchIds],
   );
 }
 
-export async function countDeliveries(opts: { orgId: string; search?: string; tab?: DeliveryTab }) {
+export async function countDeliveries(opts: { orgId: string; branchIds?: BranchIds; search?: string; tab?: DeliveryTab }) {
   const tab: DeliveryTab = opts.tab ?? 'delivered';
-  let where = `org_id = $1`;
-  if (tab === 'delivered') where += ` and status = 'delivered'`;
-  else if (tab === 'undelivered') where += ` and status in ('not_received', 'damaged')`;
-  else if (tab === 'pending_mark') where += ` and status in ('out_for_delivery', 'arrived_at_destination')`;
+  const branchIds = opts.branchIds ?? null;
   const r = await one<{ n: string }>(
-    `select count(*)::text as n from orders
-     where ${where}
-       and ($2::text is null or docket_no ilike '%' || $2 || '%' or consignee_name ilike '%' || $2 || '%')`,
-    [opts.orgId, opts.search ?? null],
+    `select count(*)::text as n from orders o
+     where o.org_id = $1${tabClause(tab, 'o')}
+       and ($3::uuid[] is null or o.destination_branch_id = any($3) or o.current_branch_id = any($3))
+       and ($2::text is null or o.docket_no ilike '%' || $2 || '%' or o.consignee_name ilike '%' || $2 || '%')`,
+    [opts.orgId, opts.search ?? null, branchIds],
   );
   return Number(r?.n ?? 0);
 }
 
-export async function getDeliveryCounts(orgId: string) {
+export async function getDeliveryCounts(orgId: string, branchIds: BranchIds = null) {
   const r = await one<{ delivered: string; undelivered: string; pending: string; total: string }>(
     `select
        count(*) filter (where status='delivered')::text as delivered,
        count(*) filter (where status in ('not_received','damaged'))::text as undelivered,
        count(*) filter (where status in ('out_for_delivery','arrived_at_destination'))::text as pending,
        count(*)::text as total
-     from orders where org_id=$1`,
-    [orgId],
+     from orders o
+     where o.org_id=$1
+       and ($2::uuid[] is null or o.destination_branch_id = any($2) or o.current_branch_id = any($2))`,
+    [orgId, branchIds],
   );
   return {
     delivered: Number(r?.delivered ?? 0),

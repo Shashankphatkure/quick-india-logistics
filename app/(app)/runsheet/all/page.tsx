@@ -7,7 +7,7 @@ import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
 import { RiSearchLine, RiListCheck2 } from '@remixicon/react';
 import { listRunsheets, countRunsheets, getRunsheetCounts, RUNSHEET_PAGE_SIZE } from '@/lib/db/runsheets';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import RunsheetTabs from '@/components/runsheet-tabs';
 import FilterPopover from '@/components/filter-popover';
@@ -20,15 +20,15 @@ const STATE_LABEL: Record<string, { label: string; color: 'gray' | 'blue' | 'ora
 };
 
 export default async function AllRunsheetsPage({ searchParams }: { searchParams?: { search?: string; state?: string; page?: string } }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
   const state = searchParams?.state;
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, total, counts] = await Promise.all([
-    listRunsheets({ orgId, search, state, page }),
-    countRunsheets({ orgId, search, state }),
-    getRunsheetCounts(orgId),
+    listRunsheets({ orgId, branchIds, search, state, page }),
+    countRunsheets({ orgId, branchIds, search, state }),
+    getRunsheetCounts(orgId, branchIds),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / RUNSHEET_PAGE_SIZE));
 

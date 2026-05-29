@@ -7,7 +7,7 @@ import StatsStrip from '@/components/stats-strip';
 import { RiSearchLine, RiFilePaperLine } from '@remixicon/react';
 import FilterPopover from '@/components/filter-popover';
 import { listManifests, countManifests, getManifestCounts, MANIFEST_PAGE_SIZE } from '@/lib/db/manifests';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import ManifestTabs from '@/components/manifest-tabs';
 
@@ -17,14 +17,14 @@ const MODE_LABEL: Record<string, string> = {
 };
 
 export default async function HubDispatchPage({ searchParams }: { searchParams?: { search?: string; page?: string } }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, total, counts] = await Promise.all([
-    listManifests({ orgId, search, state: 'rough', page }),
-    countManifests({ orgId, search, state: 'rough' }),
-    getManifestCounts(orgId),
+    listManifests({ orgId, branchIds, search, state: 'rough', page }),
+    countManifests({ orgId, branchIds, search, state: 'rough' }),
+    getManifestCounts(orgId, branchIds),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / MANIFEST_PAGE_SIZE));
 

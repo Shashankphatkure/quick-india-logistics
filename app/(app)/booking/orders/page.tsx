@@ -13,7 +13,7 @@ import {
   RiCalendarCheckLine,
 } from '@remixicon/react';
 import { listOrders, countOrders, getOrderCounts } from '@/lib/db/orders';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import OrdersTable from './orders-table';
 import FilterPopover from '@/components/filter-popover';
 
@@ -24,14 +24,14 @@ export default async function OrdersPage({
 }: {
   searchParams?: { search?: string; page?: string };
 }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [orders, total, counts] = await Promise.all([
-    listOrders({ orgId, search, page, pageSize: PAGE_SIZE }),
-    countOrders({ orgId, search }),
-    getOrderCounts(orgId),
+    listOrders({ orgId, branchIds, search, page, pageSize: PAGE_SIZE }),
+    countOrders({ orgId, branchIds, search }),
+    getOrderCounts(orgId, branchIds),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

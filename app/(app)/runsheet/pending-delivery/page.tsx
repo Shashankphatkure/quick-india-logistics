@@ -5,7 +5,7 @@ import StatsStrip from '@/components/stats-strip';
 import { RiListCheck2 } from '@remixicon/react';
 import FilterPopover from '@/components/filter-popover';
 import { listPendingDeliveryOrders, countPendingDeliveryOrders } from '@/lib/db/runsheets';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import { many } from '@/lib/db';
 import PaginationLinks from '@/components/pagination-links';
 import RunsheetTabs from '@/components/runsheet-tabs';
@@ -14,12 +14,12 @@ import PendingDeliveryTable from './pending-delivery-table';
 const PAGE_SIZE = 25;
 
 export default async function PendingDeliveryPage({ searchParams }: { searchParams?: { page?: string } }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, summary, branches] = await Promise.all([
-    listPendingDeliveryOrders({ orgId, page }),
-    countPendingDeliveryOrders(orgId),
+    listPendingDeliveryOrders({ orgId, branchIds, page }),
+    countPendingDeliveryOrders(orgId, branchIds),
     many<{ id: string; name: string }>(
       `select id, name from branches where org_id = $1 and is_active order by name`,
       [orgId],

@@ -7,20 +7,20 @@ import StatsStrip from '@/components/stats-strip';
 import { RiListCheck2 } from '@remixicon/react';
 import FilterPopover from '@/components/filter-popover';
 import { listManifests, MANIFEST_PAGE_SIZE, countManifests, getManifestCounts } from '@/lib/db/manifests';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import RunsheetTabs from '@/components/runsheet-tabs';
 
 // Hub Dispatch on the runsheet side = hub-transfer manifests (cross-branch vehicle moves)
 export default async function RunsheetHubDispatchPage({ searchParams }: { searchParams?: { page?: string } }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   // Filter manifests where mode='hub_transfer' OR vehicle-based local cross-branch
   const [rows, total, counts] = await Promise.all([
-    listManifests({ orgId, page }),
-    countManifests({ orgId }),
-    getManifestCounts(orgId),
+    listManifests({ orgId, branchIds, page }),
+    countManifests({ orgId, branchIds }),
+    getManifestCounts(orgId, branchIds),
   ]);
   // Show only vehicle-based (no airway bill) manifests
   const vehicleRows = rows.filter(r => !r.airway_bill_no);

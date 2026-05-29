@@ -5,7 +5,7 @@ import StatsStrip from '@/components/stats-strip';
 import { RiFilePaperLine } from '@remixicon/react';
 import FilterPopover from '@/components/filter-popover';
 import { listPendingDispatchOrders, countPendingDispatchOrders } from '@/lib/db/manifests';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import { many } from '@/lib/db';
 import PaginationLinks from '@/components/pagination-links';
 import ManifestTabs from '@/components/manifest-tabs';
@@ -14,12 +14,12 @@ import PendingDispatchTable from './pending-dispatch-table';
 const PAGE_SIZE = 25;
 
 export default async function PendingDispatchPage({ searchParams }: { searchParams?: { page?: string } }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, summary, branches, vendors] = await Promise.all([
-    listPendingDispatchOrders({ orgId, page }),
-    countPendingDispatchOrders(orgId),
+    listPendingDispatchOrders({ orgId, branchIds, page }),
+    countPendingDispatchOrders(orgId, branchIds),
     many<{ id: string; name: string }>(
       `select id, name from branches where org_id = $1 and is_active order by name`,
       [orgId],

@@ -18,9 +18,14 @@ export type EwaybillRow = {
 };
 
 const PAGE_SIZE = 25;
+type BranchIds = string[] | null;
 
-export async function listEwaybillOrders(opts: { orgId: string; search?: string; page?: number; onlyMissingPartB?: boolean }) {
+const BRANCH_CLAUSE = (n: number) =>
+  `and ($${n}::uuid[] is null or o.current_branch_id = any($${n}) or o.origin_branch_id = any($${n}) or o.destination_branch_id = any($${n}))`;
+
+export async function listEwaybillOrders(opts: { orgId: string; branchIds?: BranchIds; search?: string; page?: number; onlyMissingPartB?: boolean }) {
   const page = Math.max(1, opts.page ?? 1);
+  const branchIds = opts.branchIds ?? null;
   const partBClause = opts.onlyMissingPartB ? 'and o.ewaybill_part_b_done = false' : '';
   return many<EwaybillRow>(
     `select o.id, o.docket_no,
@@ -32,34 +37,39 @@ export async function listEwaybillOrders(opts: { orgId: string; search?: string;
             c.name as client_name
      from orders o left join clients c on c.id = o.client_id
      where o.org_id=$1 and o.ewaybill_no is not null
+       ${BRANCH_CLAUSE(5)}
        and ($2::text is null or o.ewaybill_no ilike '%' || $2 || '%' or o.docket_no ilike '%' || $2 || '%')
        ${partBClause}
      order by o.booking_date desc, o.created_at desc
      limit $3 offset $4`,
-    [opts.orgId, opts.search ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE],
+    [opts.orgId, opts.search ?? null, PAGE_SIZE, (page - 1) * PAGE_SIZE, branchIds],
   );
 }
 
-export async function countEwaybillOrders(opts: { orgId: string; search?: string; onlyMissingPartB?: boolean }) {
-  const partBClause = opts.onlyMissingPartB ? 'and ewaybill_part_b_done = false' : '';
+export async function countEwaybillOrders(opts: { orgId: string; branchIds?: BranchIds; search?: string; onlyMissingPartB?: boolean }) {
+  const branchIds = opts.branchIds ?? null;
+  const partBClause = opts.onlyMissingPartB ? 'and o.ewaybill_part_b_done = false' : '';
   const r = await one<{ n: string }>(
-    `select count(*)::text as n from orders
-     where org_id=$1 and ewaybill_no is not null
-       and ($2::text is null or ewaybill_no ilike '%' || $2 || '%' or docket_no ilike '%' || $2 || '%')
+    `select count(*)::text as n from orders o
+     where o.org_id=$1 and o.ewaybill_no is not null
+       ${BRANCH_CLAUSE(3)}
+       and ($2::text is null or o.ewaybill_no ilike '%' || $2 || '%' or o.docket_no ilike '%' || $2 || '%')
        ${partBClause}`,
-    [opts.orgId, opts.search ?? null],
+    [opts.orgId, opts.search ?? null, branchIds],
   );
   return Number(r?.n ?? 0);
 }
 
-export async function getEwaybillCounts(orgId: string) {
+export async function getEwaybillCounts(orgId: string, branchIds: BranchIds = null) {
   const r = await one<{ total: string; with_eway: string; missing: string; part_b_done: string }>(
     `select count(*)::text as total,
        count(*) filter (where ewaybill_no is not null)::text as with_eway,
        count(*) filter (where ewaybill_no is null)::text as missing,
        count(*) filter (where ewaybill_no is not null and ewaybill_part_b_done)::text as part_b_done
-     from orders where org_id=$1`,
-    [orgId],
+     from orders o
+     where o.org_id=$1
+       ${BRANCH_CLAUSE(2)}`,
+    [orgId, branchIds],
   );
   return {
     total: Number(r?.total ?? 0),

@@ -9,7 +9,7 @@ import { RiSearchLine, RiTruckLine, RiArrowUpDownLine } from '@remixicon/react';
 import FilterPopover from '@/components/filter-popover';
 import { cn } from '@/utils/cn';
 import { listDeliveries, countDeliveries, getDeliveryCounts, DELIVERY_PAGE_SIZE, type DeliveryTab } from '@/lib/db/deliveries';
-import { currentOrgId } from '@/lib/tenant';
+import { tenantScope } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 
 const TABS: { key: DeliveryTab; label: string }[] = [
@@ -19,15 +19,15 @@ const TABS: { key: DeliveryTab; label: string }[] = [
 ];
 
 export default async function DeliveryInfoPage({ searchParams }: { searchParams?: { search?: string; tab?: string; page?: string } }) {
-  const orgId = await currentOrgId();
+  const { orgId, branchIds } = await tenantScope();
   const search = searchParams?.search?.trim() || undefined;
   const tabKey = (TABS.find(t => t.key === searchParams?.tab)?.key) ?? 'delivered';
   const page = Math.max(1, Number(searchParams?.page) || 1);
 
   const [rows, total, counts] = await Promise.all([
-    listDeliveries({ orgId, search, page, tab: tabKey }),
-    countDeliveries({ orgId, search, tab: tabKey }),
-    getDeliveryCounts(orgId),
+    listDeliveries({ orgId, branchIds, search, page, tab: tabKey }),
+    countDeliveries({ orgId, branchIds, search, tab: tabKey }),
+    getDeliveryCounts(orgId, branchIds),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / DELIVERY_PAGE_SIZE));
 
