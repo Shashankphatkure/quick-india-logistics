@@ -82,6 +82,57 @@ export async function getUserCounts(orgId: string): Promise<UserCounts> {
   };
 }
 
+export type UserDetail = {
+  id: string;
+  username: string;
+  email: string | null;
+  full_name: string;
+  phone: string | null;
+  user_type: string | null;
+  channel_access: string | null;
+  department_name: string | null;
+  designation_name: string | null;
+  home_branch_name: string | null;
+  is_active: boolean;
+  must_change_pw: boolean;
+  created_at: string;
+  last_login_at: string | null;
+};
+
+export async function getUserByUsername(orgId: string, username: string): Promise<UserDetail | null> {
+  return one<UserDetail>(
+    `select
+       u.id, u.username, u.email, u.full_name, u.phone, u.user_type, u.channel_access,
+       d.name as department_name, g.name as designation_name, b.name as home_branch_name,
+       u.is_active, u.must_change_pw,
+       to_char(u.created_at, 'DD-MM-YYYY') as created_at,
+       to_char(u.last_login_at, 'DD-MM-YYYY HH24:MI') as last_login_at
+     from users u
+     left join departments d on d.id = u.department_id
+     left join designations g on g.id = u.designation_id
+     left join branches b on b.id = u.home_branch_id
+     where u.org_id = $1 and lower(u.username) = lower($2)`,
+    [orgId, username],
+  );
+}
+
+export type UserLoginEvent = {
+  id: string;
+  event_type: string;
+  ip_address: string | null;
+  occurred_at: string;
+};
+
+export async function listUserLoginEvents(userId: string, limit = 15): Promise<UserLoginEvent[]> {
+  return many<UserLoginEvent>(
+    `select id, event_type, ip_address::text,
+            to_char(occurred_at, 'DD-MM-YYYY HH24:MI') as occurred_at
+     from login_events where user_id = $1
+     order by occurred_at desc limit $2`,
+    [userId, limit],
+  );
+}
+
 export type CreateUserInput = {
   orgId: string;
   username: string;
