@@ -11,6 +11,13 @@ import {
 import { getDashboardMetrics, getRecentActivities } from '@/lib/db/dashboard';
 import { currentOrgId } from '@/lib/tenant';
 import { getSession } from '@/lib/auth';
+import FilterPopover from '@/components/filter-popover';
+import { cn } from '@/utils/cn';
+
+const ISO = /^\d{4}-\d{2}-\d{2}$/;
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const disp = (s: string) => { const [y, m, d] = s.split('-'); return `${d}-${m}-${y}`; };
+const daysAgo = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
 
 const EVENT_COLOR: Record<string, string> = {
   blue: 'bg-information-lighter text-information-base',
@@ -20,19 +27,33 @@ const EVENT_COLOR: Record<string, string> = {
   red: 'bg-error-lighter text-error-base',
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: { from?: string; to?: string };
+}) {
   const orgId = await currentOrgId();
   const session = await getSession();
   const branchId = session?.homeBranchId ?? session?.branchIds[0] ?? null;
 
+  const todayIso = iso(new Date());
+  // Presets (each is a precomputed from/to link). Default = last 30 days.
+  const PRESETS = [
+    { key: 'today', label: 'Today', from: todayIso, to: todayIso },
+    { key: '7d', label: '7 days', from: daysAgo(6), to: todayIso },
+    { key: '30d', label: '30 days', from: daysAgo(29), to: todayIso },
+    { key: '90d', label: '90 days', from: daysAgo(89), to: todayIso },
+  ];
+  const fromParam = searchParams?.from && ISO.test(searchParams.from) ? searchParams.from : undefined;
+  const toParam = searchParams?.to && ISO.test(searchParams.to) ? searchParams.to : undefined;
+  const fromDate = fromParam ?? daysAgo(29);
+  const toDate = toParam ?? todayIso;
+  const activePreset = PRESETS.find((p) => p.from === fromDate && p.to === toDate)?.key;
+
   const [metrics, activities] = await Promise.all([
-    getDashboardMetrics(orgId, branchId),
+    getDashboardMetrics(orgId, branchId, { fromDate, toDate }),
     getRecentActivities(orgId, 7),
   ]);
-
-  const today = new Date();
-  const thirtyAgo = new Date(today.getTime() - 30 * 86400000);
-  const fmt = (d: Date) => `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
 
   return (
     <div className="space-y-6">
@@ -42,11 +63,33 @@ export default async function DashboardPage() {
         subtitle={`Summary for ${session?.fullName ?? 'your branch'}`}
         breadcrumbs={[{ label: 'Dashboard' }]}
       >
-        <div className="flex items-center gap-1.5 rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-3 py-1.5 shadow-regular-xs">
-          <RiCalendarLine size={14} className="text-text-sub-600" />
-          <span className="text-paragraph-sm text-text-sub-600">{fmt(thirtyAgo)}</span>
-          <span className="text-text-disabled-300 mx-1">→</span>
-          <span className="text-paragraph-sm text-text-sub-600">{fmt(today)}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 rounded-lg border border-stroke-soft-200 bg-bg-white-0 p-0.5 shadow-regular-xs">
+            {PRESETS.map((p) => (
+              <Link
+                key={p.key}
+                href={`/dashboard?from=${p.from}&to=${p.to}`}
+                className={cn(
+                  'rounded-md px-2.5 py-1 text-paragraph-sm no-underline transition',
+                  activePreset === p.key
+                    ? 'bg-primary-base text-static-white'
+                    : 'text-text-sub-600 hover:bg-bg-weak-50',
+                )}
+              >
+                {p.label}
+              </Link>
+            ))}
+          </div>
+          <FilterPopover fields={[
+            { name: 'from', label: 'From date', type: 'date' },
+            { name: 'to', label: 'To date', type: 'date' },
+          ]} />
+          <div className="flex items-center gap-1.5 rounded-lg border border-stroke-soft-200 bg-bg-white-0 px-3 py-1.5 shadow-regular-xs">
+            <RiCalendarLine size={14} className="text-text-sub-600" />
+            <span className="text-paragraph-sm text-text-sub-600">{disp(fromDate)}</span>
+            <span className="text-text-disabled-300 mx-1">→</span>
+            <span className="text-paragraph-sm text-text-sub-600">{disp(toDate)}</span>
+          </div>
         </div>
       </PageHeader>
 

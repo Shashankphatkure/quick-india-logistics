@@ -31,44 +31,53 @@ export type DashboardMetrics = {
   manifest_outgoing_not_received: number;
 };
 
-export async function getDashboardMetrics(orgId: string, branchId: string | null): Promise<DashboardMetrics> {
+export async function getDashboardMetrics(
+  orgId: string,
+  branchId: string | null,
+  range?: { fromDate?: string | null; toDate?: string | null },
+): Promise<DashboardMetrics> {
+  const fromDate = range?.fromDate ?? null;
+  const toDate = range?.toDate ?? null;
+  // Date-range scope on booking_date. $3 = from, $4 = to (YYYY-MM-DD or null = unbounded).
+  const dr = `($3::date is null or booking_date >= $3::date) and ($4::date is null or booking_date <= $4::date)`;
   const r = await one<Record<string, string>>(
     `select
-       count(*) filter (where origin_branch_id = $2)::text as outgoing,
-       count(*) filter (where destination_branch_id = $2)::text as incoming,
+       count(*) filter (where origin_branch_id = $2 and ${dr})::text as outgoing,
+       count(*) filter (where destination_branch_id = $2 and ${dr})::text as incoming,
        count(*) filter (where status='delivered' and delivered_at::date = current_date)::text as delivered_today,
-       count(*) filter (where status not in ('delivered','cancelled') and current_branch_id = $2)::text as pending,
+       count(*) filter (where status not in ('delivered','cancelled') and current_branch_id = $2 and ${dr})::text as pending,
 
-       count(*) filter (where origin_branch_id = $2 and booking_date >= current_date - interval '30 days')::text as outgoing_total,
-       count(*) filter (where origin_branch_id = $2 and status='delivered')::text as outgoing_delivered,
-       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled'))::text as outgoing_pending,
-       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days')::text as outgoing_all_pending,
+       count(*) filter (where origin_branch_id = $2 and ${dr})::text as outgoing_total,
+       count(*) filter (where origin_branch_id = $2 and status='delivered' and ${dr})::text as outgoing_delivered,
+       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and ${dr})::text as outgoing_pending,
+       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days' and ${dr})::text as outgoing_all_pending,
 
-       count(*) filter (where destination_branch_id = $2 and booking_date >= current_date - interval '30 days')::text as incoming_total,
-       count(*) filter (where destination_branch_id = $2 and status='delivered')::text as incoming_delivered,
-       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled'))::text as incoming_pending,
-       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days')::text as incoming_all_pending,
+       count(*) filter (where destination_branch_id = $2 and ${dr})::text as incoming_total,
+       count(*) filter (where destination_branch_id = $2 and status='delivered' and ${dr})::text as incoming_delivered,
+       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and ${dr})::text as incoming_pending,
+       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days' and ${dr})::text as incoming_all_pending,
 
-       count(*) filter (where is_cold_chain and destination_branch_id = $2 and status not in ('delivered','cancelled'))::text as cold_incoming,
-       count(*) filter (where is_cold_chain and origin_branch_id = $2 and status not in ('delivered','cancelled'))::text as cold_outgoing,
+       count(*) filter (where is_cold_chain and destination_branch_id = $2 and status not in ('delivered','cancelled') and ${dr})::text as cold_incoming,
+       count(*) filter (where is_cold_chain and origin_branch_id = $2 and status not in ('delivered','cancelled') and ${dr})::text as cold_outgoing,
 
-       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '1 day')::text as delay_incoming_24h,
-       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '1 day')::text as delay_outgoing_24h,
-       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days')::text as delay_incoming_40h,
-       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days')::text as delay_outgoing_40h
+       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '1 day' and ${dr})::text as delay_incoming_24h,
+       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '1 day' and ${dr})::text as delay_outgoing_24h,
+       count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days' and ${dr})::text as delay_incoming_40h,
+       count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '2 days' and ${dr})::text as delay_outgoing_40h
      from orders where org_id = $1`,
-    [orgId, branchId],
+    [orgId, branchId, fromDate, toDate],
   );
 
-  // Manifest counts (received vs not received)
+  // Manifest counts (received vs not received), scoped by manifest_date.
+  const md = `($3::date is null or manifest_date >= $3::date) and ($4::date is null or manifest_date <= $4::date)`;
   const m = await one<Record<string, string>>(
     `select
-       count(*) filter (where to_branch_id = $2 and state='received')::text as manifest_incoming_received,
-       count(*) filter (where to_branch_id = $2 and state in ('rough','final','departed','arrived'))::text as manifest_incoming_not_received,
-       count(*) filter (where from_branch_id = $2 and state='received')::text as manifest_outgoing_received,
-       count(*) filter (where from_branch_id = $2 and state in ('rough','final','departed','arrived'))::text as manifest_outgoing_not_received
+       count(*) filter (where to_branch_id = $2 and state='received' and ${md})::text as manifest_incoming_received,
+       count(*) filter (where to_branch_id = $2 and state in ('rough','final','departed','arrived') and ${md})::text as manifest_incoming_not_received,
+       count(*) filter (where from_branch_id = $2 and state='received' and ${md})::text as manifest_outgoing_received,
+       count(*) filter (where from_branch_id = $2 and state in ('rough','final','departed','arrived') and ${md})::text as manifest_outgoing_not_received
      from manifests where org_id = $1`,
-    [orgId, branchId],
+    [orgId, branchId, fromDate, toDate],
   );
 
   const num = (k: string) => Number(r?.[k] ?? 0);
