@@ -54,6 +54,9 @@ type OrderDetail = {
   delivered_at: string | null;
   current_branch: string | null;
   created_by_name: string | null;
+  tat_hours: number | null;
+  expected_delivery_date: string | null;
+  eta_status: string | null;
 };
 
 type StatusEvent = {
@@ -90,7 +93,18 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
             o.pod_recipient_name, o.pod_recipient_phone,
             to_char(o.delivered_at, 'DD-MM-YYYY HH24:MI') as delivered_at,
             cb.name as current_branch,
-            u.full_name as created_by_name
+            u.full_name as created_by_name,
+            t.tat_hours,
+            to_char(o.booking_date::timestamptz + make_interval(hours => t.tat_hours), 'DD-MM-YYYY HH24:MI') as expected_delivery_date,
+            case
+              when t.tat_hours is null then null
+              when o.status = 'delivered' then
+                case when o.delivered_at is not null and o.delivered_at <= o.booking_date::timestamptz + make_interval(hours => t.tat_hours)
+                     then 'on_time' else 'late' end
+              when o.status = 'cancelled' then 'cancelled'
+              when now() > o.booking_date::timestamptz + make_interval(hours => t.tat_hours) then 'overdue'
+              else 'on_track'
+            end as eta_status
      from orders o
      left join bill_to bt on bt.id = o.bill_to_id
      left join clients c on c.id = o.client_id
@@ -98,6 +112,8 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
      left join branches db on db.id = o.destination_branch_id
      left join branches cb on cb.id = o.current_branch_id
      left join users u on u.id = o.created_by
+     left join tat_routes t on t.client_id = o.client_id and t.mode = o.mode
+       and t.origin_branch_id = o.origin_branch_id and t.destination_branch_id = o.destination_branch_id
      where o.org_id = $1 and o.docket_no = $2`,
     [orgId, docketNo],
   );
@@ -156,6 +172,15 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
   const statusLabel = orderStatusLabel(order.status);
   const statusColor = (STATUS_TO_BADGE_COLOR[statusLabel] ?? 'gray') as BadgeColor;
 
+  const ETA_META: Record<string, { label: string; color: BadgeColor }> = {
+    on_time: { label: 'Delivered On Time', color: 'green' },
+    late: { label: 'Delivered Late', color: 'red' },
+    overdue: { label: 'Overdue', color: 'red' },
+    on_track: { label: 'On Track', color: 'blue' },
+    cancelled: { label: 'Cancelled', color: 'gray' },
+  };
+  const etaMeta = order.eta_status ? ETA_META[order.eta_status] : null;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -206,6 +231,26 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
             <Row label="Mode" value={order.mode} />
             <Row label="Priority" value={order.priority} />
             <Row label="Current Branch" value={order.current_branch ?? '—'} />
+          </Card>
+
+          <Card title="Expected Delivery">
+            {order.tat_hours == null ? (
+              <p className="text-paragraph-sm text-text-sub-600">
+                No TAT route configured for this client / mode / lane — ETA unavailable.
+              </p>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-paragraph-sm text-text-sub-600 shrink-0">Expected By</span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-paragraph-sm font-medium text-text-strong-950">{order.expected_delivery_date}</span>
+                    {etaMeta && <Badge.Root size="small" variant="light" color={etaMeta.color}><Badge.Dot />{etaMeta.label}</Badge.Root>}
+                  </span>
+                </div>
+                <Row label="TAT" value={`${order.tat_hours} hrs`} />
+                {order.delivered_at && <Row label="Delivered At" value={order.delivered_at} />}
+              </>
+            )}
           </Card>
 
           <Card title="Parties">

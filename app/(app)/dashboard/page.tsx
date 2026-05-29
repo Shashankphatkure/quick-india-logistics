@@ -160,6 +160,8 @@ export default async function DashboardPage({
                 {([
                   { label: 'Incoming', value: metrics.cold_incoming, tone: 'verified' },
                   { label: 'Outgoing', value: metrics.cold_outgoing, tone: 'muted' },
+                  { label: 'Breach In (48h+)', value: metrics.cold_breach_incoming, tone: 'error' },
+                  { label: 'Breach Out (48h+)', value: metrics.cold_breach_outgoing, tone: 'error' },
                 ] as { label: string; value: number; tone: StatTone }[]).map(s => (
                   <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}

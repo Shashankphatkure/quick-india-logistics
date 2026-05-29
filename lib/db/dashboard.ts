@@ -19,6 +19,8 @@ export type DashboardMetrics = {
   // cold chain
   cold_incoming: number;
   cold_outgoing: number;
+  cold_breach_incoming: number;
+  cold_breach_outgoing: number;
   // delay
   delay_incoming_24h: number;
   delay_outgoing_24h: number;
@@ -59,6 +61,8 @@ export async function getDashboardMetrics(
 
        count(*) filter (where is_cold_chain and destination_branch_id = $2 and status not in ('delivered','cancelled') and ${dr})::text as cold_incoming,
        count(*) filter (where is_cold_chain and origin_branch_id = $2 and status not in ('delivered','cancelled') and ${dr})::text as cold_outgoing,
+       count(*) filter (where is_cold_chain and destination_branch_id = $2 and status not in ('delivered','cancelled') and extract(epoch from (now() - booking_date::timestamptz))/3600 >= 48 and ${dr})::text as cold_breach_incoming,
+       count(*) filter (where is_cold_chain and origin_branch_id = $2 and status not in ('delivered','cancelled') and extract(epoch from (now() - booking_date::timestamptz))/3600 >= 48 and ${dr})::text as cold_breach_outgoing,
 
        count(*) filter (where destination_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '1 day' and ${dr})::text as delay_incoming_24h,
        count(*) filter (where origin_branch_id = $2 and status not in ('delivered','cancelled') and booking_date < current_date - interval '1 day' and ${dr})::text as delay_outgoing_24h,
@@ -98,6 +102,8 @@ export async function getDashboardMetrics(
     incoming_all_pending: num('incoming_all_pending'),
     cold_incoming: num('cold_incoming'),
     cold_outgoing: num('cold_outgoing'),
+    cold_breach_incoming: num('cold_breach_incoming'),
+    cold_breach_outgoing: num('cold_breach_outgoing'),
     delay_incoming_24h: num('delay_incoming_24h'),
     delay_outgoing_24h: num('delay_outgoing_24h'),
     delay_incoming_40h: num('delay_incoming_40h'),

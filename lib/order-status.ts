@@ -80,4 +80,6 @@ export type OrderListItem = {
   status: string;
   priority: string;
   current_branch_name: string | null;
+  // Hours since booking for active cold-chain orders; null otherwise. Drives the SLA badge.
+  sla_hours: number | null;
 };

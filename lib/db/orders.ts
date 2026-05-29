@@ -89,7 +89,10 @@ export async function listOrders(
        o.shipper_name, o.consignee_name,
        o.origin, o.destination,
        o.mode, o.delivery_type, o.is_cold_chain, o.status, o.priority,
-       cb.name as current_branch_name
+       cb.name as current_branch_name,
+       case when o.is_cold_chain and o.status not in ('delivered','cancelled')
+            then round(extract(epoch from (now() - o.booking_date::timestamptz)) / 3600)::int
+            else null end as sla_hours
      from orders o
      left join clients c on c.id = o.client_id
      left join bill_to bt on bt.id = o.bill_to_id

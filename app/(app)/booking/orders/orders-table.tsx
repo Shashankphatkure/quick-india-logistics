@@ -20,6 +20,7 @@ import {
 import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import { cn } from '@/utils/cn';
 import { orderStatusLabel, DELIVERY_TYPE_LABEL, type OrderListItem as OrderRow } from '@/lib/order-status';
+import { coldChainTier, COLD_CHAIN_TIER_META } from '@/lib/cold-chain';
 import SortableHeader from '@/components/sortable-header';
 
 const AVATAR_TONES = [
@@ -90,11 +91,13 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
           ) : (
             orders.map((order) => {
               const statusLabel = orderStatusLabel(order.status);
+              const tier = coldChainTier(order.sla_hours);
               return (
                 <Table.Row
                   key={order.id}
                   className={cn(
                     'group/row cursor-pointer',
+                    tier === 'breach' && 'bg-error-lighter/40',
                     selectedOrder?.id === order.id && 'bg-primary-alpha-10',
                   )}
                   onClick={() => setSelectedOrder(order)}
@@ -113,6 +116,11 @@ export default function OrdersTable({ orders }: { orders: OrderRow[] }) {
                       {order.is_cold_chain && (
                         <Badge.Root size="small" variant="lighter" color="sky" className="ml-1.5">
                           Cold
+                        </Badge.Root>
+                      )}
+                      {tier !== 'ok' && (
+                        <Badge.Root size="small" variant="light" color={COLD_CHAIN_TIER_META[tier].color} className="ml-1.5">
+                          {COLD_CHAIN_TIER_META[tier].label}
                         </Badge.Root>
                       )}
                       <p className="text-paragraph-xs text-text-sub-600 mt-0.5">{order.booking_date}</p>
