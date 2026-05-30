@@ -31,9 +31,11 @@ export async function addBranchAction(formData: FormData): Promise<AddBranchResu
       email: String(formData.get('email') ?? '').trim() || null,
       phone: String(formData.get('phone') ?? '').trim() || null,
       addressLine: String(formData.get('addressLine') ?? '').trim() || null,
+      country: String(formData.get('country') ?? '').trim() || 'India',
       state: String(formData.get('state') ?? '').trim() || null,
       city: String(formData.get('city') ?? '').trim() || null,
       pincode: String(formData.get('pincode') ?? '').trim() || null,
+      operatingCities: String(formData.get('operatingCities') ?? '').trim() || null,
       headName: String(formData.get('headName') ?? '').trim() || null,
       headEmail: String(formData.get('headEmail') ?? '').trim() || null,
       headPhone: String(formData.get('headPhone') ?? '').trim() || null,
@@ -71,9 +73,11 @@ export async function editBranchAction(formData: FormData): Promise<AddBranchRes
   const email = String(formData.get('email') ?? '').trim() || null;
   const phone = String(formData.get('phone') ?? '').trim() || null;
   const addressLine = String(formData.get('addressLine') ?? '').trim() || null;
+  const country = String(formData.get('country') ?? '').trim() || 'India';
   const state = String(formData.get('state') ?? '').trim() || null;
   const city = String(formData.get('city') ?? '').trim() || null;
   const pincode = String(formData.get('pincode') ?? '').trim() || null;
+  const operatingCities = String(formData.get('operatingCities') ?? '').trim() || null;
   const headName = String(formData.get('headName') ?? '').trim() || null;
   const headEmail = String(formData.get('headEmail') ?? '').trim() || null;
   const headPhone = String(formData.get('headPhone') ?? '').trim() || null;
@@ -83,9 +87,10 @@ export async function editBranchAction(formData: FormData): Promise<AddBranchRes
       `update branches set
          code=$1, name=$2, alias=$3, branch_type=$4, email=$5, phone=$6,
          address_line=$7, state=$8, city=$9, pincode=$10,
-         head_name=$11, head_email=$12, head_phone=$13
+         head_name=$11, head_email=$12, head_phone=$13,
+         country=$16, operating_cities=$17
        where id=$14 and org_id=$15`,
-      [code, name, alias, branchType, email, phone, addressLine, state, city, pincode, headName, headEmail, headPhone, id, orgId],
+      [code, name, alias, branchType, email, phone, addressLine, state, city, pincode, headName, headEmail, headPhone, id, orgId, country, operatingCities],
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';

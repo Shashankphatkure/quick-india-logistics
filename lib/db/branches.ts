@@ -11,13 +11,16 @@ export type BranchRow = {
   email: string | null;
   phone: string | null;
   address_line: string | null;
+  country: string | null;
   state: string | null;
   city: string | null;
   pincode: string | null;
+  operating_cities: string | null;
   head_name: string | null;
   head_email: string | null;
   head_phone: string | null;
   verified_by_name: string | null;
+  org_name: string | null;
   is_active: boolean;
 };
 
@@ -40,12 +43,15 @@ export async function listBranches(opts: {
   return many<BranchRow>(
     `select
        b.id, b.code, b.name, b.alias, b.branch_type, b.vendor_mode,
-       b.email, b.phone, b.address_line, b.state, b.city, b.pincode,
+       b.email, b.phone, b.address_line, b.country, b.state, b.city, b.pincode,
+       b.operating_cities,
        b.head_name, b.head_email, b.head_phone,
        u.full_name as verified_by_name,
+       o.name as org_name,
        b.is_active
      from branches b
      left join users u on u.id = b.verified_by
+     left join organizations o on o.id = b.org_id
      where b.org_id = $1
        and ($2::text is null or b.name ilike '%' || $2 || '%' or b.code ilike '%' || $2 || '%')
      order by b.name
@@ -98,9 +104,11 @@ export type CreateBranchInput = {
   email?: string | null;
   phone?: string | null;
   addressLine?: string | null;
+  country?: string | null;
   state?: string | null;
   city?: string | null;
   pincode?: string | null;
+  operatingCities?: string | null;
   headName?: string | null;
   headEmail?: string | null;
   headPhone?: string | null;
@@ -111,12 +119,12 @@ export async function createBranch(input: CreateBranchInput): Promise<string> {
   const r = await one<{ id: string }>(
     `insert into branches (
        org_id, code, name, alias, branch_type,
-       email, phone, address_line, state, city, pincode,
+       email, phone, address_line, country, state, city, pincode, operating_cities,
        head_name, head_email, head_phone, verified_by
      ) values (
        $1, $2, $3, $4, $5,
-       $6, $7, $8, $9, $10, $11,
-       $12, $13, $14, $15
+       $6, $7, $8, $9, $10, $11, $12, $13,
+       $14, $15, $16, $17
      ) returning id`,
     [
       input.orgId,
@@ -127,9 +135,11 @@ export async function createBranch(input: CreateBranchInput): Promise<string> {
       input.email ?? null,
       input.phone ?? null,
       input.addressLine ?? null,
+      input.country ?? 'India',
       input.state ?? null,
       input.city ?? null,
       input.pincode ?? null,
+      input.operatingCities ?? null,
       input.headName ?? null,
       input.headEmail ?? null,
       input.headPhone ?? null,

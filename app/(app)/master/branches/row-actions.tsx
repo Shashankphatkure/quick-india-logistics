@@ -35,9 +35,11 @@ export default function RowActions({ row }: { row: BranchRow }) {
     email: row.email ?? '',
     phone: row.phone ?? '',
     addressLine: row.address_line ?? '',
+    country: row.country ?? 'India',
     state: row.state ?? '',
     city: row.city ?? '',
     pincode: row.pincode ?? '',
+    operatingCities: row.operating_cities ?? '',
     headName: row.head_name ?? '',
     headEmail: row.head_email ?? '',
     headPhone: row.head_phone ?? '',
@@ -137,6 +139,24 @@ export default function RowActions({ row }: { row: BranchRow }) {
                   <Input.Input value={form.addressLine} onChange={set('addressLine')} />
                 </Input.Wrapper></Input.Root>
               </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Country">
+                  <Select.Root size="small" value={form.country} onValueChange={(v) => setForm((s) => ({ ...s, country: v }))}>
+                    <Select.Trigger><Select.Value /></Select.Trigger>
+                    <Select.Content>
+                      <Select.Item value="India">India</Select.Item>
+                      <Select.Item value="Nepal">Nepal</Select.Item>
+                      <Select.Item value="Bhutan">Bhutan</Select.Item>
+                      <Select.Item value="Bangladesh">Bangladesh</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                </Field>
+                <Field label="Operating Cities">
+                  <Input.Root size="small"><Input.Wrapper>
+                    <Input.Input value={form.operatingCities} onChange={set('operatingCities')} placeholder="Comma-separated" />
+                  </Input.Wrapper></Input.Root>
+                </Field>
+              </div>
               <div className="grid grid-cols-3 gap-3">
                 <Field label="City">
                   <Input.Root size="small"><Input.Wrapper>

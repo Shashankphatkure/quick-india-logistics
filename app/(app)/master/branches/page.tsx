@@ -59,10 +59,10 @@ export default async function BranchesPage({
 
       <StatsStrip
         stats={[
-          { label: 'Total Branches', value: counts.total, trend: 0, trendLabel: 'all time' },
-          { label: 'Active', value: counts.active, trend: 0, trendLabel: 'all time' },
-          { label: 'Hubs', value: counts.hubs, trend: 0, trendLabel: 'all time' },
-          { label: 'Vendors', value: counts.vendors, trend: 0, trendLabel: 'all time' },
+          { label: 'Total Branches', value: counts.total, trend: 0, trendLabel: 'all branches' },
+          { label: 'Active', value: counts.active, trend: 0, trendLabel: 'currently active' },
+          { label: 'Hubs', value: counts.hubs, trend: 0, trendLabel: 'hub branches' },
+          { label: 'Vendors', value: counts.vendors, trend: 0, trendLabel: 'vendor branches' },
         ]}
       />
 
@@ -80,13 +80,14 @@ export default async function BranchesPage({
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.Head>Branch Code</Table.Head>
+              <Table.Head>Branch ID</Table.Head>
               <Table.Head>Branch Name</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Organisation</Table.Head>
               <Table.Head className="hidden md:table-cell">Type</Table.Head>
               <Table.Head className="hidden md:table-cell">Location</Table.Head>
               <Table.Head className="hidden lg:table-cell">Email</Table.Head>
               <Table.Head className="hidden lg:table-cell">Phone</Table.Head>
-              <Table.Head className="hidden lg:table-cell">Head</Table.Head>
+              <Table.Head className="hidden lg:table-cell">Br. Head</Table.Head>
               <Table.Head className="hidden lg:table-cell">Verified By</Table.Head>
               <Table.Head>Status</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
@@ -95,7 +96,7 @@ export default async function BranchesPage({
           <Table.Body>
             {rows.length === 0 ? (
               <Table.Row>
-                <Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">
+                <Table.Cell colSpan={11} className="py-10 text-center text-paragraph-sm text-text-sub-600">
                   No branches found
                 </Table.Cell>
               </Table.Row>
@@ -109,6 +110,7 @@ export default async function BranchesPage({
                     <Table.Cell className="h-auto py-3">
                       <span className="text-paragraph-sm font-medium text-primary-base">{b.name}</span>
                     </Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{b.org_name ?? '—'}</Table.Cell>
                     <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">
                       {BRANCH_TYPE_LABEL[b.branch_type] ?? b.branch_type}
                     </Table.Cell>
