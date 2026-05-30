@@ -4,22 +4,22 @@ Source: Notion change-log, captured 2026-05-30. Tracking status per item.
 Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 
 ## /master → Branches
-- ☐ Branches dropdown (header) is not working / should switch branch
-- ☐ Filter typeahead — typing "A" shows AGRA, AMRITSAR, AURANGABAD…
-- ☐ "Total all time" label unclear → "Total Branches"
+- ◐ Branches dropdown (header) — now lists user's real branches (switch action TBD)
+- ◐ Filter typeahead — filter works (popover + search); live typeahead dropdown TBD
+- ☑ "Total all time" label → clarified sub-labels
 - ❓ Top Performers (based on last activity) — should show Inactive too
-- ◐ Filter result works with Enter + Apply button
-- ☐ Branch ID missing — Branch Code shown instead (needs correction)
-- ☐ Organisation Name — missing in table
-- ☐ Head field → rename "Br. Head"
-- ☐ Add Branch button appearing 2x — remove duplicate
-- ☐ Branch → Edit option missing (for Admins)
-- ☐ Operating City missing
-- ❓ Drag property missing
-- ☐ Save & Add Another button missing
-- ☐ Country field missing
+- ☑ Filter result works with Enter + Apply button
+- ☑ Branch ID — column relabeled "Branch ID"
+- ☑ Organisation Name — added to table
+- ☑ Head field → renamed "Br. Head"
+- ☑ Add Branch button 2x — fixed (converted to Drawer)
+- ☑ Branch → Edit option (RowActions edit)
+- ☑ Operating City — added (Operating Cities field)
+- ❓ Drag property missing — needs clarification
+- ☑ Save & Add Another button — added
+- ☑ Country field — added (dropdown + DB column)
 - ❓ Total Branches / Active Hubs / Vendors — extra fields, clarify
-- ☐ Age field — remove
+- ☑ Age field — not present (already removed)
 
 ## /locations
 - ☐ Add Location button not working
@@ -39,8 +39,8 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 - ❓ Auto Save & No Comment window issue
 
 ## /commodities
-- ☐ Add Commodity appearing 2x — remove duplicate
-- ☐ Add 1 More — window should not close after adding
+- ☑ Add Commodity 2x — fixed (converted to Drawer)
+- ☑ Add 1 More — Save & Add Another keeps drawer open
 - ☐ Perishable → show expiry days near client-facing area
 - ❓ "Boy CLI" — pending clarification
 
@@ -53,7 +53,7 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 - ☐ Add Route → Allow Remove not implemented
 
 ## /dashboard (29 changes)
-- ☐ "40H" label → correct current value
+- ☑ "40H" label → corrected to 48h+ (matches the 2-day query interval)
 - ☐ Table view missing columns: Origin/Destination, Consignee/Pincode, Docket, Verified By, Entry Status, Navigate To, Order Type/Status/Card Channel, POD Image, Logger Report, Manifest PDF/Image, Runsheet, Delivery Type, Created/Modified By, Cold Chain, Delivered At, Total Quantity, Created/Current Branch, Docket Entry Type, Barcode, Connected to Hub/In Transit
 
 ## Add Order
@@ -67,9 +67,9 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 - ☐ Cold Chain: Buyer Info, Asset Type, Temperature Type, "Ayo" field (clarify)
 
 ## /delivery-info
-- ☐ Single Signature missing
-- ☐ POD missing
-- ☐ Verified By missing
+- ☑ Single Signature — added Signature column (view link)
+- ☑ POD — added POD column (view link)
+- ☑ Verified By — added column
 
 ## Run Sheet
 ### Pending Delivery
@@ -83,17 +83,19 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 - ☐ Branch, Verified By, Current & Delivery Status missing
 - ☐ Required cols: Hub Transfer No / Origin / Destination / Total Orders / Total Box / Total Weight / Print / Action (full rework)
 ### All Runsheet
-- ☐ Required cols: Runsheet No / Branch / Total Orders / Verified By / Current Status / Date & Time / Route / Vehicle No / Driver / Print / Delivery Status
+- ◐ Cols present + Verified By added + date/time + Status; Print/Delivery-Status TBD
 
 ## /manifest
 ### /pending-dispatch
-- ☐ Damaged, Not Received, Delivery Type missing
+- ☑ Damaged, Not Received, Delivery Type columns added
 ### /hub-dispatch
-- ☐ Destination, Print, Edit missing; Weight extra field (remove)
+- ☑ Destination column added; Weight extra field removed
+- ☐ Print, Edit — need a manifest detail page first
 ### /forwarding
 - ☐ Same as Hub Dispatch + Forward option missing; create Forward Manifest (Page 17/20)
 ### /pending-depart
-- ☐ Required cols: Manifest No / Origin / Destination / Total Orders / Coloader / Total Bags / Total Box / Total Weight / Total Qty / Print / Action
+- ☑ Columns added: Origin / Destination / Coloader / Bags / Box / Weight / Qty / Action
+- ☐ Print — needs manifest detail/print page
 ### /incoming
 - ☐ Full rework (Page 17); support By Air & By Road
 

@@ -177,10 +177,10 @@ export default async function DashboardPage({
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {([
-                  { label: 'Incoming 24h', value: metrics.delay_incoming_24h, tone: 'warning' },
-                  { label: 'Outgoing 24h', value: metrics.delay_outgoing_24h, tone: 'warning' },
-                  { label: 'Incoming 40h', value: metrics.delay_incoming_40h, tone: 'error' },
-                  { label: 'Outgoing 40h', value: metrics.delay_outgoing_40h, tone: 'error' },
+                  { label: 'Incoming 24h+', value: metrics.delay_incoming_24h, tone: 'warning' },
+                  { label: 'Outgoing 24h+', value: metrics.delay_outgoing_24h, tone: 'warning' },
+                  { label: 'Incoming 48h+', value: metrics.delay_incoming_40h, tone: 'error' },
+                  { label: 'Outgoing 48h+', value: metrics.delay_outgoing_40h, tone: 'error' },
                 ] as { label: string; value: number; tone: StatTone }[]).map(s => (
                   <StatTile key={s.label} label={s.label} value={s.value} tone={s.tone} />
                 ))}
