@@ -18,6 +18,11 @@ export async function addAssetAction(formData: FormData): Promise<AddResult> {
   const boxType = String(formData.get('boxType') ?? '').trim() || null;
   const capacityLiters = Number(formData.get('capacityLiters') ?? 0) || null;
   const manufacturer = String(formData.get('manufacturer') ?? '').trim() || null;
+  const loggerNumber = String(formData.get('loggerNumber') ?? '').trim() || null; // → manufacturer_pid
+  const oldBoxNumber = String(formData.get('oldBoxNumber') ?? '').trim() || null;
+  const calFrom = String(formData.get('calFrom') ?? '').trim() || null;
+  const calTo = String(formData.get('calTo') ?? '').trim() || null;
+  const calIssuer = String(formData.get('calIssuer') ?? '').trim() || null;
   const branchId = String(formData.get('branchId') ?? '').trim() || null;
 
   if (!assetId) return { ok: false, error: 'Asset ID is required' };
@@ -27,10 +32,13 @@ export async function addAssetAction(formData: FormData): Promise<AddResult> {
     await query(
       `insert into assets (
         org_id, asset_kind, asset_id, barcode,
-        logger_type, box_type, capacity_liters, manufacturer,
+        logger_type, box_type, capacity_liters, manufacturer, manufacturer_pid, old_box_number,
+        cal_from, cal_to, cal_issuer,
         assigned_branch_id, current_branch_id, verified_by
-       ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10)`,
-      [orgId, kind, assetId, barcode, loggerType, boxType, capacityLiters, manufacturer, branchId, session.userId],
+       ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $14, $15)`,
+      [orgId, kind, assetId, barcode, loggerType, boxType, capacityLiters, manufacturer,
+       kind === 'logger' ? loggerNumber : null, kind === 'box' ? oldBoxNumber : null,
+       calFrom, calTo, calIssuer, branchId, session.userId],
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown';
