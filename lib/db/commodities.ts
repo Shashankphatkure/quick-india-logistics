@@ -10,12 +10,14 @@ export type CommodityRow = {
   org_name: string;
   verified_by_name: string | null;
   is_active: boolean;
+  expiry_days: number | null;
   created_at: string;
 };
 
 export type CommodityType = {
   id: string;
   name: string;
+  perishable: boolean;
 };
 
 export type CommodityCounts = {
@@ -35,6 +37,7 @@ const LIST_SQL = `
     o.name as org_name,
     u.full_name as verified_by_name,
     c.is_active,
+    c.expiry_days,
     c.created_at
   from commodities c
   join commodity_types t on t.id = c.type_id
@@ -96,7 +99,8 @@ export async function getCommodityCounts(orgId: string): Promise<CommodityCounts
 
 export async function listCommodityTypes(orgId: string): Promise<CommodityType[]> {
   return many<CommodityType>(
-    `select id, name from commodity_types where org_id = $1 and is_active order by name`,
+    `select id, name, (name ~* 'perish|expiry') as perishable
+     from commodity_types where org_id = $1 and is_active order by name`,
     [orgId],
   );
 }
@@ -105,13 +109,14 @@ export async function createCommodity(input: {
   orgId: string;
   typeId: string;
   name: string;
+  expiryDays?: number | null;
   verifiedBy?: string | null;
 }): Promise<string> {
   const r = await one<{ id: string }>(
-    `insert into commodities (org_id, type_id, name, verified_by)
-     values ($1, $2, $3, $4)
+    `insert into commodities (org_id, type_id, name, expiry_days, verified_by)
+     values ($1, $2, $3, $4, $5)
      returning id`,
-    [input.orgId, input.typeId, input.name.trim(), input.verifiedBy ?? null],
+    [input.orgId, input.typeId, input.name.trim(), input.expiryDays ?? null, input.verifiedBy ?? null],
   );
   if (!r) throw new Error('Insert failed');
   return r.id;

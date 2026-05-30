@@ -18,9 +18,10 @@ type Row = {
   org_name: string;
   verified_by_name: string | null;
   is_active: boolean;
+  expiry_days: number | null;
 };
 
-type CommodityType = { id: string; name: string };
+type CommodityType = { id: string; name: string; perishable: boolean };
 
 export default function CommoditiesTable({ rows, types }: { rows: Row[]; types: CommodityType[] }) {
   const [selected, setSelected] = useState<string[]>([]);
@@ -53,7 +54,7 @@ export default function CommoditiesTable({ rows, types }: { rows: Row[]; types: 
         <Table.Header>
           <Table.Row>
             <Table.Head className="w-10"><Checkbox checked={allSelected} onCheckedChange={toggleAll} /></Table.Head>
-            {['Commodity Name', 'Type', 'Organization', 'Verified By', 'Status', ''].map((col) => (
+            {['Commodity Name', 'Type', 'Expiry', 'Organization', 'Verified By', 'Status', ''].map((col) => (
               <Table.Head key={col}>
                 {col && (
                   <span className="flex items-center gap-1">
@@ -68,7 +69,7 @@ export default function CommoditiesTable({ rows, types }: { rows: Row[]; types: 
         <Table.Body>
           {rows.length === 0 ? (
             <Table.Row>
-              <Table.Cell colSpan={7} className="py-10 text-center text-paragraph-sm text-text-sub-600">No commodities found</Table.Cell>
+              <Table.Cell colSpan={8} className="py-10 text-center text-paragraph-sm text-text-sub-600">No commodities found</Table.Cell>
             </Table.Row>
           ) : rows.map((c) => {
             const statusLabel = c.is_active ? 'Active' : 'Inactive';
@@ -83,6 +84,11 @@ export default function CommoditiesTable({ rows, types }: { rows: Row[]; types: 
                 <Table.Cell className="h-auto py-3">
                   <Badge.Root size="small" variant="lighter" color="gray">{c.type_name}</Badge.Root>
                 </Table.Cell>
+                <Table.Cell className="h-auto py-3">
+                  {c.expiry_days != null
+                    ? <Badge.Root size="small" variant="lighter" color="orange">{c.expiry_days} days</Badge.Root>
+                    : <span className="text-paragraph-sm text-text-soft-400">—</span>}
+                </Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{c.org_name}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{c.verified_by_name ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3">
@@ -91,7 +97,7 @@ export default function CommoditiesTable({ rows, types }: { rows: Row[]; types: 
                   </Badge.Root>
                 </Table.Cell>
                 <Table.Cell className="h-auto py-3 text-right">
-                  <RowActions row={{ id: c.id, name: c.name, type_id: c.type_id, is_active: c.is_active }} types={types} />
+                  <RowActions row={{ id: c.id, name: c.name, type_id: c.type_id, is_active: c.is_active, expiry_days: c.expiry_days }} types={types} />
                 </Table.Cell>
               </Table.Row>
             );

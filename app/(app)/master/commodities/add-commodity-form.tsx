@@ -18,7 +18,10 @@ export default function AddCommodityForm({ types }: { types: CommodityType[] }) 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [typeId, setTypeId] = useState<string>('');
+  const [expiryDays, setExpiryDays] = useState('');
   const [pending, startTransition] = useTransition();
+
+  const isPerishable = types.find((t) => t.id === typeId)?.perishable ?? false;
 
   function submit(addAnother: boolean) {
     if (!typeId) { toast.error('Select a commodity type'); return; }
@@ -26,11 +29,13 @@ export default function AddCommodityForm({ types }: { types: CommodityType[] }) 
     const fd = new FormData();
     fd.set('typeId', typeId);
     fd.set('name', name.trim());
+    if (isPerishable) fd.set('expiryDays', expiryDays);
     startTransition(async () => {
       const result = await addCommodityAction(fd);
       if (result.ok) {
         toast.success('Commodity added');
         setName('');
+        setExpiryDays('');
         // Keep type selected for fast repeated entry; only clear name.
         if (!addAnother) setOpen(false);
         router.refresh();
@@ -79,6 +84,17 @@ export default function AddCommodityForm({ types }: { types: CommodityType[] }) 
                   </Input.Wrapper>
                 </Input.Root>
               </div>
+              {isPerishable && (
+                <div className="flex flex-col gap-1.5">
+                  <Label.Root>Expiry / Shelf Life (days)</Label.Root>
+                  <Input.Root size="small">
+                    <Input.Wrapper>
+                      <Input.Input type="number" min={0} value={expiryDays} onChange={(e) => setExpiryDays(e.target.value)} placeholder="e.g. 7" />
+                    </Input.Wrapper>
+                  </Input.Root>
+                  <p className="text-paragraph-xs text-text-sub-600">Shown on shipments so handlers know how long this stays good.</p>
+                </div>
+              )}
             </Drawer.Body>
 
             <Divider.Root />

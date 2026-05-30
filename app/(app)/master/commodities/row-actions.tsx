@@ -13,19 +13,21 @@ import * as Select from '@/components/ui/select';
 import { RiEditLine, RiToggleLine } from '@remixicon/react';
 import { editCommodityAction, toggleCommodityActiveAction } from './actions';
 
-type CommodityType = { id: string; name: string };
+type CommodityType = { id: string; name: string; perishable: boolean };
 
 export default function RowActions({
   row,
   types,
 }: {
-  row: { id: string; name: string; type_id: string; is_active: boolean };
+  row: { id: string; name: string; type_id: string; is_active: boolean; expiry_days: number | null };
   types: CommodityType[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [form, setForm] = useState({ name: row.name, typeId: row.type_id });
+  const [form, setForm] = useState({ name: row.name, typeId: row.type_id, expiryDays: row.expiry_days != null ? String(row.expiry_days) : '' });
+
+  const isPerishable = types.find((t) => t.id === form.typeId)?.perishable ?? false;
 
   function onEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,6 +35,7 @@ export default function RowActions({
     fd.set('id', row.id);
     fd.set('typeId', form.typeId);
     fd.set('name', form.name);
+    fd.set('expiryDays', isPerishable ? form.expiryDays : '');
     startTransition(async () => {
       const r = await editCommodityAction(fd);
       if (r.ok) { toast.success('Updated'); setOpen(false); router.refresh(); }
@@ -88,6 +91,14 @@ export default function RowActions({
                   </Select.Content>
                 </Select.Root>
               </div>
+              {isPerishable && (
+                <div className="flex flex-col gap-1.5">
+                  <Label.Root>Expiry / Shelf Life (days)</Label.Root>
+                  <Input.Root size="small"><Input.Wrapper>
+                    <Input.Input type="number" min={0} value={form.expiryDays} onChange={(e) => setForm((s) => ({ ...s, expiryDays: e.target.value }))} placeholder="e.g. 7" />
+                  </Input.Wrapper></Input.Root>
+                </div>
+              )}
             </Modal.Body>
             <Modal.Footer>
               <Button.Root variant="neutral" mode="stroke" size="small" type="button" onClick={() => setOpen(false)}>Cancel</Button.Root>

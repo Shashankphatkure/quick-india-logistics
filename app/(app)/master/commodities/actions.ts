@@ -11,12 +11,13 @@ export type AddCommodityResult = { ok: true } | { ok: false; error: string };
 export async function addCommodityAction(formData: FormData): Promise<AddCommodityResult> {
   const name = String(formData.get('name') ?? '').trim();
   const typeId = String(formData.get('typeId') ?? '').trim();
+  const expiryDays = Number(formData.get('expiryDays') ?? 0) || null;
 
   if (!name) return { ok: false, error: 'Commodity name is required' };
   if (!typeId) return { ok: false, error: 'Commodity type is required' };
 
   try {
-    await createCommodity({ orgId: await currentOrgId(), typeId, name });
+    await createCommodity({ orgId: await currentOrgId(), typeId, name, expiryDays });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown error';
     if (msg.includes('commodities_name_per_org_uq')) {
@@ -72,14 +73,15 @@ export async function editCommodityAction(formData: FormData): Promise<EditCommo
   const id = String(formData.get('id') ?? '').trim();
   const name = String(formData.get('name') ?? '').trim();
   const typeId = String(formData.get('typeId') ?? '').trim();
+  const expiryDays = Number(formData.get('expiryDays') ?? 0) || null;
   if (!id) return { ok: false, error: 'Missing ID' };
   if (!name) return { ok: false, error: 'Name is required' };
   if (!typeId) return { ok: false, error: 'Type is required' };
   const orgId = await currentOrgId();
   try {
     await query(
-      `update commodities set name = $1, type_id = $2 where id = $3 and org_id = $4`,
-      [name, typeId, id, orgId],
+      `update commodities set name = $1, type_id = $2, expiry_days = $3 where id = $4 and org_id = $5`,
+      [name, typeId, expiryDays, id, orgId],
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Unknown';

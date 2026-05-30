@@ -91,6 +91,7 @@ export default async function CommoditiesPage({
             rows={rows.map((c) => ({
               id: c.id, name: c.name, type_id: c.type_id, type_name: c.type_name,
               org_name: c.org_name, verified_by_name: c.verified_by_name, is_active: c.is_active,
+              expiry_days: c.expiry_days,
             }))}
             types={types}
           />
