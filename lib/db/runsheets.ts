@@ -20,6 +20,7 @@ export type RunsheetRow = {
   driver_phone: string | null;
   state: string;
   order_count: number;
+  verified_by_name: string | null;
 };
 
 const PAGE_SIZE = 25;
@@ -35,11 +36,14 @@ export async function listRunsheets(opts: { orgId: string; branchIds?: BranchIds
   const order = resolveSort(opts.sort, opts.dir, RUNSHEET_SORT, 'date');
   return many<RunsheetRow>(
     `select r.id, r.runsheet_no,
-            to_char(r.runsheet_date, 'DD-MM-YYYY') as runsheet_date,
+            to_char(r.runsheet_date, 'DD-MM-YYYY HH24:MI') as runsheet_date,
             b.name as branch_name,
             r.route, r.vehicle_no, r.driver_name, r.driver_phone, r.state,
-            (select count(*)::int from runsheet_orders ro where ro.runsheet_id = r.id) as order_count
-     from runsheets r join branches b on b.id = r.branch_id
+            (select count(*)::int from runsheet_orders ro where ro.runsheet_id = r.id) as order_count,
+            u.full_name as verified_by_name
+     from runsheets r
+     join branches b on b.id = r.branch_id
+     left join users u on u.id = r.created_by
      where r.org_id = $1
        ${RUNSHEET_BRANCH(6)}
        and ($2::text is null or r.runsheet_no ilike '%' || $2 || '%')

@@ -86,12 +86,13 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
               <Table.Head className="hidden lg:table-cell">Driver</Table.Head>
               <Table.Head className="hidden lg:table-cell">Phone</Table.Head>
               <Table.Head className="hidden md:table-cell">Orders</Table.Head>
-              <Table.Head><SortableHeader column="state">State</SortableHeader></Table.Head>
+              <Table.Head className="hidden lg:table-cell">Verified By</Table.Head>
+              <Table.Head><SortableHeader column="state">Status</SortableHeader></Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No runsheets found</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No runsheets found</Table.Cell></Table.Row>
             ) : rows.map(r => {
               const sl = STATE_LABEL[r.state] ?? { label: r.state, color: 'gray' as const };
               return (
@@ -104,6 +105,7 @@ export default async function AllRunsheetsPage({ searchParams }: { searchParams?
                   <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{r.driver_name ?? '—'}</Table.Cell>
                   <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{r.driver_phone ?? '—'}</Table.Cell>
                   <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{r.order_count}</Table.Cell>
+                  <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{r.verified_by_name ?? '—'}</Table.Cell>
                   <Table.Cell className="h-auto py-3"><Badge.Root size="medium" variant="light" color={sl.color}><Badge.Dot />{sl.label}</Badge.Root></Table.Cell>
                 </Table.Row>
               );

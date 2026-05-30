@@ -20,9 +20,10 @@ const MODE_LABEL: Record<string, string> = {
 
 type Row = {
   id: string; manifest_no: string; manifest_date: string;
-  to_branch_name: string; mode: string;
+  from_branch_name: string; to_branch_name: string; mode: string;
   vendor_name: string | null; vehicle_no: string | null; airway_bill_no: string | null;
-  order_count: number;
+  total_bags: number; total_boxes: number; coloader_chargeable_kg: string | null;
+  order_count: number; total_qty: number;
 };
 
 export default async function PendingDepartPage({ searchParams }: { searchParams?: { page?: string } }) {
@@ -32,10 +33,15 @@ export default async function PendingDepartPage({ searchParams }: { searchParams
   const rows = await many<Row>(
     `select m.id, m.manifest_no,
             to_char(m.manifest_date, 'DD-MM-YYYY') as manifest_date,
-            tb.name as to_branch_name, m.mode,
+            fb.name as from_branch_name, tb.name as to_branch_name, m.mode,
             v.name as vendor_name, m.vehicle_no, m.airway_bill_no,
-            (select count(*)::int from manifest_orders mo where mo.manifest_id = m.id) as order_count
+            coalesce(m.total_bags, 0) as total_bags,
+            coalesce(m.total_boxes, 0) as total_boxes,
+            m.coloader_chargeable_kg::text,
+            (select count(*)::int from manifest_orders mo where mo.manifest_id = m.id) as order_count,
+            (select coalesce(sum(o.no_of_pieces), 0)::int from manifest_orders mo join orders o on o.id = mo.order_id where mo.manifest_id = m.id) as total_qty
      from manifests m
+     join branches fb on fb.id = m.from_branch_id
      join branches tb on tb.id = m.to_branch_id
      left join vendors v on v.id = m.vendor_id
      where m.org_id=$1 and m.state='final'
@@ -76,21 +82,24 @@ export default async function PendingDepartPage({ searchParams }: { searchParams
       <div className="overflow-hidden rounded-xl border border-stroke-soft-200 bg-bg-white-0 shadow-regular-xs">
         <Table.Root>
           <Table.Header>
-            <Table.Row>{['Manifest No', 'Date', 'Destination', 'Mode', 'Vendor', 'AWB', 'Vehicle', 'Orders', 'Action'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
+            <Table.Row>{['Manifest No', 'Origin', 'Destination', 'Mode', 'Coloader', 'AWB / Vehicle', 'Orders', 'Bags', 'Box', 'Weight (kg)', 'Qty', 'Action'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No manifests pending depart</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={12} className="py-10 text-center text-paragraph-sm text-text-sub-600">No manifests pending depart</Table.Cell></Table.Row>
             ) : rows.map(m => (
               <Table.Row key={m.id}>
                 <Table.Cell className="h-auto py-3"><Link href={`/manifest/${m.manifest_no}`} className="text-paragraph-sm font-medium text-primary-base hover:underline no-underline">{m.manifest_no}</Link></Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.manifest_date}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.to_branch_name}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{MODE_LABEL[m.mode] ?? m.mode}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.vendor_name ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-strong-950 font-mono">{m.airway_bill_no ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.vehicle_no ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-strong-950 font-mono">{m.airway_bill_no ?? m.vehicle_no ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.order_count}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_bags}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_boxes}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.coloader_chargeable_kg ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_qty}</Table.Cell>
                 <Table.Cell className="h-auto py-3"><DepartButton manifestId={m.id} /></Table.Cell>
               </Table.Row>
             ))}
