@@ -65,7 +65,7 @@ export default async function HubDispatchPage({ searchParams }: { searchParams?:
         </div>
         <Table.Root>
           <Table.Header>
-            <Table.Row>{['Manifest No', 'Date', 'From → To', 'Mode', 'Orders', 'Bags / Boxes', 'Weight (kg)'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
+            <Table.Row>{['Manifest No', 'Date', 'Origin', 'Destination', 'Mode', 'Orders', 'Bags / Boxes'].map(c => <Table.Head key={c}>{c}</Table.Head>)}</Table.Row>
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
@@ -74,11 +74,11 @@ export default async function HubDispatchPage({ searchParams }: { searchParams?:
               <Table.Row key={m.id}>
                 <Table.Cell className="h-auto py-3"><Link href={`/manifest/${m.manifest_no}`} className="text-paragraph-sm font-medium text-primary-base hover:underline no-underline">{m.manifest_no}</Link></Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.manifest_date}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{m.from_branch_name} → {m.to_branch_name}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.from_branch_name}</Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.to_branch_name}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{MODE_LABEL[m.mode] ?? m.mode}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.order_count}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.total_bags} / {m.total_boxes}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{m.coloader_chargeable_kg ?? '—'}</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>

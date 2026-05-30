@@ -85,7 +85,7 @@ export default async function DeliveryInfoPage({ searchParams }: { searchParams?
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              {['Docket No', 'Delivery Branch', 'Consignee', 'Recipient', 'Phone', 'Delivered At', 'Status'].map(col => (
+              {['Docket No', 'Delivery Branch', 'Consignee', 'Recipient', 'Phone', 'Delivered At', 'POD', 'Signature', 'Verified By', 'Status'].map(col => (
                 <Table.Head key={col} className="whitespace-nowrap">
                   <span className="flex items-center gap-1">
                     {col}<RiArrowUpDownLine size={11} className="text-text-disabled-300" />
@@ -97,7 +97,7 @@ export default async function DeliveryInfoPage({ searchParams }: { searchParams?
           </Table.Header>
           <Table.Body>
             {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={tabKey === 'pending_mark' ? 8 : 7} className="py-10 text-center text-paragraph-sm text-text-sub-600">No deliveries in this tab</Table.Cell></Table.Row>
+              <Table.Row><Table.Cell colSpan={tabKey === 'pending_mark' ? 11 : 10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No deliveries in this tab</Table.Cell></Table.Row>
             ) : rows.map(d => (
               <Table.Row key={d.id}>
                 <Table.Cell className="h-auto py-3 font-medium whitespace-nowrap">
@@ -108,6 +108,17 @@ export default async function DeliveryInfoPage({ searchParams }: { searchParams?
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-strong-950 whitespace-nowrap">{d.pod_recipient_name ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.pod_recipient_phone ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.delivered_at ?? '—'}</Table.Cell>
+                <Table.Cell className="h-auto py-3 whitespace-nowrap">
+                  {d.pod_image_url ? (
+                    <Link href={`/booking/orders/${d.docket_no}`} className="text-paragraph-xs text-primary-base hover:underline no-underline">View</Link>
+                  ) : <span className="text-paragraph-xs text-text-disabled-300">—</span>}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-3 whitespace-nowrap">
+                  {d.pod_signature_url ? (
+                    <Link href={`/booking/orders/${d.docket_no}`} className="text-paragraph-xs text-primary-base hover:underline no-underline">View</Link>
+                  ) : <span className="text-paragraph-xs text-text-disabled-300">—</span>}
+                </Table.Cell>
+                <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600 whitespace-nowrap">{d.verified_by_name ?? '—'}</Table.Cell>
                 <Table.Cell className="h-auto py-3">
                   <Badge.Root size="medium" variant="light" color={d.status === 'delivered' ? 'green' : d.status === 'damaged' || d.status === 'not_received' ? 'red' : 'orange'}>
                     <Badge.Dot />{d.status.replace(/_/g, ' ')}

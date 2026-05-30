@@ -24,7 +24,14 @@ type Order = {
   ewaybill_no: string | null;
   chargeable_weight_kg: string | null;
   no_of_pieces: number;
+  delivery_type: string;
+  damaged_count: number;
+  not_received_count: number;
   is_cold_chain: boolean;
+};
+
+const DELIVERY_TYPE_LABEL: Record<string, string> = {
+  local: 'Local', domestic: 'Domestic', international: 'International',
 };
 
 type SelectItem = { id: string; name: string };
@@ -92,12 +99,12 @@ export default function PendingDispatchTable({
         <Table.Header>
           <Table.Row>
             <Table.Head className="w-10"><Checkbox checked={allSelected} onCheckedChange={toggleAll} /></Table.Head>
-            {['Docket No', 'Date', 'Origin', 'Destination', 'Client', 'EwayBill', 'Weight (kg)', 'Pcs', 'Cold'].map(c => <Table.Head key={c}>{c}</Table.Head>)}
+            {['Docket No', 'Date', 'Origin', 'Destination', 'Client', 'Delivery Type', 'EwayBill', 'Weight (kg)', 'Pcs', 'Damaged', 'Not Received', 'Cold'].map(c => <Table.Head key={c}>{c}</Table.Head>)}
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {rows.length === 0 ? (
-            <Table.Row><Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No orders pending dispatch</Table.Cell></Table.Row>
+            <Table.Row><Table.Cell colSpan={13} className="py-10 text-center text-paragraph-sm text-text-sub-600">No orders pending dispatch</Table.Cell></Table.Row>
           ) : rows.map(o => (
             <Table.Row key={o.id}>
               <Table.Cell className="h-auto py-3 w-10" onClick={(e) => e.stopPropagation()}>
@@ -108,9 +115,16 @@ export default function PendingDispatchTable({
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.origin}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.destination}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.client_name ?? '—'}</Table.Cell>
+              <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{DELIVERY_TYPE_LABEL[o.delivery_type] ?? o.delivery_type}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{o.ewaybill_no ?? 'No EwayBill'}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.chargeable_weight_kg ?? '—'}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.no_of_pieces}</Table.Cell>
+              <Table.Cell className="h-auto py-3 text-paragraph-sm">
+                {o.damaged_count > 0 ? <Badge.Root size="small" variant="lighter" color="red">{o.damaged_count}</Badge.Root> : <span className="text-text-disabled-300">0</span>}
+              </Table.Cell>
+              <Table.Cell className="h-auto py-3 text-paragraph-sm">
+                {o.not_received_count > 0 ? <Badge.Root size="small" variant="lighter" color="orange">{o.not_received_count}</Badge.Root> : <span className="text-text-disabled-300">0</span>}
+              </Table.Cell>
               <Table.Cell className="h-auto py-3">{o.is_cold_chain ? <Badge.Root size="small" variant="lighter" color="sky">Cold</Badge.Root> : '—'}</Table.Cell>
             </Table.Row>
           ))}

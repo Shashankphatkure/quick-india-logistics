@@ -109,6 +109,9 @@ export type PendingDispatchOrder = {
   ewaybill_no: string | null;
   chargeable_weight_kg: string | null;
   no_of_pieces: number;
+  delivery_type: string;
+  damaged_count: number;
+  not_received_count: number;
   is_cold_chain: boolean;
 };
 
@@ -121,7 +124,10 @@ export async function listPendingDispatchOrders(opts: { orgId: string; branchIds
             o.origin, o.destination,
             c.name as client_name,
             o.ewaybill_no, o.chargeable_weight_kg::text,
-            o.no_of_pieces, o.is_cold_chain
+            o.no_of_pieces, o.delivery_type,
+            coalesce(o.damaged_count, 0) as damaged_count,
+            coalesce(o.not_received_count, 0) as not_received_count,
+            o.is_cold_chain
      from orders o
      left join clients c on c.id = o.client_id
      where o.org_id=$1

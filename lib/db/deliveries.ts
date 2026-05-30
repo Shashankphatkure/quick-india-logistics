@@ -10,6 +10,7 @@ export type DeliveryRow = {
   pod_recipient_phone: string | null;
   pod_image_url: string | null;
   pod_signature_url: string | null;
+  verified_by_name: string | null;
   consignee_name: string;
   destination: string;
   status: string;
@@ -44,9 +45,11 @@ export async function listDeliveries(opts: {
             b.name as delivery_branch_name,
             o.pod_recipient_name, o.pod_recipient_phone,
             o.pod_image_url, o.pod_signature_url,
+            u.full_name as verified_by_name,
             o.consignee_name, o.destination, o.status
      from orders o
      left join branches b on b.id = o.destination_branch_id
+     left join users u on u.id = o.created_by
      where o.org_id = $1${tabClause(tab, 'o')}
        and ($5::uuid[] is null or o.destination_branch_id = any($5) or o.current_branch_id = any($5))
        and ($2::text is null or o.docket_no ilike '%' || $2 || '%' or o.consignee_name ilike '%' || $2 || '%')
