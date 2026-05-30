@@ -1,32 +1,16 @@
 import React from 'react';
-import * as Button from '@/components/ui/button';
 import * as Input from '@/components/ui/input';
-import * as Table from '@/components/ui/table';
-import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
 import { RiSearchLine, RiTruckLine } from '@remixicon/react';
 import FilterPopover from '@/components/filter-popover';
-import { STATUS_TO_BADGE_COLOR, type BadgeColor } from '@/lib/ui-types';
 import { listVendors, countVendors, getVendorCounts } from '@/lib/db/vendors';
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import AddVendorForm from './add-vendor-form';
-import RowActions from './row-actions';
+import VendorsTable from './vendors-table';
 
 const PAGE_SIZE = 25;
-
-const STATUS_LABEL: Record<string, string> = {
-  approved: 'Approved',
-  pending: 'Pending',
-  rejected: 'Rejected',
-};
-
-const REGION_LABEL: Record<string, string> = {
-  pan_india: 'Pan India',
-  state: 'State',
-  city: 'City',
-};
 
 export default async function VendorsPage({ searchParams }: { searchParams?: { search?: string; page?: string } }) {
   const orgId = await currentOrgId();
@@ -73,44 +57,9 @@ export default async function VendorsPage({ searchParams }: { searchParams?: { s
             </Input.Root>
           </form>
         </div>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.Head>Vendor Name</Table.Head>
-              <Table.Head className="hidden lg:table-cell">PAN</Table.Head>
-              <Table.Head className="hidden lg:table-cell">Email</Table.Head>
-              <Table.Head className="hidden md:table-cell">Phone</Table.Head>
-              <Table.Head className="hidden lg:table-cell">Company Type</Table.Head>
-              <Table.Head className="hidden md:table-cell">Service Region</Table.Head>
-              <Table.Head className="hidden lg:table-cell">Line of Business</Table.Head>
-              <Table.Head className="hidden lg:table-cell">Verified By</Table.Head>
-              <Table.Head>Status</Table.Head>
-              <Table.Head className="text-right">Actions</Table.Head>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vendors found</Table.Cell></Table.Row>
-            ) : rows.map(v => (
-              <Table.Row key={v.id} className={v.is_active ? '' : 'opacity-60'}>
-                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{v.name}{!v.is_active && <span className="ml-1.5 text-paragraph-xs text-text-soft-400">(inactive)</span>}</span></Table.Cell>
-                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.pan ?? '—'}</Table.Cell>
-                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-xs text-text-sub-600">{v.primary_email ?? '—'}</Table.Cell>
-                <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.primary_phone ?? '—'}</Table.Cell>
-                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.company_type ?? '—'}</Table.Cell>
-                <Table.Cell className="hidden md:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{REGION_LABEL[v.service_region ?? ''] ?? '—'}</Table.Cell>
-                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.line_of_business ?? '—'}</Table.Cell>
-                <Table.Cell className="hidden lg:table-cell h-auto py-3 text-paragraph-sm text-text-sub-600">{v.verified_by_name ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3">
-                  <Badge.Root size="medium" variant="light" color={(STATUS_TO_BADGE_COLOR[STATUS_LABEL[v.status] ?? v.status] ?? 'gray') as BadgeColor}>
-                    <Badge.Dot />{STATUS_LABEL[v.status] ?? v.status}
-                  </Badge.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3 text-right"><RowActions row={v} /></Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
+        <div className="p-3">
+          <VendorsTable rows={rows} />
+        </div>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
           <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*PAGE_SIZE+1}-{Math.min(page*PAGE_SIZE, total)} of {total}</span>
           <PaginationLinks page={page} totalPages={totalPages} basePath="/master/vendors" query={{ search }} />

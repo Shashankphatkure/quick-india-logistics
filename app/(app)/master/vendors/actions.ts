@@ -81,3 +81,27 @@ export async function toggleVendorActiveAction(id: string, active: boolean): Pro
   await query(`update vendors set is_active=$1 where id=$2 and org_id=$3`, [active, id, await currentOrgId()]);
   revalidatePath('/master/vendors');
 }
+
+export async function bulkApproveVendorsAction(ids: string[]): Promise<AddResult> {
+  await requireSession();
+  if (ids.length === 0) return { ok: false, error: 'Nothing selected' };
+  try {
+    await query(`update vendors set status='approved' where id = any($1::uuid[]) and org_id=$2`, [ids, await currentOrgId()]);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+  }
+  revalidatePath('/master/vendors');
+  return { ok: true };
+}
+
+export async function bulkDeactivateVendorsAction(ids: string[]): Promise<AddResult> {
+  await requireSession();
+  if (ids.length === 0) return { ok: false, error: 'Nothing selected' };
+  try {
+    await query(`update vendors set is_active=false where id = any($1::uuid[]) and org_id=$2`, [ids, await currentOrgId()]);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+  }
+  revalidatePath('/master/vendors');
+  return { ok: true };
+}
