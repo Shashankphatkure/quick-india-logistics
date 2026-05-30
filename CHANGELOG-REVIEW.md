@@ -22,21 +22,21 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 - ☑ Age field — not present (already removed)
 
 ## /locations
-- ☐ Add Location button not working
-- ☐ Correct sequence: Country → Pincode → State → City → Branch → Pincodes
-- ☐ Missing fields: Assigned Branch, Created Branch, Created By, In Use (stage), Is Active, Country, Branch, Validated By
+- ☑ Add Location button — now works (real locations table + form)
+- ☑ Sequence Country → Pincode → State → City → Branch in the form
+- ☑ Fields added: Assigned Branch, Created By, In Use, Is Active, Country, Validated By
 
 ## /assets
-- ☐ Asset ID — Add option missing
-- ☐ Manufacturer dropdown missing
-- ☐ Asset Calibration Info missing
-- ☐ Logger Number missing
-- ☐ Initial Assigned Branch (Logger) missing
-- ☐ Old Box Number missing
-- ☐ Box Capacity — decimal input required (e.g. 1.0)
-- ☐ Temp Control Box missing
-- ☐ "Add As One More" button — show Add & None options
-- ❓ Auto Save & No Comment window issue
+- ☑ Asset ID input present (Add form is a Drawer now)
+- ☑ Manufacturer — now a dropdown
+- ☑ Asset Calibration Info — from/to/issued-by section (loggers)
+- ☑ Logger Number — added (→ manufacturer_pid)
+- ☑ Initial Assigned Branch — present
+- ☑ Old Box Number — added (boxes)
+- ☑ Box Capacity — decimal required (step 0.1)
+- ☑ Temp Control Box — box kind option present
+- ☑ "Add As One More" → Save & Add Another
+- ❓ Auto Save & No Comment window issue — needs clarification
 
 ## /commodities
 - ☑ Add Commodity 2x — fixed (converted to Drawer)
@@ -57,14 +57,14 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 - ☐ Table view missing columns: Origin/Destination, Consignee/Pincode, Docket, Verified By, Entry Status, Navigate To, Order Type/Status/Card Channel, POD Image, Logger Report, Manifest PDF/Image, Runsheet, Delivery Type, Created/Modified By, Cold Chain, Delivered At, Total Quantity, Created/Current Branch, Docket Entry Type, Barcode, Connected to Hub/In Transit
 
 ## Add Order
-- ☐ Booking Form / Bookings section / Entry Type / Consignee / Booking Date & Time missing
-- ☐ Cold Chain Shipment checkbox — error on add, no cold-chain info shown
-- ☐ Shipper: location info, state — invalid/missing/not validating
-- ☐ Consignee: valid location missing
-- ☐ Tariff: Commodity Type, Local Delivery Type, COD, Chargeable Weight, Remarks missing
-- ☐ Dimensions: No. of Pieces missing, Add Another Dimension missing
-- ☐ Order Image: sequence after Invoices wrong, Invoice Image missing, Add Another Invoice missing
-- ☐ Cold Chain: Buyer Info, Asset Type, Temperature Type, "Ayo" field (clarify)
+- ☑ Booking Info step has Bill To, Client, Delivery Type, Mode, Priority, Booking Date, Cold Chain
+- ☑ Consignee step present
+- ◐ Cold Chain checkbox works; asset attach is on order-detail (not in wizard yet)
+- ☑ Tariff: Local Delivery Type, COD, Remarks added; Chargeable Weight auto-computed
+- ☑ Dimensions: No. of Pieces present (Tariff step)
+- ☐ Add Another Dimension / Add Another Invoice — needs order_dimensions / order_invoices child tables
+- ☐ Order Image sequence / Invoice Image — image upload is on order-detail gallery
+- ❓ Cold Chain "Ayo" field — needs clarification
 
 ## /delivery-info
 - ☑ Single Signature — added Signature column (view link)
