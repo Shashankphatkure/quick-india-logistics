@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
@@ -9,8 +10,10 @@ import * as Modal from '@/components/ui/modal';
 import * as Input from '@/components/ui/input';
 import * as Select from '@/components/ui/select';
 import * as Label from '@/components/ui/label';
+import * as CompactButton from '@/components/ui/compact-button';
+import * as Tooltip from '@/components/ui/tooltip';
 import { Root as Checkbox } from '@/components/ui/checkbox';
-import { RiAddLine } from '@remixicon/react';
+import { RiAddLine, RiEyeLine } from '@remixicon/react';
 import { createRunsheetAction } from './actions';
 
 type Order = {
@@ -79,12 +82,13 @@ export default function PendingDeliveryTable({
         <Table.Header>
           <Table.Row>
             <Table.Head className="w-10"><Checkbox checked={allSelected} onCheckedChange={toggleAll} /></Table.Head>
-            {['Docket No', 'Booking Date', 'Origin', 'Destination', 'Client', 'EwayBill No', 'Actual Weight', 'Pcs'].map(c => <Table.Head key={c}>{c}</Table.Head>)}
+            {['Docket No', 'Booking Date', 'Origin', 'Destination', 'Client', 'EwayBill No', 'Actual Weight', 'Total Qty'].map(c => <Table.Head key={c}>{c}</Table.Head>)}
+            <Table.Head className="text-right">Action</Table.Head>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {rows.length === 0 ? (
-            <Table.Row><Table.Cell colSpan={9} className="py-10 text-center text-paragraph-sm text-text-sub-600">No orders pending delivery</Table.Cell></Table.Row>
+            <Table.Row><Table.Cell colSpan={10} className="py-10 text-center text-paragraph-sm text-text-sub-600">No orders pending delivery</Table.Cell></Table.Row>
           ) : rows.map(o => (
             <Table.Row key={o.id}>
               <Table.Cell className="h-auto py-3 w-10" onClick={(e) => e.stopPropagation()}>
@@ -96,8 +100,18 @@ export default function PendingDeliveryTable({
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.destination}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.client_name ?? '—'}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-xs text-text-sub-600">{o.ewaybill_no ?? 'No EwayBill'}</Table.Cell>
-              <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.actual_weight_kg ?? '—'}</Table.Cell>
+              <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.actual_weight_kg ? `${o.actual_weight_kg} kg` : '—'}</Table.Cell>
               <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600">{o.no_of_pieces}</Table.Cell>
+              <Table.Cell className="h-auto py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <CompactButton.Root asChild variant="ghost" size="large">
+                      <Link href={`/booking/orders/${encodeURIComponent(o.docket_no)}`}><CompactButton.Icon as={RiEyeLine} /></Link>
+                    </CompactButton.Root>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>View order</Tooltip.Content>
+                </Tooltip.Root>
+              </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
