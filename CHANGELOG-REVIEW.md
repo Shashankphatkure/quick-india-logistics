@@ -41,16 +41,18 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 ## /commodities
 - ☑ Add Commodity 2x — fixed (converted to Drawer)
 - ☑ Add 1 More — Save & Add Another keeps drawer open
-- ☐ Perishable → show expiry days near client-facing area
+- ☑ Perishable → expiry/shelf-life (days) field on perishable types; orange "{n} days" badge in list
 - ❓ "Boy CLI" — pending clarification
 
 ## /charges
-- ☐ Add Slab button not visible/clickable
-- ☐ Fare rates missing
-- ☐ Add Route → Remove button not working
+- ☑ Add Charge now works (DB-backed charges table + drawer); was a dead button on a hard-coded list
+- ☑ Fare rates — charge codes (percent/flat/per-kg/per-box + default value) stored in DB
+- ☑ Remove — per-row Remove (deactivate)
+- ◐ Weight-break "slabs" (tiered rate per weight range) — needs client's slab structure (per route? per charge?) before building
 
 ## /routes
-- ☐ Add Route → Allow Remove not implemented
+- ☑ Add Route — drawer writing to tat_routes (client/mode/origin/destination/TAT/rate), org-scoped + unique guard
+- ☑ Allow Remove — per-row Remove with org ownership check
 
 ## /dashboard (29 changes)
 - ☑ "40H" label → corrected to 48h+ (matches the 2-day query interval)
@@ -62,7 +64,7 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 - ◐ Cold Chain checkbox works; asset attach is on order-detail (not in wizard yet)
 - ☑ Tariff: Local Delivery Type, COD, Remarks added; Chargeable Weight auto-computed
 - ☑ Dimensions: No. of Pieces present (Tariff step)
-- ☐ Add Another Dimension / Add Another Invoice — needs order_dimensions / order_invoices child tables
+- ☑ Add Another Dimension / Add Another Invoice — multi-row repeaters → order_dimensions / order_invoices child tables; volumetric weight sums across rows; detail page shows both
 - ☐ Order Image sequence / Invoice Image — image upload is on order-detail gallery
 - ❓ Cold Chain "Ayo" field — needs clarification
 
