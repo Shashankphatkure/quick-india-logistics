@@ -40,6 +40,9 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
   const actualWeight = Number(formData.get('actualWeightKg') ?? 0);
   const noOfPieces = Number(formData.get('noOfPieces') ?? 0);
   const noOfBoxes = Number(formData.get('noOfBoxes') ?? 0);
+  const localDeliveryType = String(formData.get('localDeliveryType') ?? '').trim() || null;
+  const cod = formData.get('cod') === 'true';
+  const remarks = String(formData.get('remarks') ?? '').trim() || null;
   const length = Number(formData.get('length') ?? 0) || null;
   const breadth = Number(formData.get('breadth') ?? 0) || null;
   const height = Number(formData.get('height') ?? 0) || null;
@@ -88,6 +91,7 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         length_cm, breadth_cm, height_cm,
         no_of_pieces, no_of_boxes,
         invoice_value, invoice_number, invoice_date, ewaybill_no,
+        local_delivery_type, cod, remarks,
         status, lock_state, created_branch_id, current_branch_id, created_by
       ) values (
         $1, $2, $3,
@@ -100,6 +104,7 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         $23, $24, $25,
         $26, $27,
         $28, $29, $30, $31,
+        $33, $34, $35,
         'received', 'data_entry', $14, $14, $32
       ) returning docket_no`,
       [
@@ -114,6 +119,7 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         noOfPieces, noOfBoxes,
         invoiceValue, invoiceNumber, invoiceDate, ewaybillNo,
         session.userId,
+        localDeliveryType, cod, remarks,
       ],
     );
 

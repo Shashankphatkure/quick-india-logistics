@@ -62,6 +62,9 @@ type FormState = {
   actualWeightKg: string;
   noOfPieces: string;
   noOfBoxes: string;
+  localDeliveryType: string;
+  cod: boolean;
+  remarks: string;
   // Step 5
   length: string;
   breadth: string;
@@ -83,6 +86,7 @@ const INITIAL: FormState = {
   consigneeName: '', consigneePhone: '', consigneeAddress: '',
   destination: '', destinationBranchId: '',
   actualWeightKg: '', noOfPieces: '1', noOfBoxes: '0',
+  localDeliveryType: 'sales', cod: false, remarks: '',
   length: '', breadth: '', height: '',
   ewaybillNo: '', invoiceNumber: '', invoiceDate: '', invoiceValue: '',
 };
@@ -360,6 +364,28 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
                 </Input.Wrapper>
               </Input.Root>
             </Field>
+            <Field label="Local Delivery Type">
+              <Select.Root size="small" value={state.localDeliveryType} onValueChange={(v) => update('localDeliveryType', v)}>
+                <Select.Trigger><Select.Value /></Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="sales">Sales</Select.Item>
+                  <Select.Item value="sample">Sample</Select.Item>
+                  <Select.Item value="expiry">Expiry Goods</Select.Item>
+                  <Select.Item value="return">Return</Select.Item>
+                </Select.Content>
+              </Select.Root>
+            </Field>
+            <Field label="COD">
+              <label className="flex items-center gap-2 cursor-pointer text-paragraph-sm pt-1">
+                <Checkbox checked={state.cod} onCheckedChange={(v) => update('cod', !!v)} />
+                Cash on Delivery
+              </label>
+            </Field>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Field label="Remarks">
+                <Textarea.Root simple value={state.remarks} onChange={(e) => update('remarks', e.target.value)} placeholder="Any special handling notes…" rows={2} />
+              </Field>
+            </div>
           </div>
         </Section>
       </div>
