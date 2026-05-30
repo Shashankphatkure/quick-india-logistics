@@ -75,10 +75,10 @@ Status key: ☐ todo · ◐ partial · ☑ done · ❓ needs clarification
 
 ## Run Sheet
 ### Pending Delivery
-- ☐ Required cols: Docket No / Delivery Branch / Person Name / Phone / Delivered Date & Time
-- ☐ Additional: Docket No / Booking Date / Origin / Destination / Eway Bill No / Actual Weight / Total Qty / Action
-- ☐ Show Actual Weight instead of Total Quantity
-- ☐ Action button missing
+- ☑ Cols present: Docket / Booking Date / Origin / Destination / Eway Bill / Actual Weight / Total Qty
+- ☑ Action button — per-row View → order detail
+- ☑ Actual Weight shown with kg unit; Pcs relabeled Total Qty
+- ◐ Delivery Branch / Person / Phone / Delivered Date — these are post-delivery fields (belong on /delivery-info, already has them); pending list is pre-delivery
 ### Hub Dispatch
 - ☐ Print, Edit missing
 ### Incoming Runsheet
