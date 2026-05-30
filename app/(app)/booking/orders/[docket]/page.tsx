@@ -84,6 +84,22 @@ type LockEvent = {
   note: string | null;
 };
 
+type DimensionRow = {
+  id: string;
+  length_cm: string | null;
+  breadth_cm: string | null;
+  height_cm: string | null;
+  no_of_pieces: number;
+};
+
+type InvoiceRow = {
+  id: string;
+  invoice_number: string | null;
+  invoice_date: string | null;
+  invoice_value: string | null;
+  ewaybill_no: string | null;
+};
+
 export default async function OrderDetailPage({ params }: { params: { docket: string } }) {
   const orgId = await currentOrgId();
   const session = await getSession();
@@ -184,6 +200,20 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
      where le.order_id = $1 order by le.performed_at desc`,
     [order.id],
   );
+
+  const [dimensions, invoices] = await Promise.all([
+    many<DimensionRow>(
+      `select id, length_cm::text, breadth_cm::text, height_cm::text, no_of_pieces
+       from order_dimensions where order_id = $1 order by created_at`,
+      [order.id],
+    ),
+    many<InvoiceRow>(
+      `select id, invoice_number, to_char(invoice_date, 'DD-MM-YYYY') as invoice_date,
+              invoice_value::text, ewaybill_no
+       from order_invoices where order_id = $1 order by created_at`,
+      [order.id],
+    ),
+  ]);
 
   const images: ImageItem[] = await Promise.all(
     imageRows.map(async (img) => ({
@@ -304,6 +334,36 @@ export default async function OrderDetailPage({ params }: { params: { docket: st
             <Row label="Pieces" value={order.no_of_pieces.toString()} />
             <Row label="Boxes" value={order.no_of_boxes.toString()} />
           </Card>
+
+          {dimensions.length > 0 && (
+            <Card title={`Package Dimensions (${dimensions.length})`}>
+              <div className="space-y-1.5">
+                {dimensions.map((d, i) => (
+                  <div key={d.id} className="flex items-center justify-between text-paragraph-sm">
+                    <span className="text-text-sub-600">Box {i + 1}</span>
+                    <span className="font-medium text-text-strong-950">
+                      {d.length_cm ?? '—'} × {d.breadth_cm ?? '—'} × {d.height_cm ?? '—'} cm
+                      <span className="ml-2 text-text-sub-600">× {d.no_of_pieces} pcs</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {invoices.length > 0 && (
+            <Card title={`Invoices (${invoices.length})`}>
+              <div className="space-y-2.5">
+                {invoices.map((inv) => (
+                  <div key={inv.id} className="flex items-center justify-between border-b border-stroke-soft-200 pb-2 last:border-0 last:pb-0 text-paragraph-sm">
+                    <span className="font-medium text-text-strong-950">{inv.invoice_number ?? '—'}</span>
+                    <span className="text-text-sub-600">{inv.invoice_date ?? '—'}</span>
+                    <span className="font-medium text-text-strong-950">{inv.invoice_value ? `₹${Number(inv.invoice_value).toLocaleString('en-IN')}` : '—'}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           <Card title="Invoice & EwayBill">
             <Row label="Invoice Number" value={order.invoice_number ?? '—'} />

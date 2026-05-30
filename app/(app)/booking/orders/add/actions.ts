@@ -1,8 +1,7 @@
 'use server';
 
-import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { query, one } from '@/lib/db';
+import { pool } from '@/lib/db';
 import { currentOrgId } from '@/lib/tenant';
 import { requireSession } from '@/lib/auth';
 import { getClientDimensionConfig } from '@/lib/db/bill-to';
@@ -12,6 +11,19 @@ export type CreateOrderResult = { ok: true; docketNo: string } | { ok: false; er
 
 const MODES = new Set(['local', 'air', 'surface', 'cargo', 'train', 'courier', 'warehouse']);
 const DELIVERY_TYPES = new Set(['local', 'domestic', 'international']);
+
+type DimInput = { length?: string; breadth?: string; height?: string; pieces?: string };
+type InvInput = { number?: string; date?: string; value?: string };
+
+function parseRows<T>(raw: string): T[] {
+  if (!raw) return [];
+  try {
+    const v = JSON.parse(raw);
+    return Array.isArray(v) ? (v as T[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 export async function createOrderAction(formData: FormData): Promise<CreateOrderResult> {
   const session = await requireSession();
@@ -52,6 +64,23 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
   const invoiceDate = String(formData.get('invoiceDate') ?? '').trim() || null;
   const invoiceValue = Number(formData.get('invoiceValue') ?? 0) || null;
 
+  // Multi-row children. Keep only rows with real content.
+  const dimRows = parseRows<DimInput>(String(formData.get('dimensionsJson') ?? ''))
+    .map((d) => ({
+      length: Number(d.length) || null,
+      breadth: Number(d.breadth) || null,
+      height: Number(d.height) || null,
+      pieces: Number(d.pieces) || 1,
+    }))
+    .filter((d) => d.length || d.breadth || d.height);
+  const invRows = parseRows<InvInput>(String(formData.get('invoicesJson') ?? ''))
+    .map((v) => ({
+      number: String(v.number ?? '').trim() || null,
+      date: String(v.date ?? '').trim() || null,
+      value: Number(v.value) || null,
+    }))
+    .filter((v) => v.number || v.date || v.value);
+
   // Validate
   if (!shipperName) return { ok: false, error: 'Shipper name is required' };
   if (!consigneeName) return { ok: false, error: 'Consignee name is required' };
@@ -64,22 +93,39 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
   // Chargeable weight: volumetric (L×B×H / divisor × multiplier) vs actual, whichever
   // is greater — but only when the client bills by dimension weight (use_kg) and a
   // formula exists for this mode. Otherwise chargeable = actual.
+  // Sum volumetric across every dimension row (× pieces) when the client bills
+  // by dimension weight on this mode. Fall back to the legacy single L/B/H if
+  // no multi-row data was sent.
   let dimensionWeight: number | null = null;
   let chargeable = round3(actualWeight);
-  if (clientId && length && breadth && height) {
+  if (clientId) {
     const cfg = await getClientDimensionConfig(clientId, mode);
     if (cfg && cfg.use_dimension === 'use_kg' && cfg.divisor_x) {
-      const vol = volumetricWeight(length, breadth, height, cfg.divisor_x, cfg.multiplier_y ?? 1);
-      dimensionWeight = round3(vol);
-      chargeable = round3(chargeableWeight(actualWeight, vol));
+      const divisor = cfg.divisor_x;
+      const mult = cfg.multiplier_y ?? 1;
+      const rowsForCalc = dimRows.length > 0
+        ? dimRows
+        : (length && breadth && height ? [{ length, breadth, height, pieces: 1 }] : []);
+      const vol = rowsForCalc.reduce((sum, d) => {
+        const l = d.length ?? 0, b = d.breadth ?? 0, h = d.height ?? 0;
+        if (!l || !b || !h) return sum;
+        return sum + volumetricWeight(l, b, h, divisor, mult) * (d.pieces ?? 1);
+      }, 0);
+      if (vol > 0) {
+        dimensionWeight = round3(vol);
+        chargeable = round3(chargeableWeight(actualWeight, vol));
+      }
     }
   }
 
   // Auto-generate docket number from timestamp
   const docketNo = `D${Date.now().toString().slice(-9)}`;
 
+  const client = await pool.connect();
   try {
-    const r = await one<{ docket_no: string }>(
+    await client.query('begin');
+
+    const ins = await client.query<{ id: string; docket_no: string }>(
       `insert into orders (
         org_id, docket_no, booking_date,
         bill_to_id, client_id,
@@ -106,7 +152,7 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
         $28, $29, $30, $31,
         $33, $34, $35,
         'received', 'data_entry', $14, $14, $32
-      ) returning docket_no`,
+      ) returning id, docket_no`,
       [
         orgId, docketNo, bookingDate,
         billToId || null, clientId || null,
@@ -123,23 +169,45 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
       ],
     );
 
-    if (!r) return { ok: false, error: 'Insert failed' };
+    const order = ins.rows[0];
+    if (!order) throw new Error('Insert failed');
+
+    // Multi-row dimension children
+    for (const d of dimRows) {
+      await client.query(
+        `insert into order_dimensions (order_id, length_cm, breadth_cm, height_cm, no_of_pieces)
+         values ($1, $2, $3, $4, $5)`,
+        [order.id, d.length, d.breadth, d.height, d.pieces],
+      );
+    }
+
+    // Multi-row invoice children
+    for (const v of invRows) {
+      await client.query(
+        `insert into order_invoices (order_id, invoice_number, invoice_date, invoice_value, ewaybill_no)
+         values ($1, $2, $3, $4, $5)`,
+        [order.id, v.number, v.date || null, v.value, ewaybillNo],
+      );
+    }
 
     // Log the initial status event
-    await query(
+    await client.query(
       `insert into order_status_events (order_id, status, note, performed_by, performed_at)
-       select id, 'received', 'Order created via Add Order wizard', $1, now()
-       from orders where docket_no = $2 and org_id = $3`,
-      [session.userId, r.docket_no, orgId],
+       values ($1, 'received', 'Order created via Add Order wizard', $2, now())`,
+      [order.id, session.userId],
     );
 
+    await client.query('commit');
     revalidatePath('/booking/orders');
-    return { ok: true, docketNo: r.docket_no };
+    return { ok: true, docketNo: order.docket_no };
   } catch (e) {
+    await client.query('rollback').catch(() => {});
     const msg = e instanceof Error ? e.message : 'Unknown error';
     if (msg.includes('orders_docket_per_org_uq')) {
       return { ok: false, error: 'A docket with this number already exists — retry' };
     }
     return { ok: false, error: msg };
+  } finally {
+    client.release();
   }
 }

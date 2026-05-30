@@ -11,7 +11,7 @@ import * as HorizontalStepper from '@/components/ui/horizontal-stepper';
 import * as Textarea from '@/components/ui/textarea';
 import { Root as Checkbox } from '@/components/ui/checkbox';
 import {
-  RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiSaveLine,
+  RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiSaveLine, RiAddLine, RiDeleteBinLine,
 } from '@remixicon/react';
 import { cn } from '@/utils/cn';
 import { createOrderAction } from './actions';
@@ -29,6 +29,11 @@ const STEPS = [
 
 type SelectItem = { id: string; name: string };
 type ClientItem = SelectItem & { bill_to_id: string; use_dimension: string };
+
+type DimRow = { length: string; breadth: string; height: string; pieces: string };
+type InvRow = { number: string; date: string; value: string };
+const EMPTY_DIM: DimRow = { length: '', breadth: '', height: '', pieces: '1' };
+const EMPTY_INV: InvRow = { number: '', date: '', value: '' };
 
 export type AddOrderSelects = {
   billTos: SelectItem[];
@@ -66,14 +71,10 @@ type FormState = {
   cod: boolean;
   remarks: string;
   // Step 5
-  length: string;
-  breadth: string;
-  height: string;
+  dimensions: DimRow[];
   // Step 6
   ewaybillNo: string;
-  invoiceNumber: string;
-  invoiceDate: string;
-  invoiceValue: string;
+  invoices: InvRow[];
 };
 
 const INITIAL: FormState = {
@@ -87,8 +88,8 @@ const INITIAL: FormState = {
   destination: '', destinationBranchId: '',
   actualWeightKg: '', noOfPieces: '1', noOfBoxes: '0',
   localDeliveryType: 'sales', cod: false, remarks: '',
-  length: '', breadth: '', height: '',
-  ewaybillNo: '', invoiceNumber: '', invoiceDate: '', invoiceValue: '',
+  dimensions: [{ ...EMPTY_DIM }],
+  ewaybillNo: '', invoices: [{ ...EMPTY_INV }],
 };
 
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
@@ -121,6 +122,28 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
     setState((s) => ({ ...s, [key]: value }));
   }
 
+  // ----- Dimension rows -----
+  function updateDim(i: number, key: keyof DimRow, value: string) {
+    setState((s) => ({ ...s, dimensions: s.dimensions.map((d, idx) => (idx === i ? { ...d, [key]: value } : d)) }));
+  }
+  function addDim() {
+    setState((s) => ({ ...s, dimensions: [...s.dimensions, { ...EMPTY_DIM }] }));
+  }
+  function removeDim(i: number) {
+    setState((s) => ({ ...s, dimensions: s.dimensions.length > 1 ? s.dimensions.filter((_, idx) => idx !== i) : s.dimensions }));
+  }
+
+  // ----- Invoice rows -----
+  function updateInv(i: number, key: keyof InvRow, value: string) {
+    setState((s) => ({ ...s, invoices: s.invoices.map((d, idx) => (idx === i ? { ...d, [key]: value } : d)) }));
+  }
+  function addInv() {
+    setState((s) => ({ ...s, invoices: [...s.invoices, { ...EMPTY_INV }] }));
+  }
+  function removeInv(i: number) {
+    setState((s) => ({ ...s, invoices: s.invoices.length > 1 ? s.invoices.filter((_, idx) => idx !== i) : s.invoices }));
+  }
+
   // Filter clients by selected bill-to
   const clientsForBillTo = state.billToId
     ? selects.clients.filter((c) => c.bill_to_id === state.billToId)
@@ -129,23 +152,39 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
   // Live chargeable-weight calculation (mirrors the authoritative server computation).
   const selectedClient = selects.clients.find((c) => c.id === state.clientId);
   const formula = selects.formulas.find((f) => f.client_id === state.clientId && f.mode === state.mode);
-  const L = Number(state.length) || 0;
-  const B = Number(state.breadth) || 0;
-  const H = Number(state.height) || 0;
   const actual = Number(state.actualWeightKg) || 0;
   const usesDimension = selectedClient?.use_dimension === 'use_kg';
-  const volumetric = usesDimension && formula && L && B && H
-    ? round3(volumetricWeight(L, B, H, formula.divisor_x, formula.multiplier_y))
+  // Volumetric weight summed across every dimension row (× pieces on that row).
+  const volumetric = usesDimension && formula
+    ? round3(state.dimensions.reduce((sum, d) => {
+        const l = Number(d.length) || 0, b = Number(d.breadth) || 0, h = Number(d.height) || 0;
+        const p = Number(d.pieces) || 1;
+        if (!l || !b || !h) return sum;
+        return sum + volumetricWeight(l, b, h, formula.divisor_x, formula.multiplier_y) * p;
+      }, 0))
     : 0;
   const chargeable = round3(chargeableWeight(actual, volumetric));
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    // Inject all state values
+    // Inject all scalar state values (arrays handled separately below).
     for (const [k, v] of Object.entries(state)) {
+      if (k === 'dimensions' || k === 'invoices') continue;
       fd.set(k, typeof v === 'boolean' ? String(v) : String(v ?? ''));
     }
+    // Multi-row dimensions / invoices → JSON. Also mirror the first row into the
+    // legacy single columns the orders table + listings already read.
+    fd.set('dimensionsJson', JSON.stringify(state.dimensions));
+    fd.set('invoicesJson', JSON.stringify(state.invoices));
+    const d0 = state.dimensions[0] ?? EMPTY_DIM;
+    fd.set('length', d0.length);
+    fd.set('breadth', d0.breadth);
+    fd.set('height', d0.height);
+    const i0 = state.invoices[0] ?? EMPTY_INV;
+    fd.set('invoiceNumber', i0.number);
+    fd.set('invoiceDate', i0.date);
+    fd.set('invoiceValue', i0.value);
     startTransition(async () => {
       const r = await createOrderAction(fd);
       if (r.ok) {
@@ -393,30 +432,41 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
       {/* Step 5: Dimensions */}
       <div className={step === 4 ? 'space-y-4' : 'hidden'}>
         <Section title="Dimensions">
-          <p className="text-paragraph-xs text-text-sub-600">Optional — for dimension-weight calculation</p>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-            <Field label="Length (cm)">
-              <Input.Root size="small">
-                <Input.Wrapper>
-                  <Input.Input type="number" value={state.length} onChange={(e) => update('length', e.target.value)} placeholder="0" />
-                </Input.Wrapper>
-              </Input.Root>
-            </Field>
-            <Field label="Breadth (cm)">
-              <Input.Root size="small">
-                <Input.Wrapper>
-                  <Input.Input type="number" value={state.breadth} onChange={(e) => update('breadth', e.target.value)} placeholder="0" />
-                </Input.Wrapper>
-              </Input.Root>
-            </Field>
-            <Field label="Height (cm)">
-              <Input.Root size="small">
-                <Input.Wrapper>
-                  <Input.Input type="number" value={state.height} onChange={(e) => update('height', e.target.value)} placeholder="0" />
-                </Input.Wrapper>
-              </Input.Root>
-            </Field>
+          <p className="text-paragraph-xs text-text-sub-600">Optional — for dimension-weight calculation. Add a row per distinct box size.</p>
+          <div className="space-y-3">
+            {state.dimensions.map((d, i) => (
+              <div key={i} className="flex items-end gap-3 rounded-xl border border-stroke-soft-200 p-3">
+                <div className="grid flex-1 grid-cols-2 gap-3 lg:grid-cols-4">
+                  <Field label="Length (cm)">
+                    <Input.Root size="small"><Input.Wrapper>
+                      <Input.Input type="number" value={d.length} onChange={(e) => updateDim(i, 'length', e.target.value)} placeholder="0" />
+                    </Input.Wrapper></Input.Root>
+                  </Field>
+                  <Field label="Breadth (cm)">
+                    <Input.Root size="small"><Input.Wrapper>
+                      <Input.Input type="number" value={d.breadth} onChange={(e) => updateDim(i, 'breadth', e.target.value)} placeholder="0" />
+                    </Input.Wrapper></Input.Root>
+                  </Field>
+                  <Field label="Height (cm)">
+                    <Input.Root size="small"><Input.Wrapper>
+                      <Input.Input type="number" value={d.height} onChange={(e) => updateDim(i, 'height', e.target.value)} placeholder="0" />
+                    </Input.Wrapper></Input.Root>
+                  </Field>
+                  <Field label="Pieces">
+                    <Input.Root size="small"><Input.Wrapper>
+                      <Input.Input type="number" value={d.pieces} onChange={(e) => updateDim(i, 'pieces', e.target.value)} placeholder="1" />
+                    </Input.Wrapper></Input.Root>
+                  </Field>
+                </div>
+                <Button.Root variant="error" mode="stroke" size="xsmall" type="button" onClick={() => removeDim(i)} disabled={state.dimensions.length === 1} aria-label="Remove dimension">
+                  <Button.Icon as={RiDeleteBinLine} />
+                </Button.Root>
+              </div>
+            ))}
           </div>
+          <Button.Root variant="neutral" mode="stroke" size="xsmall" type="button" onClick={addDim}>
+            <Button.Icon as={RiAddLine} />Add Another Dimension
+          </Button.Root>
 
           <div className="rounded-xl bg-bg-weak-50 p-4">
             {!state.clientId ? (
@@ -453,8 +503,8 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
 
       {/* Step 6: Invoices */}
       <div className={step === 5 ? 'space-y-4' : 'hidden'}>
-        <Section title="Invoice & EwayBill">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Section title="EwayBill">
+          <div className="grid grid-cols-1 gap-4 sm:max-w-xs">
             <Field label="EwayBill No">
               <Input.Root size="small">
                 <Input.Wrapper>
@@ -462,28 +512,40 @@ export default function AddOrderForm({ selects }: { selects: AddOrderSelects }) 
                 </Input.Wrapper>
               </Input.Root>
             </Field>
-            <Field label="Invoice Number">
-              <Input.Root size="small">
-                <Input.Wrapper>
-                  <Input.Input value={state.invoiceNumber} onChange={(e) => update('invoiceNumber', e.target.value)} placeholder="INV-..." />
-                </Input.Wrapper>
-              </Input.Root>
-            </Field>
-            <Field label="Invoice Date">
-              <Input.Root size="small">
-                <Input.Wrapper>
-                  <Input.Input type="date" value={state.invoiceDate} onChange={(e) => update('invoiceDate', e.target.value)} />
-                </Input.Wrapper>
-              </Input.Root>
-            </Field>
-            <Field label="Invoice Value (₹)">
-              <Input.Root size="small">
-                <Input.Wrapper>
-                  <Input.Input type="number" step="0.01" value={state.invoiceValue} onChange={(e) => update('invoiceValue', e.target.value)} placeholder="0.00" />
-                </Input.Wrapper>
-              </Input.Root>
-            </Field>
           </div>
+        </Section>
+
+        <Section title="Invoices">
+          <p className="text-paragraph-xs text-text-sub-600">Add a row per invoice attached to this shipment.</p>
+          <div className="space-y-3">
+            {state.invoices.map((inv, i) => (
+              <div key={i} className="flex items-end gap-3 rounded-xl border border-stroke-soft-200 p-3">
+                <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
+                  <Field label="Invoice Number">
+                    <Input.Root size="small"><Input.Wrapper>
+                      <Input.Input value={inv.number} onChange={(e) => updateInv(i, 'number', e.target.value)} placeholder="INV-..." />
+                    </Input.Wrapper></Input.Root>
+                  </Field>
+                  <Field label="Invoice Date">
+                    <Input.Root size="small"><Input.Wrapper>
+                      <Input.Input type="date" value={inv.date} onChange={(e) => updateInv(i, 'date', e.target.value)} />
+                    </Input.Wrapper></Input.Root>
+                  </Field>
+                  <Field label="Invoice Value (₹)">
+                    <Input.Root size="small"><Input.Wrapper>
+                      <Input.Input type="number" step="0.01" value={inv.value} onChange={(e) => updateInv(i, 'value', e.target.value)} placeholder="0.00" />
+                    </Input.Wrapper></Input.Root>
+                  </Field>
+                </div>
+                <Button.Root variant="error" mode="stroke" size="xsmall" type="button" onClick={() => removeInv(i)} disabled={state.invoices.length === 1} aria-label="Remove invoice">
+                  <Button.Icon as={RiDeleteBinLine} />
+                </Button.Root>
+              </div>
+            ))}
+          </div>
+          <Button.Root variant="neutral" mode="stroke" size="xsmall" type="button" onClick={addInv}>
+            <Button.Icon as={RiAddLine} />Add Another Invoice
+          </Button.Root>
         </Section>
 
         <Section title="Review">
