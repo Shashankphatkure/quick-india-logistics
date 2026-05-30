@@ -1,8 +1,5 @@
 import React from 'react';
-import * as Button from '@/components/ui/button';
 import * as Input from '@/components/ui/input';
-import * as Table from '@/components/ui/table';
-import * as Badge from '@/components/ui/badge';
 import PageHeader from '@/components/page-header';
 import StatsStrip from '@/components/stats-strip';
 import { RiSearchLine, RiCarLine } from '@remixicon/react';
@@ -11,15 +8,7 @@ import { listVehicles, countVehicles, getVehicleCounts, VEHICLE_PAGE_SIZE } from
 import { currentOrgId } from '@/lib/tenant';
 import PaginationLinks from '@/components/pagination-links';
 import AddVehicleForm from './add-vehicle-form';
-import RowActions from './row-actions';
-
-const TYPE_LABEL: Record<string, string> = {
-  truck: 'Truck', van: 'Van', bike: 'Bike', tempo: 'Tempo', mini_truck: 'Mini Truck',
-};
-
-const OWNER_LABEL: Record<string, string> = {
-  owned: 'Owned', partner: 'Partner', market: 'Market',
-};
+import VehiclesTable from './vehicles-table';
 
 export default async function VehiclesPage({ searchParams }: { searchParams?: { search?: string; page?: string } }) {
   const orgId = await currentOrgId();
@@ -66,38 +55,9 @@ export default async function VehiclesPage({ searchParams }: { searchParams?: { 
             </Input.Root>
           </form>
         </div>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.Head>Vehicle No</Table.Head>
-              <Table.Head className="hidden md:table-cell">Type</Table.Head>
-              <Table.Head className="hidden md:table-cell">Owner</Table.Head>
-              <Table.Head className="hidden lg:table-cell">Model</Table.Head>
-              <Table.Head className="hidden md:table-cell">Capacity (kg)</Table.Head>
-              <Table.Head>Status</Table.Head>
-              <Table.Head className="text-right">Actions</Table.Head>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rows.length === 0 ? (
-              <Table.Row><Table.Cell colSpan={7} className="py-10 text-center text-paragraph-sm text-text-sub-600">No vehicles found</Table.Cell></Table.Row>
-            ) : rows.map(v => (
-              <Table.Row key={v.id}>
-                <Table.Cell className="h-auto py-3"><span className="text-paragraph-sm font-medium text-primary-base">{v.number}</span></Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">{TYPE_LABEL[v.vehicle_type ?? ''] ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">{OWNER_LABEL[v.owner_type ?? ''] ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden lg:table-cell">{v.model ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3 text-paragraph-sm text-text-sub-600 hidden md:table-cell">{v.capacity_kg ?? '—'}</Table.Cell>
-                <Table.Cell className="h-auto py-3">
-                  <Badge.Root size="medium" variant="light" color={v.is_active ? 'green' : 'gray'}>
-                    <Badge.Dot />{v.is_active ? 'Active' : 'Inactive'}
-                  </Badge.Root>
-                </Table.Cell>
-                <Table.Cell className="h-auto py-3 text-right"><RowActions row={v} /></Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
+        <div className="p-3">
+          <VehiclesTable rows={rows} />
+        </div>
         <div className="flex items-center justify-between border-t border-stroke-soft-200 px-4 py-3">
           <span className="text-paragraph-xs text-text-sub-600">Showing {total === 0 ? 0 : (page-1)*VEHICLE_PAGE_SIZE+1}-{Math.min(page*VEHICLE_PAGE_SIZE, total)} of {total}</span>
           <PaginationLinks page={page} totalPages={totalPages} basePath="/master/vehicles" query={{ search }} />

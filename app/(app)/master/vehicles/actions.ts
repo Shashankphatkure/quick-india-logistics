@@ -75,3 +75,23 @@ export async function toggleVehicleActiveAction(id: string, active: boolean): Pr
   await query(`update vehicles set is_active=$1 where id=$2 and org_id=$3`, [active, id, await currentOrgId()]);
   revalidatePath('/master/vehicles');
 }
+
+async function bulkSetActive(ids: string[], active: boolean): Promise<AddResult> {
+  await requireSession();
+  if (ids.length === 0) return { ok: false, error: 'Nothing selected' };
+  try {
+    await query(`update vehicles set is_active=$1 where id = any($2::uuid[]) and org_id=$3`, [active, ids, await currentOrgId()]);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Failed' };
+  }
+  revalidatePath('/master/vehicles');
+  return { ok: true };
+}
+
+export async function bulkActivateVehiclesAction(ids: string[]): Promise<AddResult> {
+  return bulkSetActive(ids, true);
+}
+
+export async function bulkDeactivateVehiclesAction(ids: string[]): Promise<AddResult> {
+  return bulkSetActive(ids, false);
+}
